@@ -22,7 +22,7 @@ The prototype uses a 4x4 grid over a fictional test area in central Ukraine. For
 
 Clone this repository and import its root `project.godot` in Godot. Press **F5** to run.
 
-The prototype is on `phase-1-vertical-slice` until its pull request is merged. Select that branch when cloning or downloading it.
+The terrain-bridge build is on `phase-2-terrain-bridge` until its pull request is merged. Select that branch when cloning or downloading it.
 
 ### Controls
 
@@ -42,7 +42,7 @@ The prototype is on `phase-1-vertical-slice` until its pull request is merged. S
 ### Current limits
 
 - The battle center is the geographic center of its sector, not a detected real contact point. The uniform latitude/longitude grid spans about 20x20 km; `sector_size_km` is nominal, not an exact metric measurement.
-- No OSM, elevation, buildings, terrain maps, CMBS scenario files, automatic launch, or result import are generated yet. The JSON is a contract for the future bridge.
+- The Python terrain bridge can prepare real OSM features, a projected elevation grid, and a CMAutoEditor elevation CSV. It does not create a CMBS scenario, launch the game, or import battle results.
 - Only the first same-sector opposing pair is exported each turn. Crossing moves and larger battles need later rules.
 - Campaign state lives in memory and resets when the application closes. Units can continue moving after contact; battles do not lock turns yet. Personnel and vehicles are carried in the payload, but losses and campaign saving are not implemented.
 
@@ -55,6 +55,16 @@ godot --headless --path . --script res://tests/campaign_smoke.gd
 
 The smoke test exercises click orders, illegal movement, simultaneous movement, contact detection, sector-center orientation, JSON file contents, invalid export filenames, and directory-write failure handling. Test exports use a separate temporary folder and are cleaned up.
 
+## Prepare real terrain
+
+On Windows, install Python 3.11 or 3.12, run `setup_terrain_bridge.cmd`, then run
+`run_terrain_bridge.cmd`. Choose **F** to fetch public OSM and elevation data for
+the latest Godot battle export. Open `terrain_output/<battle_id>/preview.html`
+and follow that folder's `CMAUTOEDITOR.md` to place terrain through the CMBS editor.
+
+See [the terrain bridge guide](terrain_bridge/README.md) for offline planning,
+local DEMs, the CLI, accuracy limits, and the manual editor handoff.
+
 ## Project layout
 
 - `scripts/main.gd`: campaign interactions, turn resolution, and rendering.
@@ -62,7 +72,8 @@ The smoke test exercises click orders, illegal movement, simultaneous movement, 
 - `scripts/battle_exporter.gd`: JSON file writing and write errors.
 - `data/campaign.json`: formations and geographic bounds.
 - `docs/BATTLE_EXPORT.md`: export fields and coordinate assumptions.
-- `docs/CODEX_NEXT_PROMPT.md`: terrain-bridge milestone.
+- `docs/CODEX_NEXT_PROMPT.md`: Windows CMBS validation and campaign persistence milestones.
+- `terrain_bridge/`: validated GIS requests, public-source fetching, elevation CSV, and previews.
 
 ## Architecture direction
 
@@ -99,7 +110,7 @@ Godot campaign state
 - Replace uniform geographic interpolation with a projected metric sector grid.
 - Add operational movement costs by road/terrain.
 - Add formation composition and persistent losses.
-- Add a Python `terrain_bridge` that accepts battle coordinates and prepares OSM/DEM data for CMAutoEditor.
+- Validate the generated terrain inside the Windows CMBS scenario editor.
 - Add battle-result import.
 
 ## Design rule

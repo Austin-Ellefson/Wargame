@@ -51,5 +51,8 @@ Example terrain request from the B2 demo:
 }
 ```
 
-The downstream GIS bridge must validate the request and compute its metric
-bounds before requesting OSM/DEM data or preparing CMAutoEditor inputs.
+The Python `terrain_bridge` now validates this request and computes projected
+metric bounds before requesting OSM/DEM data and preparing CMAutoEditor inputs.
+`source: future_osm_dem_pipeline` remains the campaign's request label, not a
+claim that terrain has already been downloaded. The bridge's own manifest is
+authoritative for preparation status. See `terrain_bridge/README.md`.

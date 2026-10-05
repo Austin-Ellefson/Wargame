@@ -1,0 +1,39 @@
+{
+  "battle_id": "T003_B2",
+  "russia": {
+    "id": "RU_1",
+    "morale": 75.0,
+    "name": "Russian Motor Rifle Battalion",
+    "personnel": 680.0,
+    "supply": 80.0,
+    "vehicles": {
+      "apc": 4.0,
+      "ifv": 30.0,
+      "tanks": 12.0
+    }
+  },
+  "schema_version": 1,
+  "sector": "B2",
+  "terrain_request": {
+    "center_lat": 49.0225,
+    "center_lon": 31.965,
+    "center_method": "placeholder_sector_center",
+    "coordinate_system": "EPSG:4326",
+    "sector_size_km": 5.0,
+    "source": "future_osm_dem_pipeline",
+    "tactical_map_size_km": 2
+  },
+  "turn": 3,
+  "ukraine": {
+    "id": "UKR_1",
+    "morale": 80.0,
+    "name": "Ukrainian 1st Mechanized Battalion",
+    "personnel": 620.0,
+    "supply": 85.0,
+    "vehicles": {
+      "apc": 6.0,
+      "ifv": 28.0,
+      "tanks": 10.0
+    }
+  }
+}
