@@ -3,3 +3,8 @@
 *.tmp
 .DS_Store
 Thumbs.db
+.venv/
+__pycache__/
+.pytest_cache/
+terrain_output/
+*.pyc

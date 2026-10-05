@@ -1,40 +1,47 @@
-# Next Codex Task: Terrain Bridge Contract
-
-Continue the Godot prototype in this repository. Keep the existing two-turn
-movement/contact demo and its smoke test working.
+# Next Codex Task: Validate the Windows CMBS Terrain Handoff
 
 ## Completed
 
-- Campaign data and placeholder geographic bounds load from `data/campaign.json`.
-- Opposing units entering one sector generate a schema-versioned battle payload.
-- `scripts/sector_geometry.gd` calculates the center of a uniform WGS84 grid cell.
-- `scripts/battle_exporter.gd` writes JSON to `user://battle_exports`.
-- The sidebar shows the coordinates and export filename.
-- `tests/campaign_smoke.gd` validates the loop and export errors in Godot 4.5.1.
+- Godot movement/contact detection and geographic battle JSON exports.
+- A Python terrain bridge with schema validation and a projected 8 m UTM grid.
+- Offline footprints/manifests with explicit pending-source statuses.
+- Public OSM feature and Copernicus GLO-30 fetching, or local source files.
+- Verified HTTPS fallback and tile caching when GDAL streaming cannot connect.
+- Correct southwest-origin elevation CSVs, original-altitude GeoTIFFs, and previews.
+- A Windows setup and run launcher, plus generated CMAutoEditor instructions.
+- 26 GIS tests and the Godot smoke test passed at the terrain-bridge milestone.
+- An actual Godot export produced a live 2x2 km package with 62,500 elevation
+  cells, complete DEM coverage, and real OSM data. This was a data-preparation
+  check, not a completed CMBS map.
 
-## Next implementation
+## Next validation
 
-1. Add a Python CLI under `terrain_bridge/` accepting an existing battle JSON.
-2. Validate schema version, coordinate ranges, and requested tactical map size.
-   Reject incomplete geographic requests instead of fabricating coordinates.
-3. Calculate a 2x2 km tactical bounding box in an appropriate projected CRS,
-   transform it back to WGS84, and write a terrain-request manifest. Include the
-   projection and source provenance. Do not treat decimal degrees as meters.
-4. Keep the bridge usable offline with a checked-in synthetic fixture. Record
-   OSM/DEM inputs as pending until actual data has been provided or downloaded.
-5. Inspect current CMAutoEditor documentation and its actual CMBS configuration
-   before adding adapters. Do not assume an API exists for producing a CMBS
-   scenario or importing results.
-6. Document an explicit manual terrain-generation workflow, including what the
-   user must do in the Windows Combat Mission editor.
+1. Have the user run the Windows terrain bridge on their PC and inspect its
+   preview. Work from their output and errors; do not assume local CMBS control
+   or installed editor binaries are available to Codex.
+2. Confirm the user's CMAutoEditor binary exposes the inspected flags and has
+   the Black Sea profile/configuration. Follow its installation/screen guidance.
+3. Run its OSM converter with the package's exact projected bounds. Check
+   terrain CSV extent against the 250x250 elevation CSV, including orientation.
+4. Guide the user through the elevation and surface passes in a new CMBS map.
+   Compare hills, roads, river crossings, building placement, and map dimensions
+   against the preview. Record version-specific problems and manual corrections.
+5. Keep forces, objectives, and time/weather manual until a real supported
+   scenario-generation interface has been verified.
 
-## Definition of done
+## Follow-on campaign milestone
 
-- The existing Godot smoke test passes.
-- A real exported JSON file is accepted by the Python CLI.
-- Its terrain manifest has validated geographic bounds and metric dimensions.
-- Bad coordinates, unsupported schema versions, and missing data fail clearly.
-- No placeholder data is described as actual OSM, elevation, or a playable CMBS map.
+Add campaign save/load, a pending-battle lock, and a manual battle-result form
+with validated losses and persistent formation updates. Do not discard an
+unresolved battle, apply a result twice, or silently reload initial forces.
+Keep fictional campaign data separate from real-time operational information.
 
-Later milestones: campaign save/load, unresolved battle locking, manual result
-import with persistent losses, and exact metric operational sectors.
+## Validation to preserve
+
+```bash
+python -m pytest -q tests/test_terrain_bridge.py
+godot --headless --path . --script res://tests/campaign_smoke.gd
+```
+
+See `terrain_bridge/README.md`, `docs/BATTLE_EXPORT.md`, and each prepared
+package's `CMAUTOEDITOR.md` for the existing contracts and limitations.
