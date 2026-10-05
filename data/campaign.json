@@ -1,0 +1,42 @@
+{
+  "turn": 1,
+  "turn_hours": 6,
+  "map": {
+    "name": "Prototype AO",
+    "rows": 4,
+    "columns": 4,
+    "sector_size_km": 5
+  },
+  "units": [
+    {
+      "id": "UKR_1",
+      "name": "Ukrainian 1st Mechanized Battalion",
+      "faction": "UKR",
+      "sector": {"x": 0, "y": 2},
+      "strength": 100,
+      "personnel": 620,
+      "vehicles": {
+        "tanks": 10,
+        "ifv": 28,
+        "apc": 6
+      },
+      "morale": 80,
+      "supply": 85
+    },
+    {
+      "id": "RU_1",
+      "name": "Russian Motor Rifle Battalion",
+      "faction": "RU",
+      "sector": {"x": 3, "y": 1},
+      "strength": 100,
+      "personnel": 680,
+      "vehicles": {
+        "tanks": 12,
+        "ifv": 30,
+        "apc": 4
+      },
+      "morale": 75,
+      "supply": 80
+    }
+  ]
+}
