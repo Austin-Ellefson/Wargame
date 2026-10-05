@@ -2,10 +2,16 @@
   "turn": 1,
   "turn_hours": 6,
   "map": {
-    "name": "Prototype AO",
+    "name": "Fictional central Ukraine test area",
     "rows": 4,
     "columns": 4,
-    "sector_size_km": 5
+    "sector_size_km": 5,
+    "geographic_bounds": {
+      "northwest_lat": 49.09,
+      "northwest_lon": 31.86,
+      "southeast_lat": 48.91,
+      "southeast_lon": 32.14
+    }
   },
   "units": [
     {

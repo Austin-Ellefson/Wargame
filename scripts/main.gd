@@ -1,5 +1,7 @@
 extends Node2D
 
+const SectorGeometry = preload("res://scripts/sector_geometry.gd")
+const BattleExporter = preload("res://scripts/battle_exporter.gd")
 const CAMPAIGN_PATH := "res://data/campaign.json"
 const GRID_ORIGIN := Vector2(70, 90)
 const CELL_SIZE := Vector2(170, 125)
@@ -10,6 +12,8 @@ var units: Array = []
 var selected_unit_id: String = ""
 var pending_orders: Dictionary = {}
 var battle_payload: Dictionary = {}
+var battle_export_directory: String = BattleExporter.EXPORT_DIRECTORY
+var battle_export_path: String = ""
 var status_message := "Select a unit, then click an adjacent sector."
 
 func _ready() -> void:
@@ -24,6 +28,9 @@ func _load_json(path: String) -> Dictionary:
         return {}
 
     var file := FileAccess.open(path, FileAccess.READ)
+    if file == null:
+        push_error("Cannot read campaign: %s" % error_string(FileAccess.get_open_error()))
+        return {}
     var parsed = JSON.parse_string(file.get_as_text())
     if typeof(parsed) != TYPE_DICTIONARY:
         push_error("Campaign JSON is invalid.")
@@ -69,6 +76,7 @@ func _handle_click(mouse_pos: Vector2) -> void:
 
 func _resolve_turn() -> void:
     battle_payload = {}
+    battle_export_path = ""
 
     for unit_id in pending_orders.keys():
         var idx := _get_unit_index(str(unit_id))
@@ -83,6 +91,13 @@ func _resolve_turn() -> void:
     if not battle.is_empty():
         battle_payload = _build_battle_payload(battle[0], battle[1])
         status_message = "CONTACT! Tactical battle generated for Sector %s." % battle_payload.get("sector", "?")
+        var export_result: Dictionary = BattleExporter.write_payload(battle_payload, battle_export_directory)
+        if export_result.get("ok", false):
+            battle_export_path = str(export_result["path"])
+            print("Battle exported: %s" % ProjectSettings.globalize_path(battle_export_path))
+        else:
+            status_message = "CONTACT! Export failed; see console."
+            push_error(str(export_result.get("error", "Unknown export error.")))
     else:
         status_message = "Turn resolved. No opposing units share a sector."
 
@@ -103,18 +118,24 @@ func _build_battle_payload(a: Dictionary, b: Dictionary) -> Dictionary:
     var ukr := a if a.get("faction") == "UKR" else b
     var ru := b if b.get("faction") == "RU" else a
     var sector: Dictionary = a.get("sector", {})
+    var geographic_center: Dictionary = SectorGeometry.center(
+        campaign.get("map", {}),
+        Vector2i(int(sector.get("x", 0)), int(sector.get("y", 0))))
+    var terrain_request: Dictionary = {
+        "sector_size_km": campaign.get("map", {}).get("sector_size_km", 5),
+        "tactical_map_size_km": 2,
+        "source": "future_osm_dem_pipeline"
+    }
+    terrain_request.merge(geographic_center)
 
     return {
+        "schema_version": 1,
         "battle_id": "T%03d_%s" % [int(campaign.get("turn", 1)), _sector_label(Vector2i(int(sector.get("x", 0)), int(sector.get("y", 0))))],
         "sector": _sector_label(Vector2i(int(sector.get("x", 0)), int(sector.get("y", 0)))),
         "turn": campaign.get("turn", 1),
         "ukraine": _unit_summary(ukr),
         "russia": _unit_summary(ru),
-        "terrain_request": {
-            "sector_size_km": campaign.get("map", {}).get("sector_size_km", 5),
-            "tactical_map_size_km": 2,
-            "source": "future_osm_dem_pipeline"
-        }
+        "terrain_request": terrain_request
     }
 
 func _unit_summary(unit: Dictionary) -> Dictionary:
@@ -208,6 +229,19 @@ func _draw_sidebar() -> void:
         draw_string(ThemeDB.fallback_font, Vector2(SIDEBAR_X + 20, y), "%s — Sector %s" % [battle_payload.get("battle_id"), battle_payload.get("sector")], HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("eeeeee"))
         y += 24
         draw_string(ThemeDB.fallback_font, Vector2(SIDEBAR_X + 20, y), "Tactical terrain request: 2 x 2 km", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("eeeeee"))
+        y += 24
+        var terrain: Dictionary = battle_payload.get("terrain_request", {})
+        var coordinate_text := "Geographic bounds unavailable."
+        if terrain.has("center_lat") and terrain.has("center_lon"):
+            coordinate_text = "Center: %.6f, %.6f" % [terrain["center_lat"], terrain["center_lon"]]
+        draw_string(ThemeDB.fallback_font, Vector2(SIDEBAR_X + 20, y), coordinate_text, HORIZONTAL_ALIGNMENT_LEFT, 390, 14, Color("eeeeee"))
+        y += 22
+        draw_string(ThemeDB.fallback_font, Vector2(SIDEBAR_X + 20, y), "Placeholder sector center / WGS84", HORIZONTAL_ALIGNMENT_LEFT, 390, 13, Color("b7bcc5"))
+        if not battle_export_path.is_empty():
+            y += 24
+            draw_string(ThemeDB.fallback_font, Vector2(SIDEBAR_X + 20, y), "Export: user://battle_exports/", HORIZONTAL_ALIGNMENT_LEFT, 390, 13, Color("a9d8ac"))
+            y += 20
+            draw_string(ThemeDB.fallback_font, Vector2(SIDEBAR_X + 20, y), battle_export_path.get_file(), HORIZONTAL_ALIGNMENT_LEFT, 390, 13, Color("a9d8ac"))
 
 func _point_in_end_turn_button(point: Vector2) -> bool:
     return Rect2(Vector2(SIDEBAR_X + 20, 195), Vector2(180, 48)).has_point(point)
