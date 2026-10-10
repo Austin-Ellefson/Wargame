@@ -1,8 +1,9 @@
 # Native tactical battle: first integrated slice
 
 The native simulator runs in the campaign's Godot process. Download the
-`codex/integrated-tactical-battle` branch, import `project.godot`, and press F5.
-This branch includes the unmerged save/load work. Godot 4.5.1 is the tested version.
+`codex/completed-battle-report` branch, import `project.godot`, and press F5.
+This milestone branch includes the unmerged stacked campaign and tactical work.
+Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
 ## Complete game loop

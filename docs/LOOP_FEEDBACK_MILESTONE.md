@@ -14,15 +14,15 @@ they actually run on Windows.
 
 ## Durable ledger
 
-- Milestone status: in progress
+- Milestone status: ready for user testing
 - Workflow baseline branch: codex/loop-feedback-workflow
-- Last validated gameplay branch: codex/readable-combat-feedback
-- Last validated gameplay commit: 13a9fe5fcf0ca7d7c6019c5bc43a3a34c204da14
-- Current task: completed battle report and campaign consequences
-- Current task branch / PR: not started; use codex/readable-combat-feedback (PR #9) as the base
-- Next task: combined build validation and user check-in preparation
-- Check-in prepared for code commit: none
-- Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38084345802
+- Last validated gameplay branch: codex/completed-battle-report
+- Last validated gameplay commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
+- Current task: milestone check-in prepared; preserve this downloadable branch
+- Current task branch / PR: codex/completed-battle-report / PR #10
+- Next task: user Windows playtest, then small independent tactical improvements
+- Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
+- Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
   actual-shot execution cues. The user said only that the first battle appeared
   to work; Windows repeat-loop and cue validation remain outstanding.
@@ -39,8 +39,8 @@ unrelated CI run or screenshot lacking the behavior under test.
 | Restart and safe results | Restart between battles and during execution preserves state and deterministic outcome. Duplicate/stale results are rejected after restart. Failed result save rolls back live state and retains the prior slot. | Repeat-loop restart, pending-battle restart, stale first result and duplicate results passed at `aa96bbb`. Existing tactical smoke still covers mid-execution deterministic restart and save rollback. CI run 38076428133 succeeded. |
 | Visible firing | Cues derive from actual simulated firing events with shooter and target. No cues for out-of-range/blocked fire or empty ammunition. A cue means a shot, not a guaranteed hit. Rendered execution shows shots clearly at supported playback speeds. | Passed at `29dded6` in PR #8: logic covers actual/blocked/range/ammunition cases; CI run 38080482143 succeeded. Its artifact 11680700605 visibly shows two emissive orange shot lines at `EXECUTION | 00:03` and 4x playback. |
 | Readable combat feedback | Squad casualty, ammunition and suppression changes are visible during execution; dead squads stop acting and cannot receive orders. Feedback is legible and does not obscure commands or imply unsupported ballistic realism. | Passed at `13a9fe5` in PR #9. Continuous compact squad/roster status and a latest-volley panel show actual tick deltas; casualties are prioritized. Dead movement/hold rejection and disabled controls are tested. CI run 38084345802 succeeded; artifact 11681289149 visibly shows actual `-1P`, rounds and suppression changes with shot cues at `EXECUTION | 00:03`. |
-| Battle report and continuation | Finished report shows outcome, both sides' deployed/surviving/lost personnel, objective control and campaign consequences. APPLY & CAMPAIGN succeeds once; player can continue and resume without a stale report. | Basic summary exists; improve and verify |
-| Combined build | All logic/input/GIS checks pass on the same candidate; rendered execution/report previews reviewed; one branch ZIP includes all work and docs. Windows-specific limits are stated. | Planned |
+| Battle report and continuation | Finished report shows outcome, both sides' deployed/surviving/lost personnel, objective control and campaign consequences. APPLY & CAMPAIGN succeeds once; player can continue and resume without a stale report. | Passed at `733b6d8` in PR #10. The UI test finishes a real battle, verifies all report sections, applies once, rejects a repeat, reloads the unlocked campaign and rejects the stale result. CI run 38087842201 succeeded; artifact 11682945674 contains a reviewed readable finished report. |
+| Combined build | All logic/input/GIS checks pass on the same candidate; rendered execution/report previews reviewed; one branch ZIP includes all work and docs. Windows-specific limits are stated. | Passed for code commit `733b6d8`: all six Godot checks and 26 terrain tests passed on the descendant containing every gate. CI 38087842201 passed; both 1280x720 execution and report captures were reviewed. Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/completed-battle-report. Windows remains unverified. |
 
 ## Ordered work flow
 
@@ -140,6 +140,45 @@ access/dependency blockers. Do not announce completion with incomplete gates.
 - Next: replace the basic finished-state sentence with a readable two-sided
   battle report covering deployed, surviving and lost personnel, objective
   control and the consequences that will apply to the campaign.
+
+## Run record — completed report and milestone candidate, 2026-10-10
+
+- Branch / draft PR: `codex/completed-battle-report` / PR #10, based on
+  `codex/readable-combat-feedback` (PR #9).
+- Gameplay/check-in commit: `733b6d8feafcd2f96265cfb387dd2d0823945966`.
+- Replaced the basic result sentence with a large report showing outcome, elapsed
+  time, both formations' deployed/surviving/lost personnel, objective-control
+  seconds, personnel losses, morale caps, abstract supply costs, withdrawal or
+  elimination, autosave and campaign unlock. Existing authoritative rules and
+  save schema are unchanged.
+- The view regression now finishes an actual battle, checks every report section,
+  applies it, verifies one history entry and an unlocked campaign, rejects an
+  immediate duplicate, reloads from disk without a stale report and rejects the
+  result again without mutation.
+- Local evidence on the same code candidate: Godot 4.5.1 editor, campaign,
+  save/load, tactical, repeat-loop and tactical-view checks passed; terrain
+  bridge: 26 passed; `git diff --check` passed.
+- CI evidence: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
+  completed successfully. Artifact `tactical-validation` ID 11682945674 was
+  inspected. `tactical-preview.png` still shows actual shots and readable live
+  casualty/ammunition/suppression changes at `EXECUTION | 00:03`.
+  `battle-report-preview.png` shows a readable `FINISHED` report with both force
+  rows, objective control, campaign consequences and the exposed apply button.
+- Test-ready ZIP:
+  https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/completed-battle-report
+- Launch: extract, import/open `project.godot` in Godot 4.5.1 and press F5.
+- Short validation: choose **PLAY INTEGRATED DEMO**; order blue squads and execute
+  intervals until the report, then apply. On the campaign map select the retreated
+  formation, order it into the opponent's adjacent sector and resolve to create
+  `T004_B2`. During battle 2, finish one interval, choose **SAVE & CAMPAIGN**,
+  restart/F5, **LOAD**, reopen the tactical battle, finish and apply. Confirm the
+  fresh ID, prior losses/history, visible fire/feedback and no stale report.
+- Limits: Linux logic/software rendering is not a Windows input/performance test;
+  combat remains abstract infantry on synthetic terrain with full enemy visibility
+  and a scripted opponent. No realistic-fidelity claim is made.
+- The higher-frequency milestone cadence was restored to the normal daily evening
+  schedule after this check-in was prepared. Preserve this branch/commit for the
+  user's download; later work must not obscure it.
 
 ## Scope and priorities
 
