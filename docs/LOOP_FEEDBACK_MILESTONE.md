@@ -14,13 +14,13 @@ they actually run on Windows.
 
 ## Durable ledger
 
-- Milestone status: planned
+- Milestone status: in progress
 - Workflow baseline branch: codex/loop-feedback-workflow
-- Last validated gameplay branch: codex/integrated-tactical-battle
-- Last validated gameplay commit: 7a542b7ce827df980ccc9ec9f293298b83d90bbb
-- Current task: prove two consecutive battles and restart between them
-- Current task branch / PR: not started
-- Next task: actual-shot firing events and rendered cues
+- Last validated gameplay branch: codex/repeatable-two-battle-loop
+- Last validated gameplay commit: aa96bbb68172c6df3a491407e3382a31d5f9ad64
+- Current task: actual-shot firing events and rendered cues
+- Current task branch / PR: not started; use codex/repeatable-two-battle-loop as the base
+- Next task: readable casualty/ammunition/suppression feedback
 - Check-in prepared for code commit: none
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38068410069
 - Baseline evidence: first-battle logic, save/load, GUI input and terrain render;
@@ -35,8 +35,8 @@ unrelated CI run or screenshot lacking the behavior under test.
 
 | Gate | Evidence required | Status |
 | --- | --- | --- |
-| Repeatable campaign loop | Actual orders create contact; play and apply battle 1; loser retreats and campaign unlocks; new orders create battle 2 with a fresh ID; battle 2 completes and applies without resetting prior losses or history. | Planned |
-| Restart and safe results | Restart between battles and during execution preserves state and deterministic outcome. Duplicate/stale results are rejected after restart. Failed result save rolls back live state and retains the prior slot. | Existing single-battle checks; extend to repeated loop |
+| Repeatable campaign loop | Actual orders create contact; play and apply battle 1; loser retreats and campaign unlocks; new orders create battle 2 with a fresh ID; battle 2 completes and applies without resetting prior losses or history. | Passed at `aa96bbb` in PR #7: actual click orders created `T004_B2`; both results applied; cumulative losses/history and both retreats/unlocks verified. CI run 38076428133 succeeded. |
+| Restart and safe results | Restart between battles and during execution preserves state and deterministic outcome. Duplicate/stale results are rejected after restart. Failed result save rolls back live state and retains the prior slot. | Repeat-loop restart, pending-battle restart, stale first result and duplicate results passed at `aa96bbb`. Existing tactical smoke still covers mid-execution deterministic restart and save rollback. CI run 38076428133 succeeded. |
 | Visible firing | Cues derive from actual simulated firing events with shooter and target. No cues for out-of-range/blocked fire or empty ammunition. A cue means a shot, not a guaranteed hit. Rendered execution shows shots clearly at supported playback speeds. | Planned |
 | Readable combat feedback | Squad casualty, ammunition and suppression changes are visible during execution; dead squads stop acting and cannot receive orders. Feedback is legible and does not obscure commands or imply unsupported ballistic realism. | Counters exist; improve and verify |
 | Battle report and continuation | Finished report shows outcome, both sides' deployed/surviving/lost personnel, objective control and campaign consequences. APPLY & CAMPAIGN succeeds once; player can continue and resume without a stale report. | Basic summary exists; improve and verify |
@@ -64,6 +64,29 @@ unrelated CI run or screenshot lacking the behavior under test.
 
 Persist enough state for a fresh session to resume. Record and report concrete
 access/dependency blockers. Do not announce completion with incomplete gates.
+
+## Run record — repeatable loop, 2026-10-10
+
+- Branch / draft PR: `codex/repeatable-two-battle-loop` / PR #7, based on
+  `codex/loop-feedback-workflow` (PR #6).
+- Gameplay commit: `aa96bbb68172c6df3a491407e3382a31d5f9ad64`.
+- Added `repeatable_loop_smoke.gd` to the standard runner. It completes battle 1,
+  restarts from the committed slot, creates battle 2 through actual map clicks,
+  restarts with that contact pending, and applies battle 2. It checks fresh IDs,
+  retained/cumulative losses and ordered history, retreat/unlock after each
+  result, and stale/duplicate rejection without state mutation.
+- Local evidence: Godot 4.5.1 editor, campaign, save/load, tactical, repeat-loop
+  and tactical-view checks passed together. Terrain bridge: 26 passed.
+  `git diff --check` passed.
+- CI evidence: gameplay commit run
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/38076428133 and the
+  ledger-head run https://github.com/Austin-Ellefson/Wargame/actions/runs/38076455800
+  both completed successfully.
+- No gameplay defect was found. The first test assertion needed JSON-normalized
+  numeric comparison because restored Godot JSON numbers are floats; this did
+  not affect campaign behavior.
+- Next: add deterministic transient shot events to actual attacks, then render
+  execution-time cues without adding saved authoritative state or consuming RNG.
 
 ## Scope and priorities
 
