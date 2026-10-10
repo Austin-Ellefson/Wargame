@@ -19,7 +19,8 @@ def main():
     logs = args.logs_dir or Path(tempfile.mkdtemp(prefix="wargame-checks-"))
     logs.mkdir(parents=True, exist_ok=True)
     checks = [("editor", ["--headless", "--editor", "--quit"])]
-    for name in ["campaign_smoke", "campaign_save_smoke", "tactical_smoke", "tactical_view_smoke"]:
+    for name in ["campaign_smoke", "campaign_save_smoke", "tactical_smoke",
+                 "repeatable_loop_smoke", "tactical_view_smoke"]:
         checks.append((name, ["--headless", "--script", f"res://tests/{name}.gd"]))
     if args.render_check:
         if args.capture:
