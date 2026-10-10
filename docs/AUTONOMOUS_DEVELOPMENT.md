@@ -1,7 +1,10 @@
 # Autonomous development queue
 
 ## Operating cadence
-One focused development pass each evening in America/Chicago.
+The user requested all-day unattended work on 2026-10-10. During the loop/feedback
+milestone, use hourly development passes, one focused task per pass. After the
+milestone check-in is prepared, restore the prior daily evening cadence around
+7 PM America/Chicago. This is scheduled work, not a continuously running process.
 The scheduled task uses GitHub as durable project state. It does not depend on the user's local folder.
 Progress is delivered through draft PRs and scheduled run reports; review and merging remain with the user.
 
@@ -67,3 +70,4 @@ This setup change contains instructions only; these missing tools must be addres
 - Added evidence gates, a task/branch ledger, continuation rules and check-in criteria. Nightly automation follows this milestone before GIS or vehicles.
 - Verification for this documentation-only task: branch/PR baseline inspected, local documentation consistency and git diff --check. No new gameplay/Windows validation claimed.
 - Next: implement and test the two-battle/restart gate, then actual-shot visual feedback.
+- Follow-up authorization: hourly passes while pursuing this milestone; an immediate run was requested. The user also authorized project testing on their PC if a supported desktop connection is actually available. No desktop-control connection is present in the current session; continue cloud/repository testing and do not claim local Windows tests ran.

@@ -4,6 +4,14 @@ Requested on 2026-10-10. Continue routine development while the user is away.
 Prepare a check-in once all gates pass together on a downloadable branch.
 This is a playable prototype milestone, not realistic-model validation.
 
+The user subsequently requested all-day development and authorized project
+testing on their PC if needed. Run hourly passes during this milestone, then
+restore the prior daily evening cadence after preparing the milestone check-in.
+Use an actual supported desktop connection only if available; permission alone
+does not provide PC access. The setup session has no desktop-control connection,
+so independent cloud/GitHub testing continues. Record Windows tests only when
+they actually run on Windows.
+
 ## Durable ledger
 
 - Milestone status: planned
