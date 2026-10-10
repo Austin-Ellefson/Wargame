@@ -5,25 +5,25 @@ One focused development pass each evening in America/Chicago.
 The scheduled task uses GitHub as durable project state. It does not depend on the user's local folder.
 Progress is delivered through draft PRs and scheduled run reports; review and merging remain with the user.
 
-## Current baseline (2026-10-09)
-- main: starter README only.
-- PR #1: phase-1-vertical-slice -> main.
-- PR #2: phase-2-terrain-bridge -> phase-1-vertical-slice.
-- Working baseline: phase-2-terrain-bridge until those changes are integrated.
-- Existing terrain preview was reported working by the user.
-- A real Windows CMBS editor handoff has not been verified.
+## Current baseline (2026-10-10)
+- main: starter README only; no PRs merged at setup time.
+- Existing chain: phase-1-vertical-slice -> phase-2-terrain-bridge -> codex/unattended-development-setup -> codex/campaign-save-load -> codex/integrated-tactical-battle.
+- Workflow baseline: codex/loop-feedback-workflow, based on the tested native branch at 7a542b7. Follow the latest validated descendant recorded in docs/LOOP_FEEDBACK_MILESTONE.md.
+- User reported the native first battle appeared to work on Windows. This is basic playtest feedback, not evidence that repeat battles, restart persistence or all inputs were tested.
+- Native Linux tests and rendered/input CI passed at 7a542b7; preview reviewed. A real Windows CMBS editor handoff has not been verified.
 Check this state again before each run. Follow the actual PR dependency chain if bases change.
 
 ## Queue — native simulator direction (approved 2026-10-10)
 
 The user approved replacing the primary CMBS handoff with an integrated Godot tactical battle.
-Use codex/integrated-tactical-battle, stacked on codex/campaign-save-load, until review/merging changes the active base. Recheck PRs; do not duplicate the battle lock or result implementation now included there.
+Read docs/LOOP_FEEDBACK_MILESTONE.md first. The current user-requested milestone is the repeatable loop plus visible firing and feedback. Use codex/loop-feedback-workflow and its latest validated descendant until review/merging changes the active base. Recheck PRs; do not duplicate existing battle locks or result application.
 
-1. Review and validate the native first battle on Windows, including camera/input and restarting saved engagements. Preserve existing scenario exports and optional GIS tools.
-2. Improve tactical usability: camera pan/orbit, order-path previews, clear fire feedback, and readable battle reports, each with relevant checks.
-3. Add more tactical depth in small steps: morale behavior, player/enemy visibility, and stronger opponent decisions. Preserve deterministic outcomes across save/load.
-4. Import prepared elevation into the native renderer and simulation together; validate orientation, movement and LOS against known synthetic fixtures before adding OSM features. Keep source provenance and distinguish generated test terrain from real GIS data.
-5. Add vehicles and equipment composition with a versioned simulation/save contract and bounded formation losses.
+1. Prove two consecutive battles in one campaign through actual movement/contact and result application, including restart between engagements, fresh IDs, retained losses and duplicate rejection. Fix problems discovered by this check.
+2. Add transient firing events tied to actual simulated attacks, render readable shot/muzzle cues, and show casualty/suppression feedback. Presentation must not change outcomes or restart determinism.
+3. Add a readable completed battle report and practical command feedback; camera pan/orbit and order-path previews are supporting tasks if needed. Validate the combined milestone and prepare the requested check-in with a playable download.
+4. After the milestone check-in, add more tactical depth in small steps: morale behavior, player/enemy visibility, and stronger opponent decisions. Preserve deterministic outcomes across save/load.
+5. Import prepared elevation into the native renderer and simulation together; validate orientation, movement and LOS against known synthetic fixtures before adding OSM features. Keep source provenance and distinguish generated test terrain from real GIS data.
+6. Add vehicles and equipment composition with a versioned simulation/save contract and bounded formation losses.
 
 Campaign save/load, pending battle locks, and native once-only result application already exist on the stacked branches. The old manual CMBS result form is no longer the primary development priority.
 
@@ -59,3 +59,11 @@ This setup change contains instructions only; these missing tools must be addres
 - Local validation: Godot 4.5.1 editor import; campaign, save/load, tactical logic and actual GUI-event smoke tests; 26 Python GIS tests. Record final CI rendered check outcome in the PR.
 - Limits: synthetic map; squad markers; reserve vehicles; abstract fire; full enemy visibility; scripted advance; Linux logic tests do not prove Windows graphics/input or realistic combat fidelity.
 - Next: Windows user playtest, then a focused native tactical usability improvement or real elevation import as specified above.
+
+## Unattended loop/feedback workflow — 2026-10-10
+- Status: workflow ready; milestone implementation remains planned. No gameplay features added by this workflow change.
+- Branch: codex/loop-feedback-workflow, stacked on the native battle branch.
+- User authorized routine work while away and requested a check-in when both the complete loop and visible firing/feedback are ready.
+- Added evidence gates, a task/branch ledger, continuation rules and check-in criteria. Nightly automation follows this milestone before GIS or vehicles.
+- Verification for this documentation-only task: branch/PR baseline inspected, local documentation consistency and git diff --check. No new gameplay/Windows validation claimed.
+- Next: implement and test the two-battle/restart gate, then actual-shot visual feedback.
