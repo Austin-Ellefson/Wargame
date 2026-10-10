@@ -16,6 +16,8 @@ var world: Node3D
 var actors := {}
 var labels := {}
 var markers := {}
+var shot_cues: Array = []
+var observed_shot_events: Array = []
 var phase_label: Label
 var summary_label: Label
 var selection_label: Label
@@ -266,15 +268,57 @@ func _execute() -> void:
         _refresh()
 
 func _process(delta: float) -> void:
+    _age_shot_cues(delta)
     if simulation == null or simulation.state["phase"] != "execution":
         return
     accumulator += delta * speed
     while accumulator >= 1.0 and simulation.state["phase"] == "execution":
         simulation.step()
+        _show_shot_events(simulation.consume_events())
         accumulator -= 1.0
     _refresh()
     if simulation.state["phase"] != "execution":
         checkpoint.emit()
+
+func _show_shot_events(events: Array) -> void:
+    for event in events:
+        if event.get("type") != "shot":
+            continue
+        observed_shot_events.append(event.duplicate(true))
+        if observed_shot_events.size() > 64:
+            observed_shot_events.pop_front()
+        var start := Vector2(float(event["from"][0]), float(event["from"][1]))
+        var finish := Vector2(float(event["to"][0]), float(event["to"][1]))
+        var start_3d := Vector3(start.x, Battle.terrain_height(start.x, start.y) + 7.0, start.y)
+        var finish_3d := Vector3(finish.x, Battle.terrain_height(finish.x, finish.y) + 5.0, finish.y)
+        var cue := Node3D.new()
+        world.add_child(cue)
+        var flash := SphereMesh.new()
+        flash.radius = 3.0
+        flash.height = 6.0
+        _mesh(flash, start_3d, _shot_material(Color("fff2a8")), cue)
+        var trail := BoxMesh.new()
+        trail.size = Vector3(0.9, 0.9, start_3d.distance_to(finish_3d))
+        var tracer := _mesh(trail, (start_3d + finish_3d) * 0.5, _shot_material(Color("ffb43b")), cue)
+        tracer.look_at(finish_3d, Vector3.UP)
+        shot_cues.append({"node": cue, "ttl": 0.42})
+
+func _shot_material(color: Color) -> StandardMaterial3D:
+    var material := _material(color, true)
+    material.emission_enabled = true
+    material.emission = color
+    material.emission_energy_multiplier = 3.5
+    material.no_depth_test = true
+    return material
+
+func _age_shot_cues(delta: float) -> void:
+    for index in range(shot_cues.size() - 1, -1, -1):
+        shot_cues[index]["ttl"] = float(shot_cues[index]["ttl"]) - delta
+        if shot_cues[index]["ttl"] <= 0:
+            var node: Node = shot_cues[index]["node"]
+            if is_instance_valid(node):
+                node.queue_free()
+            shot_cues.remove_at(index)
 
 func _back() -> void:
     if simulation.state["phase"] == "finished":
