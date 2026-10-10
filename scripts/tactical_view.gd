@@ -220,7 +220,7 @@ func _build_world() -> void:
             body.height = 6
             _mesh(body, offset + Vector3(0, 3, 0), _material(color), actor)
         var label := Label3D.new()
-        label.font_size = 34
+        label.font_size = 28
         label.pixel_size = 0.35
         label.position = Vector3(0, 14, 0)
         label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
@@ -392,7 +392,7 @@ func _refresh() -> void:
         var point: Vector2 = Battle.position(squad)
         actors[squad["id"]].position = Vector3(point.x, Battle.terrain_height(point.x, point.y), point.y)
         actors[squad["id"]].visible = int(squad["alive"]) > 0
-        labels[squad["id"]].text = "%s | %dP | %dR | SUP%d%%%s" % [str(squad["id"]).replace("_", " "), squad["alive"], squad["ammo"], int(float(squad["suppression"]) * 100), " *" if squad["id"] == selected else ""]
+        labels[squad["id"]].text = "%s %dP %dR SUP%d%s" % [str(squad["id"]).replace("_", " "), squad["alive"], squad["ammo"], int(float(squad["suppression"]) * 100), " *" if squad["id"] == selected else ""]
         var path: Array = state["orders"].get(squad["id"], [])
         markers[squad["id"]].visible = not path.is_empty() and squad["faction"] == "UKR" and state["phase"] == "planning"
         if not path.is_empty():
