@@ -2,11 +2,14 @@ extends Node2D
 
 const SectorGeometry = preload("res://scripts/sector_geometry.gd")
 const BattleExporter = preload("res://scripts/battle_exporter.gd")
+const CampaignSave = preload("res://scripts/campaign_save.gd")
 const CAMPAIGN_PATH := "res://data/campaign.json"
 const GRID_ORIGIN := Vector2(70, 90)
 const CELL_SIZE := Vector2(170, 125)
 const SIDEBAR_X := 790.0
 
+var initial_campaign: Dictionary = {}
+var save_path: String = CampaignSave.SAVE_PATH
 var campaign: Dictionary = {}
 var units: Array = []
 var selected_unit_id: String = ""
@@ -18,6 +21,7 @@ var status_message := "Select a unit, then click an adjacent sector."
 
 func _ready() -> void:
     campaign = _load_json(CAMPAIGN_PATH)
+    initial_campaign = campaign.duplicate(true)
     units = campaign.get("units", []).duplicate(true)
     set_process_input(true)
     queue_redraw()
@@ -42,6 +46,12 @@ func _input(event: InputEvent) -> void:
         _handle_click(event.position)
 
 func _handle_click(mouse_pos: Vector2) -> void:
+    if _save_button().has_point(mouse_pos):
+        _save_campaign()
+        return
+    if _load_button().has_point(mouse_pos):
+        _load_campaign()
+        return
     if _point_in_end_turn_button(mouse_pos):
         _resolve_turn()
         return
@@ -102,6 +112,62 @@ func _resolve_turn() -> void:
         status_message = "Turn resolved. No opposing units share a sector."
 
     queue_redraw()
+
+func _snapshot() -> Dictionary:
+    return {
+        "schema_version": CampaignSave.VERSION,
+        "scenario_hash": JSON.stringify(initial_campaign).sha256_text(),
+        "turn": campaign.get("turn", 1),
+        "units": units.duplicate(true),
+        "pending_orders": pending_orders.duplicate(true),
+        "selected_unit_id": selected_unit_id,
+        "battle_payload": battle_payload.duplicate(true),
+        "battle_export_path": battle_export_path
+    }
+
+func _save_campaign() -> Dictionary:
+    var result: Dictionary = CampaignSave.write(_snapshot(), initial_campaign, save_path)
+    status_message = "Campaign saved." if result["ok"] else "Save failed: " + str(result["error"])
+    queue_redraw()
+    return result
+
+func _load_campaign() -> Dictionary:
+    var result: Dictionary = CampaignSave.read(initial_campaign, save_path)
+    if result["ok"]:
+        var snapshot: Dictionary = result["snapshot"]
+        # Check the saved battle with the same builder used for live exports,
+        # on a detached scene so a rejected save cannot mutate this campaign.
+        var probe = get_script().new()
+        probe.campaign = initial_campaign.duplicate(true)
+        probe.campaign["turn"] = snapshot["turn"]
+        probe.units = snapshot["units"].duplicate(true)
+        var saved_battle: Dictionary = snapshot["battle_payload"]
+        var contact: Array = probe._detect_first_contact()
+        if not saved_battle.is_empty():
+            if contact.is_empty() or saved_battle != JSON.parse_string(JSON.stringify(probe._build_battle_payload(contact[0], contact[1]))):
+                result = {"ok": false, "error": "Saved battle does not match campaign contact."}
+            elif snapshot["battle_export_path"] != "" and snapshot["battle_export_path"] != battle_export_directory.path_join(str(saved_battle["battle_id"]) + ".json"):
+                result = {"ok": false, "error": "Saved battle export path is incompatible."}
+        elif not contact.is_empty():
+            result = {"ok": false, "error": "Save is missing the current contact battle."}
+        probe.free()
+        if result["ok"]:
+            campaign = initial_campaign.duplicate(true)
+            campaign["turn"] = int(snapshot["turn"])
+            units = snapshot["units"].duplicate(true)
+            pending_orders = snapshot["pending_orders"].duplicate(true)
+            selected_unit_id = snapshot["selected_unit_id"]
+            battle_payload = saved_battle.duplicate(true)
+            battle_export_path = snapshot["battle_export_path"]
+    status_message = "Campaign loaded." if result["ok"] else "Load failed: " + str(result["error"])
+    queue_redraw()
+    return result
+
+func _save_button() -> Rect2:
+    return Rect2(Vector2(SIDEBAR_X + 210, 195), Vector2(90, 48))
+
+func _load_button() -> Rect2:
+    return Rect2(Vector2(SIDEBAR_X + 310, 195), Vector2(90, 48))
 
 func _detect_first_contact() -> Array:
     for i in range(units.size()):
@@ -212,6 +278,12 @@ func _draw_sidebar() -> void:
     draw_rect(button, Color("526274"), true)
     draw_rect(button, Color("a6b0bb"), false, 2.0)
     draw_string(ThemeDB.fallback_font, button.position + Vector2(28, 31), "RESOLVE TURN", HORIZONTAL_ALIGNMENT_LEFT, -1, 17, Color.WHITE)
+
+    for control in [{"rect": _save_button(), "label": "SAVE"}, {"rect": _load_button(), "label": "LOAD"}]:
+        var rect: Rect2 = control["rect"]
+        draw_rect(rect, Color("526274"), true)
+        draw_rect(rect, Color("a6b0bb"), false, 2.0)
+        draw_string(ThemeDB.fallback_font, rect.position + Vector2(20, 31), control["label"], HORIZONTAL_ALIGNMENT_LEFT, -1, 17, Color.WHITE)
 
     draw_string(ThemeDB.fallback_font, Vector2(SIDEBAR_X + 20, 280), "Pending Orders: %d" % pending_orders.size(), HORIZONTAL_ALIGNMENT_LEFT, -1, 17, Color("f0f0f0"))
 

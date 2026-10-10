@@ -29,6 +29,8 @@ The terrain-bridge build is on `phase-2-terrain-bridge` until its pull request i
 - Left-click a unit token to select it.
 - Left-click an adjacent sector to issue a movement order.
 - Click **RESOLVE TURN** to execute orders simultaneously.
+- Click **SAVE** to write the current campaign to one save slot; click **LOAD** to restore it, including after restarting. Loading deliberately replaces unsaved progress.
+- Saves use `user://saves/campaign.json`; see [save/load behavior](docs/CAMPAIGN_SAVES.md).
 - If Ukrainian and Russian units occupy the same sector, a battle summary and its geographic center appear. The payload is written to `user://battle_exports/<battle_id>.json`.
 
 ### Two-turn contact demo
@@ -44,13 +46,14 @@ The terrain-bridge build is on `phase-2-terrain-bridge` until its pull request i
 - The battle center is the geographic center of its sector, not a detected real contact point. The uniform latitude/longitude grid spans about 20x20 km; `sector_size_km` is nominal, not an exact metric measurement.
 - The Python terrain bridge can prepare real OSM features, a projected elevation grid, and a CMAutoEditor elevation CSV. It does not create a CMBS scenario, launch the game, or import battle results.
 - Only the first same-sector opposing pair is exported each turn. Crossing moves and larger battles need later rules.
-- Campaign state lives in memory and resets when the application closes. Units can continue moving after contact; battles do not lock turns yet. Personnel and vehicles are carried in the payload, but losses and campaign saving are not implemented.
+- Campaign state can be saved and loaded explicitly. Startup opens the initial scenario until you click **LOAD**; there is no autosave. Units can still move after contact; battles do not lock turns yet. Battle-result entry and automatic loss application are not implemented.
 
 ## Validation
 
 ```bash
 godot --headless --path . --editor --quit
 godot --headless --path . --script res://tests/campaign_smoke.gd
+godot --headless --path . --script res://tests/campaign_save_smoke.gd
 ```
 
 The smoke test exercises click orders, illegal movement, simultaneous movement, contact detection, sector-center orientation, JSON file contents, invalid export filenames, and directory-write failure handling. Test exports use a separate temporary folder and are cleaned up.
