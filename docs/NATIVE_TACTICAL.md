@@ -20,7 +20,10 @@ Python, CMAutoEditor and Combat Mission are not required for native play.
    Playback at 4x takes approximately 15 real seconds per complete interval; 8x
    changes presentation speed without changing simulated results. Each actual
    automatic attack flashes briefly at the firing squad and draws an orange shot
-   cue toward its target. A cue means rounds were fired, not that they hit.
+   cue toward its target. A cue means rounds were fired, not that they hit. Unit
+   labels and the blue roster continuously show personnel, rounds and suppression.
+   The translucent **LATEST VOLLEY** panel spells out recent changes for both sides:
+   `P` is personnel, `R` is rounds and `SUP` is suppression percentage points.
 5. Capture the gold objective. It scores one point per uncontested second within
    52 m of the flag. A surviving side wins if its opposing detachment is eliminated;
    otherwise objective time determines the winner at 360 seconds. Equal scores draw.
@@ -54,6 +57,11 @@ Shot cues come directly from the simulation's eligible attacks, so blocked,
 out-of-range and empty-ammunition squads do not flash. They are short-lived
 presentation events: they are not added to the save schema, do not consume random
 numbers, and cannot change the authoritative result or deterministic restart.
+The live combat panel is also presentation-only and compares state immediately
+before and after an authoritative tick. Casualties are listed first so personnel
+losses remain visible even when several squads fire together. Dead squads vanish,
+their roster button and hold control disable, and both movement and hold orders
+are rejected by the simulation.
 
 Enemy positions remain visible. This first model has no detailed ballistics,
 weapon classes, armor, animations, multi-contact battles, fog of war or realistic

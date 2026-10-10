@@ -21,10 +21,12 @@ var observed_shot_events: Array = []
 var phase_label: Label
 var summary_label: Label
 var selection_label: Label
+var combat_label: Label
 var report_label: Label
 var execute_button: Button
 var back_button: Button
 var speed_button: Button
+var hold_button: Button
 var squad_buttons := {}
 
 func _ready() -> void:
@@ -91,6 +93,8 @@ func _build_interface() -> void:
     viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
     container.add_child(viewport)
     container.gui_input.connect(_map_input)
+    _panel(Rect2(36, 126, 500, 116), Color(0.04, 0.08, 0.1, 0.88))
+    combat_label = _label("LIVE COMBAT\nWaiting for contact...", Vector2(50, 138), 13, 472)
     _label("BLUE DETACHMENT", Vector2(986, 130), 13)
     summary_label = _label("", Vector2(986, 155), 16, 245)
     for index in range(4):
@@ -98,9 +102,10 @@ func _build_interface() -> void:
         var button := _button("", Rect2(986, 212 + index * 38, 248, 32), func():
             selected = id
             _refresh())
+        button.add_theme_font_size_override("font_size", 13)
         squad_buttons[id] = button
     selection_label = _label("", Vector2(986, 374), 14, 244)
-    _button("HOLD POSITION", Rect2(986, 426, 248, 32), func():
+    hold_button = _button("HOLD POSITION", Rect2(986, 426, 248, 32), func():
         simulation.order_hold(selected)
         _refresh())
     execute_button = _button("EXECUTE 60 SECONDS", Rect2(986, 470, 248, 44), _execute)
@@ -215,7 +220,7 @@ func _build_world() -> void:
             body.height = 6
             _mesh(body, offset + Vector3(0, 3, 0), _material(color), actor)
         var label := Label3D.new()
-        label.font_size = 44
+        label.font_size = 28
         label.pixel_size = 0.35
         label.position = Vector3(0, 14, 0)
         label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
@@ -273,8 +278,10 @@ func _process(delta: float) -> void:
         return
     accumulator += delta * speed
     while accumulator >= 1.0 and simulation.state["phase"] == "execution":
+        var before := _status_snapshot()
         simulation.step()
         _show_shot_events(simulation.consume_events())
+        _show_combat_changes(before)
         accumulator -= 1.0
     _refresh()
     if simulation.state["phase"] != "execution":
@@ -302,6 +309,41 @@ func _show_shot_events(events: Array) -> void:
         var tracer := _mesh(trail, (start_3d + finish_3d) * 0.5, _shot_material(Color("ffb43b")), cue)
         tracer.look_at(finish_3d, Vector3.UP)
         shot_cues.append({"node": cue, "ttl": 0.42})
+
+func _status_snapshot() -> Dictionary:
+    var snapshot := {}
+    for squad in simulation.state["squads"]:
+        snapshot[squad["id"]] = {"alive": int(squad["alive"]), "ammo": int(squad["ammo"]),
+            "suppression": int(round(float(squad["suppression"]) * 100.0))}
+    return snapshot
+
+func _show_combat_changes(before: Dictionary) -> void:
+    var casualty_lines: Array[String] = []
+    var other_lines: Array[String] = []
+    for squad in simulation.state["squads"]:
+        var previous: Dictionary = before.get(squad["id"], {})
+        if previous.is_empty():
+            continue
+        var personnel_change := int(previous["alive"]) - int(squad["alive"])
+        var ammunition_change := int(previous["ammo"]) - int(squad["ammo"])
+        var suppression_change := int(round(float(squad["suppression"]) * 100.0)) - int(previous["suppression"])
+        if personnel_change <= 0 and ammunition_change <= 0 and suppression_change <= 0:
+            continue
+        var changes: Array[String] = []
+        if personnel_change > 0:
+            changes.append("-%dP" % personnel_change)
+        if ammunition_change > 0:
+            changes.append("-%dR" % ammunition_change)
+        if suppression_change > 0:
+            changes.append("SUP+%d" % suppression_change)
+        var line := "%s  %s" % [str(squad["id"]).replace("_", " "), "  ".join(changes)]
+        if personnel_change > 0:
+            casualty_lines.append(line)
+        else:
+            other_lines.append(line)
+    var lines: Array[String] = casualty_lines + other_lines
+    if not lines.is_empty():
+        combat_label.text = "LATEST VOLLEY  •  P personnel  R rounds  SUP suppression\n" + "\n".join(lines.slice(0, 4))
 
 func _shot_material(color: Color) -> StandardMaterial3D:
     var material := _material(color, true)
@@ -333,10 +375,11 @@ func _refresh() -> void:
     for id in squad_buttons:
         var squad: Dictionary = simulation.squad_by_id(id)
         squad_buttons[id].disabled = squad.is_empty() or int(squad.get("alive", 0)) == 0
-        squad_buttons[id].text = "SQUAD %s  |  %d personnel%s" % [str(id).right(1), int(squad.get("alive", 0)), "  <" if id == selected else ""]
+        squad_buttons[id].text = "S%s  %dP  %dR  SUP%d%%%s" % [str(id).right(1), int(squad.get("alive", 0)), int(squad.get("ammo", 0)), int(float(squad.get("suppression", 0)) * 100), "  <" if id == selected else ""]
     var selected_squad: Dictionary = simulation.squad_by_id(selected)
     if not selected_squad.is_empty():
         selection_label.text = "Squad %s  |  %d rounds\nSuppression %d%%  /  Morale %d" % [selected.right(1), selected_squad["ammo"], int(float(selected_squad["suppression"]) * 100), selected_squad["morale"]]
+    hold_button.disabled = state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0
     execute_button.disabled = state["phase"] != "planning"
     execute_button.text = "%d SECONDS REMAINING" % state["remaining"] if state["phase"] == "execution" else "EXECUTE 60 SECONDS"
     back_button.disabled = state["phase"] == "execution"
@@ -349,7 +392,7 @@ func _refresh() -> void:
         var point: Vector2 = Battle.position(squad)
         actors[squad["id"]].position = Vector3(point.x, Battle.terrain_height(point.x, point.y), point.y)
         actors[squad["id"]].visible = int(squad["alive"]) > 0
-        labels[squad["id"]].text = "%s  %d%s" % [str(squad["id"]).replace("_", " "), squad["alive"], " *" if squad["id"] == selected else ""]
+        labels[squad["id"]].text = "%s %dP %dR SUP%d%s" % [str(squad["id"]).replace("_", " "), squad["alive"], squad["ammo"], int(float(squad["suppression"]) * 100), " *" if squad["id"] == selected else ""]
         var path: Array = state["orders"].get(squad["id"], [])
         markers[squad["id"]].visible = not path.is_empty() and squad["faction"] == "UKR" and state["phase"] == "planning"
         if not path.is_empty():

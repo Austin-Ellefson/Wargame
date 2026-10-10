@@ -192,6 +192,9 @@ func _run() -> void:
     for tick in range(3):
         no_fire.step()
     check(no_fire.consume_events().is_empty(), "Empty-ammunition squads must not emit firing events.")
+    no_fire.state["phase"] = "planning"
+    no_fire.squad_by_id("UKR_S1")["alive"] = 0
+    check(not no_fire.order_move("UKR_S1", Vector2(100, 100)) and not no_fire.order_hold("UKR_S1"), "A dead squad must reject both movement and hold orders.")
     var blocked = Battle.new()
     blocked.setup(payload)
     for squad in blocked.state["squads"]:
