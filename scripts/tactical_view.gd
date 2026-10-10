@@ -27,6 +27,8 @@ var squad_buttons := {}
 
 func _ready() -> void:
     set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    # The campaign parent is Node2D; give this fixed-design canvas an explicit size.
+    size = Vector2(1280, 720)
     _build_interface()
     _build_world()
     _refresh()
@@ -157,10 +159,13 @@ func _build_world() -> void:
                 elif Battle.cover(Vector2(px, pz)) > 0.3:
                     color = Color("46634a")
                 surface.set_color(color)
+                var slope_x := (Battle.terrain_height(px + 0.5, pz) - Battle.terrain_height(px - 0.5, pz))
+                var slope_z := (Battle.terrain_height(px, pz + 0.5) - Battle.terrain_height(px, pz - 0.5))
+                surface.set_normal(Vector3(-slope_x, 1, -slope_z).normalized())
                 surface.add_vertex(Vector3(px, Battle.terrain_height(px, pz), pz))
-    surface.generate_normals()
     var terrain_material := _material(Color.WHITE)
     terrain_material.vertex_color_use_as_albedo = true
+    terrain_material.cull_mode = BaseMaterial3D.CULL_DISABLED
     _mesh(surface.commit(), Vector3.ZERO, terrain_material)
     for building in Battle.BUILDINGS:
         var center: Vector2 = building.get_center()

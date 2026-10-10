@@ -309,6 +309,8 @@ func _draw_grid() -> void:
 func _draw_units() -> void:
     var stack_counts := {}
     for unit in units:
+        if int(unit.get("personnel", 0)) <= 0:
+            continue
         var s: Dictionary = unit.get("sector", {})
         var key := "%d,%d" % [int(s.get("x", 0)), int(s.get("y", 0))]
         var stack_idx := int(stack_counts.get(key, 0))
@@ -398,7 +400,7 @@ func _screen_to_sector(point: Vector2) -> Vector2i:
 
 func _top_unit_in_sector(sector: Vector2i) -> Dictionary:
     for unit in units:
-        if _same_sector(unit.get("sector", {}), {"x": sector.x, "y": sector.y}):
+        if int(unit.get("personnel", 0)) > 0 and _same_sector(unit.get("sector", {}), {"x": sector.x, "y": sector.y}):
             return unit
     return {}
 

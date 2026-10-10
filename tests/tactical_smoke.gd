@@ -165,6 +165,10 @@ func _run() -> void:
     finish(timed, false)
     check(timed.state["elapsed"] == Battle.MAX_SECONDS and timed.result()["forces"]["UKR"]["losses"] == 0, "Ammunition exhaustion must prevent fire and the battle clock must still terminate.")
     check(timed.state["winner"] == "RU", "Uncontested objective control must determine the timed result.")
+    game.units[0]["personnel"] = 0
+    game.units[0]["sector"] = game.units[1]["sector"].duplicate(true)
+    var occupied: Dictionary = game.units[1]["sector"]
+    check(game._top_unit_in_sector(Vector2i(occupied["x"], occupied["y"]))["id"] == "RU_1", "Eliminated formations must not block selecting a surviving formation in the same sector.")
     restarted.queue_free()
     game.queue_free()
     await process_frame

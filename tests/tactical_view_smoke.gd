@@ -63,6 +63,15 @@ func _run() -> void:
     if not capture.is_empty() and DisplayServer.get_name() != "headless":
         await RenderingServer.frame_post_draw
         var image := root.get_texture().get_image()
+        var terrain_pixels := 0
+        for y in range(112, 684, 4):
+            for x in range(24, 944, 4):
+                var color := image.get_pixel(x, y)
+                if color.g > color.r * 1.03 and color.g > color.b * 1.15:
+                    terrain_pixels += 1
+        check(terrain_pixels > 2500, "Rendered ground must occupy a substantial visible area, not just trees against a blank viewport.")
+        var background := image.get_pixel(10, 100)
+        check(background.r < 0.15 and background.g < 0.2, "The battle canvas must cover the campaign viewport.")
         check(image.save_png(capture) == OK, "Rendered preview must save.")
     view._back()
     check(not is_instance_valid(game.tactical_view), "Save/back must restore the campaign view.")
