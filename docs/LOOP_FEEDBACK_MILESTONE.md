@@ -16,16 +16,16 @@ they actually run on Windows.
 
 - Milestone status: in progress
 - Workflow baseline branch: codex/loop-feedback-workflow
-- Last validated gameplay branch: codex/repeatable-two-battle-loop
-- Last validated gameplay commit: aa96bbb68172c6df3a491407e3382a31d5f9ad64
-- Current task: actual-shot firing events and rendered cues
-- Current task branch / PR: not started; use codex/repeatable-two-battle-loop as the base
-- Next task: readable casualty/ammunition/suppression feedback
+- Last validated gameplay branch: codex/visible-shot-cues
+- Last validated gameplay commit: 29dded6867df2c869803c985644a2f38c562f124
+- Current task: readable casualty/ammunition/suppression feedback
+- Current task branch / PR: not started; use codex/visible-shot-cues (PR #8) as the base
+- Next task: completed battle report and campaign consequences
 - Check-in prepared for code commit: none
-- Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38068410069
-- Baseline evidence: first-battle logic, save/load, GUI input and terrain render;
-  user said the first battle appeared to work. Repeated loop and firing cues are
-  not yet verified or implemented by this workflow.
+- Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38080482143
+- Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
+  actual-shot execution cues. The user said only that the first battle appeared
+  to work; Windows repeat-loop and cue validation remain outstanding.
 
 Update the ledger and gates after each run with real branches, PRs, code commits,
 CI runs and artifact evidence. Do not mark a gate passed from a plan, export,
@@ -37,7 +37,7 @@ unrelated CI run or screenshot lacking the behavior under test.
 | --- | --- | --- |
 | Repeatable campaign loop | Actual orders create contact; play and apply battle 1; loser retreats and campaign unlocks; new orders create battle 2 with a fresh ID; battle 2 completes and applies without resetting prior losses or history. | Passed at `aa96bbb` in PR #7: actual click orders created `T004_B2`; both results applied; cumulative losses/history and both retreats/unlocks verified. CI run 38076428133 succeeded. |
 | Restart and safe results | Restart between battles and during execution preserves state and deterministic outcome. Duplicate/stale results are rejected after restart. Failed result save rolls back live state and retains the prior slot. | Repeat-loop restart, pending-battle restart, stale first result and duplicate results passed at `aa96bbb`. Existing tactical smoke still covers mid-execution deterministic restart and save rollback. CI run 38076428133 succeeded. |
-| Visible firing | Cues derive from actual simulated firing events with shooter and target. No cues for out-of-range/blocked fire or empty ammunition. A cue means a shot, not a guaranteed hit. Rendered execution shows shots clearly at supported playback speeds. | Planned |
+| Visible firing | Cues derive from actual simulated firing events with shooter and target. No cues for out-of-range/blocked fire or empty ammunition. A cue means a shot, not a guaranteed hit. Rendered execution shows shots clearly at supported playback speeds. | Passed at `29dded6` in PR #8: logic covers actual/blocked/range/ammunition cases; CI run 38080482143 succeeded. Its artifact 11680700605 visibly shows two emissive orange shot lines at `EXECUTION | 00:03` and 4x playback. |
 | Readable combat feedback | Squad casualty, ammunition and suppression changes are visible during execution; dead squads stop acting and cannot receive orders. Feedback is legible and does not obscure commands or imply unsupported ballistic realism. | Counters exist; improve and verify |
 | Battle report and continuation | Finished report shows outcome, both sides' deployed/surviving/lost personnel, objective control and campaign consequences. APPLY & CAMPAIGN succeeds once; player can continue and resume without a stale report. | Basic summary exists; improve and verify |
 | Combined build | All logic/input/GIS checks pass on the same candidate; rendered execution/report previews reviewed; one branch ZIP includes all work and docs. Windows-specific limits are stated. | Planned |
@@ -87,6 +87,32 @@ access/dependency blockers. Do not announce completion with incomplete gates.
   not affect campaign behavior.
 - Next: add deterministic transient shot events to actual attacks, then render
   execution-time cues without adding saved authoritative state or consuming RNG.
+
+## Run record — visible firing cues, 2026-10-10
+
+- Branch / draft PR: `codex/visible-shot-cues` / PR #8, based on
+  `codex/repeatable-two-battle-loop` (PR #7).
+- Gameplay commit: `29dded6867df2c869803c985644a2f38c562f124`.
+- Actual eligible attacks now emit transient events containing tick, shooter,
+  target, endpoints, rounds and losses. The view consumes them as short-lived
+  emissive muzzle flashes and orange shot lines. Events remain outside saved
+  state and use no additional random samples.
+- Regression coverage proves cues for actual fire and none for blocked,
+  out-of-range or empty-ammunition cases. Godot 4.5.1 editor, campaign,
+  save/load, tactical, repeat-loop and tactical-view checks passed together;
+  terrain bridge: 26 passed; `git diff --check` passed.
+- CI evidence: https://github.com/Austin-Ellefson/Wargame/actions/runs/38080482143
+  completed successfully. Artifact `tactical-validation` ID 11680700605 was
+  inspected: the 1280x720 frame says `EXECUTION | 00:03 elapsed` and visibly
+  shows two orange shot cues between the firing squads at 4x playback.
+- The first artifact exposed that capture happened after the interval returned
+  to planning. The render regression was corrected to capture during execution,
+  then CI and artifact review were repeated on the recorded gameplay commit.
+- Limits: Linux software rendering is not Windows validation; cues show abstract
+  squad-level fire, not projectiles or confirmed hits. Readable live state changes
+  and the completed battle report are still incomplete milestone gates.
+- Next: make ammunition, casualties and suppression changes unmistakable during
+  execution, while keeping command controls legible and outcomes unchanged.
 
 ## Scope and priorities
 
