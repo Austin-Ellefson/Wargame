@@ -29,7 +29,7 @@ jobs:
         run: python3 -m pytest -q tests/test_terrain_bridge.py
       - name: Godot logic and rendered input checks
         run: |
-          xvfb-run -a python3 tests/run_godot_checks.py --godot "$RUNNER_TEMP/godot/Godot_v4.5.1-stable_linux.x86_64" --render-check --capture "$RUNNER_TEMP/tactical-preview.png" --logs-dir "$RUNNER_TEMP/godot-logs"
+          xvfb-run -a python3 tests/run_godot_checks.py --godot "$RUNNER_TEMP/godot/Godot_v4.5.1-stable_linux.x86_64" --render-check --capture "$RUNNER_TEMP/tactical-preview.png" --report-capture "$RUNNER_TEMP/battle-report-preview.png" --logs-dir "$RUNNER_TEMP/godot-logs"
       - name: Save render and test logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -37,4 +37,5 @@ jobs:
           name: tactical-validation
           path: |
             ${{ runner.temp }}/tactical-preview.png
+            ${{ runner.temp }}/battle-report-preview.png
             ${{ runner.temp }}/godot-logs/

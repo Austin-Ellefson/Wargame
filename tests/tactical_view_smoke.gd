@@ -11,6 +11,9 @@ func check(condition: bool, message: String) -> void:
         failures.append(message)
         push_error(message)
 
+func same(a: Variant, b: Variant) -> bool:
+    return JSON.parse_string(JSON.stringify(a)) == JSON.parse_string(JSON.stringify(b))
+
 func click(point: Vector2, button: int) -> void:
     var event := InputEventMouseButton.new()
     event.position = point
@@ -71,9 +74,12 @@ func _run() -> void:
     check("P" in view.combat_label.text and "R" in view.combat_label.text and "SUP" in view.combat_label.text, "Live combat feedback must identify personnel, ammunition and suppression changes.")
     check("P" in view.labels["UKR_S1"].text and "R" in view.labels["UKR_S1"].text and "SUP" in view.labels["UKR_S1"].text, "World labels must expose current personnel, ammunition and suppression.")
     var capture := ""
+    var report_capture := ""
     for argument in OS.get_cmdline_user_args():
         if argument.begins_with("--capture="):
             capture = argument.trim_prefix("--capture=")
+        elif argument.begins_with("--report-capture="):
+            report_capture = argument.trim_prefix("--report-capture=")
     if not capture.is_empty() and DisplayServer.get_name() != "headless":
         await RenderingServer.frame_post_draw
         var image := root.get_texture().get_image()
@@ -93,16 +99,63 @@ func _run() -> void:
     view._refresh()
     view.checkpoint.emit()
     check(not view.back_button.disabled, "Planning or result controls must return after execution.")
+    var selected_alive: int = game.tactical_simulation.squad_by_id("UKR_S1")["alive"]
     game.tactical_simulation.squad_by_id("UKR_S1")["alive"] = 0
     view.selected = "UKR_S1"
     view._refresh()
     check(view.squad_buttons["UKR_S1"].disabled and view.hold_button.disabled, "Dead squads must be visibly disabled and unable to receive orders.")
+    game.tactical_simulation.squad_by_id("UKR_S1")["alive"] = selected_alive
+    view._refresh()
     view._back()
     check(not is_instance_valid(game.tactical_view), "Save/back must restore the campaign view.")
     check(not game.battle_payload.is_empty(), "Save/back must preserve the unresolved battle lock.")
     game._open_tactical_battle()
     check(is_instance_valid(game.tactical_view), "Pending battle must reopen without resetting the simulation.")
+    view = game.tactical_view
+    view.set_process(false)
+    var guard := 0
+    while game.tactical_simulation.state["phase"] != "finished" and guard < 500:
+        if game.tactical_simulation.state["phase"] == "planning":
+            for squad in game.tactical_simulation.state["squads"]:
+                if squad["faction"] == "UKR" and int(squad["alive"]) > 0:
+                    var lane := int(str(squad["id"]).right(1)) - 1
+                    game.tactical_simulation.order_move(squad["id"], Vector2(242, 218 + lane * 24))
+            game.tactical_simulation.execute()
+        var before: Dictionary = view._status_snapshot()
+        game.tactical_simulation.step()
+        view._show_shot_events(game.tactical_simulation.consume_events())
+        view._show_combat_changes(before)
+        guard += 1
+    view._refresh()
+    var completed_result: Dictionary = game.tactical_simulation.result()
+    check(not completed_result.is_empty() and view.completed_report_panel.visible, "A finished battle must display its completed report.")
+    for phrase in ["DEPLOYED", "SURVIVING", "LOST", "OBJECTIVE CONTROL", "CAMPAIGN CONSEQUENCES", "commits once"]:
+        check(phrase in view.completed_report_label.text, "Completed report must include %s." % phrase)
+    for faction in ["UKR", "RU"]:
+        var force: Dictionary = completed_result["forces"][faction]
+        check(str(force["id"]) in view.completed_report_label.text, "Completed report must identify both campaign formations.")
+    if not report_capture.is_empty() and DisplayServer.get_name() != "headless":
+        await RenderingServer.frame_post_draw
+        var report_image := root.get_texture().get_image()
+        check(report_image.save_png(report_capture) == OK, "Rendered completed report must save.")
+    var completed_id := str(completed_result["battle_id"])
+    view._back()
+    check(not is_instance_valid(game.tactical_view) and game.battle_payload.is_empty(), "Apply must close the report and unlock the campaign.")
+    check(game.resolved_battle_ids.count(completed_id) == 1 and same(game.last_battle_result, completed_result), "Apply must record the completed report exactly once.")
+    var applied_snapshot: Dictionary = game._snapshot()
+    check(not game._apply_tactical_result(completed_result)["ok"] and same(game._snapshot(), applied_snapshot), "A repeated report apply must be rejected without changing campaign state.")
+    var resumed = load("res://scenes/main.tscn").instantiate()
+    resumed.auto_launch_battles = false
+    root.add_child(resumed)
+    await process_frame
+    resumed.save_path = game.save_path
+    resumed.battle_export_directory = directory
+    check(resumed._load_campaign()["ok"], "Campaign must reload after applying the completed report.")
+    check(resumed.battle_payload.is_empty() and not is_instance_valid(resumed.tactical_view), "Reload must resume the unlocked campaign without a stale report.")
+    var resumed_snapshot: Dictionary = resumed._snapshot()
+    check(not resumed._apply_tactical_result(completed_result)["ok"] and same(resumed._snapshot(), resumed_snapshot), "Reloaded campaign must reject the already applied report.")
     game.queue_free()
+    resumed.queue_free()
     await process_frame
     for filename in DirAccess.get_files_at(directory):
         DirAccess.remove_absolute(directory.path_join(filename))

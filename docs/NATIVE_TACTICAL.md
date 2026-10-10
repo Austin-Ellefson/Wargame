@@ -30,7 +30,11 @@ Python, CMAutoEditor and Combat Mission are not required for native play.
 6. Click **APPLY & CAMPAIGN** on the finished report. Deployed infantry losses,
    morale and an abstract supply cost apply automatically, once. The losing
    formation withdraws to its prior sector if possible, or a free adjacent sector.
-   In a draw the blue formation withdraws. The committed result autosaves.
+   In a draw the blue formation withdraws. The committed result autosaves. Before
+   applying, the completed report shows both formations' deployed, surviving and
+   lost personnel, objective-control seconds, morale caps, abstract supply costs,
+   the withdrawing formation and the resulting campaign unlock. Applying closes
+   the report; restart returns to the unlocked campaign rather than a stale result.
 
 ## Simulation scope
 

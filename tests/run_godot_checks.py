@@ -13,6 +13,7 @@ def main():
     parser.add_argument("--godot", default="godot")
     parser.add_argument("--render-check", action="store_true")
     parser.add_argument("--capture", type=Path)
+    parser.add_argument("--report-capture", type=Path)
     parser.add_argument("--logs-dir", type=Path)
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
@@ -26,10 +27,17 @@ def main():
         if args.capture:
             args.capture = args.capture.resolve()
             args.capture.parent.mkdir(parents=True, exist_ok=True)
+        if args.report_capture:
+            args.report_capture = args.report_capture.resolve()
+            args.report_capture.parent.mkdir(parents=True, exist_ok=True)
         command = ["--rendering-method", "gl_compatibility", "--audio-driver", "Dummy",
                    "--script", "res://tests/tactical_view_smoke.gd"]
         if args.capture:
             command.extend(["--", f"--capture={args.capture}"])
+        if args.report_capture:
+            if "--" not in command:
+                command.append("--")
+            command.append(f"--report-capture={args.report_capture}")
         checks.append(("render", command))
     for name, flags in checks:
         result = subprocess.run([args.godot, "--path", str(root), *flags], cwd=root,
@@ -44,6 +52,9 @@ def main():
         print(f"PASS: {name}")
     if args.render_check and args.capture and not args.capture.is_file():
         print("FAILED: rendered screenshot was not created", file=sys.stderr)
+        return 1
+    if args.render_check and args.report_capture and not args.report_capture.is_file():
+        print("FAILED: rendered report screenshot was not created", file=sys.stderr)
         return 1
     print(f"Godot checks complete; logs: {logs}")
     return 0
