@@ -21,7 +21,10 @@ var observed_shot_events: Array = []
 var phase_label: Label
 var summary_label: Label
 var selection_label: Label
+var combat_panel: Panel
 var combat_label: Label
+var completed_report_panel: Panel
+var completed_report_label: Label
 var report_label: Label
 var execute_button: Button
 var back_button: Button
@@ -93,8 +96,12 @@ func _build_interface() -> void:
     viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
     container.add_child(viewport)
     container.gui_input.connect(_map_input)
-    _panel(Rect2(36, 126, 500, 116), Color(0.04, 0.08, 0.1, 0.88))
+    combat_panel = _panel(Rect2(36, 126, 500, 116), Color(0.04, 0.08, 0.1, 0.88))
     combat_label = _label("LIVE COMBAT\nWaiting for contact...", Vector2(50, 138), 13, 472)
+    completed_report_panel = _panel(Rect2(150, 145, 670, 450), Color(0.04, 0.08, 0.1, 0.96))
+    completed_report_label = _label("", Vector2(180, 167), 16, 610)
+    completed_report_panel.visible = false
+    completed_report_label.visible = false
     _label("BLUE DETACHMENT", Vector2(986, 130), 13)
     summary_label = _label("", Vector2(986, 155), 16, 245)
     for index in range(4):
@@ -368,6 +375,21 @@ func _back() -> void:
     elif simulation.state["phase"] == "planning":
         leave_battle.emit()
 
+func _supply_cost(force: Dictionary) -> int:
+    return int(ceil(float(force["ammunition_used"]) / maxi(1, int(force["deployed"]) * Battle.ROUNDS_PER_PERSON) * 5.0))
+
+func _battle_report(result: Dictionary) -> String:
+    var blue: Dictionary = result["forces"]["UKR"]
+    var red: Dictionary = result["forces"]["RU"]
+    var blue_survivors := int(blue["deployed"]) - int(blue["losses"])
+    var red_survivors := int(red["deployed"]) - int(red["losses"])
+    var retreating := "UKR" if result["winner"] in ["RU", "draw"] else "RU"
+    var retreat_force: Dictionary = result["forces"][retreating]
+    var retreat_text := "%s withdraws to a legal origin/adjacent sector." % retreat_force["id"]
+    if int(retreat_force["deployed"]) - int(retreat_force["losses"]) <= 0:
+        retreat_text = "%s was eliminated; no withdrawal." % retreat_force["id"]
+    return "BATTLE COMPLETE  •  %s\n%s  •  %02d:%02d elapsed\n\nFORCE             DEPLOYED     SURVIVING     LOST\nBLUE %-10s     %2d             %2d            %2d\nRED  %-10s     %2d             %2d            %2d\n\nOBJECTIVE CONTROL\nBlue %d seconds  •  Red %d seconds\n\nCAMPAIGN CONSEQUENCES ON APPLY\n%s: -%d personnel  •  morale cap %d  •  supply -%d\n%s: -%d personnel  •  morale cap %d  •  supply -%d\n%s\nResult commits once, autosaves, and unlocks campaign turns." % [str(result["winner"]).to_upper(), result["battle_id"], int(result["elapsed"]) / 60, int(result["elapsed"]) % 60, blue["id"], blue["deployed"], blue_survivors, blue["losses"], red["id"], red["deployed"], red_survivors, red["losses"], result["objective"]["UKR"], result["objective"]["RU"], blue["id"], blue["losses"], blue["morale"], _supply_cost(blue), red["id"], red["losses"], red["morale"], _supply_cost(red), retreat_text]
+
 func _refresh() -> void:
     var state: Dictionary = simulation.state
     phase_label.text = "%s  |  %02d:%02d elapsed  |  512 x 512 m generated test terrain" % [str(state["phase"]).to_upper(), int(state["elapsed"]) / 60, int(state["elapsed"]) % 60]
@@ -384,10 +406,15 @@ func _refresh() -> void:
     execute_button.text = "%d SECONDS REMAINING" % state["remaining"] if state["phase"] == "execution" else "EXECUTE 60 SECONDS"
     back_button.disabled = state["phase"] == "execution"
     back_button.text = "APPLY & CAMPAIGN" if state["phase"] == "finished" else "SAVE & CAMPAIGN"
+    combat_panel.visible = state["phase"] != "finished"
+    combat_label.visible = state["phase"] != "finished"
+    completed_report_panel.visible = state["phase"] == "finished"
+    completed_report_label.visible = state["phase"] == "finished"
     report_label.text = "Capture the gold circle. Fire is automatic when enemies are visible and in range. Six intervals maximum."
     if state["phase"] == "finished":
         var result: Dictionary = simulation.result()
-        report_label.text = "%s result. Losses: blue %d / red %d. Apply to resume the campaign." % [str(state["winner"]).to_upper(), result["forces"]["UKR"]["losses"], result["forces"]["RU"]["losses"]]
+        completed_report_label.text = _battle_report(result)
+        report_label.text = "Review the completed report. APPLY commits it once and returns to the campaign."
     for squad in state["squads"]:
         var point: Vector2 = Battle.position(squad)
         actors[squad["id"]].position = Vector3(point.x, Battle.terrain_height(point.x, point.y), point.y)
