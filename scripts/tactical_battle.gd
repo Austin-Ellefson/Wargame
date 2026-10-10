@@ -107,7 +107,7 @@ func order_move(id: String, target: Vector2, player: bool = true) -> bool:
 
 func order_hold(id: String) -> bool:
     var squad := squad_by_id(id)
-    if state["phase"] != "planning" or squad.is_empty() or squad["faction"] != "UKR":
+    if state["phase"] != "planning" or squad.is_empty() or squad["faction"] != "UKR" or int(squad["alive"]) <= 0:
         return false
     state["orders"].erase(id)
     return true

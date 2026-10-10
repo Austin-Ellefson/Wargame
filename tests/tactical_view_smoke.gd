@@ -51,16 +51,25 @@ func _run() -> void:
     view._execute()
     check(view.execute_button.disabled and view.back_button.disabled, "Execution must freeze turn/back controls.")
     view.set_process(false)
-    # Put one opposing pair in unobstructed range, then feed events produced by
-    # the actual simulation tick into the view. This is also the rendered shot fixture.
+    # Put one opposing pair in close, unobstructed range. Advance only until an
+    # actual casualty occurs so the rendered execution fixture shows personnel,
+    # ammunition and suppression feedback together with real shot cues.
     game.tactical_simulation.squad_by_id("UKR_S1")["position"] = [180, 245]
-    game.tactical_simulation.squad_by_id("RU_S1")["position"] = [300, 245]
-    for index in range(3):
+    game.tactical_simulation.squad_by_id("RU_S1")["position"] = [240, 245]
+    var starting_personnel: int = game.tactical_simulation.alive("UKR") + game.tactical_simulation.alive("RU")
+    var executed_ticks := 0
+    while executed_ticks < 30 and game.tactical_simulation.alive("UKR") + game.tactical_simulation.alive("RU") == starting_personnel:
+        var before: Dictionary = view._status_snapshot()
         game.tactical_simulation.step()
-    var actual_events: Array = game.tactical_simulation.consume_events()
-    view._show_shot_events(actual_events)
+        var tick_events: Array = game.tactical_simulation.consume_events()
+        view._show_shot_events(tick_events)
+        view._show_combat_changes(before)
+        executed_ticks += 1
     view._refresh()
-    check(actual_events.size() >= 2 and view.shot_cues.size() == actual_events.size(), "Actual firing events must create visible transient cues for eligible shooters.")
+    check(game.tactical_simulation.alive("UKR") + game.tactical_simulation.alive("RU") < starting_personnel, "Rendered feedback fixture must reach an actual simulated casualty.")
+    check(not view.shot_cues.is_empty(), "Actual firing events must create visible transient cues for eligible shooters.")
+    check("P" in view.combat_label.text and "R" in view.combat_label.text and "SUP" in view.combat_label.text, "Live combat feedback must identify personnel, ammunition and suppression changes.")
+    check("P" in view.labels["UKR_S1"].text and "R" in view.labels["UKR_S1"].text and "SUP" in view.labels["UKR_S1"].text, "World labels must expose current personnel, ammunition and suppression.")
     var capture := ""
     for argument in OS.get_cmdline_user_args():
         if argument.begins_with("--capture="):
@@ -79,11 +88,15 @@ func _run() -> void:
         check(background.r < 0.15 and background.g < 0.2, "The battle canvas must cover the campaign viewport.")
         check(game.tactical_simulation.state["phase"] == "execution" and not view.observed_shot_events.is_empty(), "Rendered execution must contain an actual observed shot event.")
         check(image.save_png(capture) == OK, "Rendered preview must save.")
-    for index in range(57):
+    for index in range(60 - executed_ticks):
         game.tactical_simulation.step()
     view._refresh()
     view.checkpoint.emit()
     check(not view.back_button.disabled, "Planning or result controls must return after execution.")
+    game.tactical_simulation.squad_by_id("UKR_S1")["alive"] = 0
+    view.selected = "UKR_S1"
+    view._refresh()
+    check(view.squad_buttons["UKR_S1"].disabled and view.hold_button.disabled, "Dead squads must be visibly disabled and unable to receive orders.")
     view._back()
     check(not is_instance_valid(game.tactical_view), "Save/back must restore the campaign view.")
     check(not game.battle_payload.is_empty(), "Save/back must preserve the unresolved battle lock.")
