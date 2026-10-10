@@ -50,3 +50,11 @@ Unmerged PR work must not be described as available on main.
 Repository access and active branch were confirmed.
 Local baseline pytest could not run because pytest is not installed; Godot is also unavailable in the setup environment.
 This setup change contains instructions only; these missing tools must be addressed or reported during feature development.
+
+## Campaign save/load task — 2026-10-09
+- Status: ready for review; not merged or available on main.
+- Branch: codex/campaign-save-load; draft PR targets codex/unattended-development-setup, which contains the same phase-2 game baseline plus development instructions.
+- Added explicit one-slot Save/Load, schema/scenario validation, temporary-file replacement, and restart restoration of turns, formation state, orders, selection, and battle display.
+- Verification: Godot 4.5.1 headless editor import, existing campaign smoke, new save/load smoke, and 26 Python terrain tests pass. Missing setup dependencies were installed for this run.
+- Limits: no autosave, result application, or battle turn lock; Windows filesystem/UI and CMBS editor handoff are not validated by these Linux headless checks.
+- Next: review/integrate persistence, then implement a persistent pending-battle lock and export-retry behavior with tests. Recheck open PRs before choosing a dependent base.
