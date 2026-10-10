@@ -18,10 +18,12 @@ func check(condition: bool, message: String) -> void:
 
 func _run() -> void:
     var game = load("res://scenes/main.tscn").instantiate()
+    game.auto_launch_battles = false
     root.add_child(game)
     await process_frame
     var export_directory := "user://smoke_test_%d" % Time.get_ticks_usec()
     game.battle_export_directory = export_directory
+    game.save_path = export_directory.path_join("campaign.json")
     check(game.units.size() == 2, "Campaign must load two formations.")
 
     var map_data: Dictionary = game.campaign["map"]
@@ -71,6 +73,7 @@ func _run() -> void:
 
     DirAccess.remove_absolute(ProjectSettings.globalize_path(blocked_path))
     DirAccess.remove_absolute(ProjectSettings.globalize_path(game.battle_export_path))
+    DirAccess.remove_absolute(ProjectSettings.globalize_path(game.save_path))
     DirAccess.remove_absolute(ProjectSettings.globalize_path(export_directory))
     game.queue_free()
     await process_frame

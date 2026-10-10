@@ -1,6 +1,6 @@
 # Ukraine Wargame
 
-Prototype operational campaign layer intended to use **Combat Mission: Black Sea** as the tactical battle resolver.
+Operational campaign prototype with an **integrated 3D WEGO infantry battle** built in Godot. Contact launches the battle directly; its results update the campaign without external editor steps.
 
 ## Phase 1 vertical slice
 
@@ -22,9 +22,23 @@ The prototype uses a 4x4 grid over a fictional test area in central Ukraine. For
 
 Clone this repository and import its root `project.godot` in Godot. Press **F5** to run.
 
-The terrain-bridge build is on `phase-2-terrain-bridge` until its pull request is merged. Select that branch when cloning or downloading it.
+Download **`codex/integrated-tactical-battle`** for this build. It includes the save/load and terrain-bridge branches; the stacked PRs are still unmerged. Import its `project.godot`, then press **F5**.
 
-### Controls
+### Try the integrated battle
+
+Click **PLAY INTEGRATED DEMO** in a new campaign. It executes the documented two-turn contact and opens `T003_B2` on a synthetic 512 x 512 m map.
+
+- You command the blue detachment: up to four nine-person squads. Red is a scripted opponent.
+- Select a blue squad in the map or side panel; right-click ground to order movement. Orders route around buildings. **HOLD POSITION** clears an order.
+- Click **EXECUTE 60 SECONDS**. Both sides move and fire simultaneously. Playback defaults to 4x and can switch to 8x.
+- Capture the gold objective. Fire is automatic within 230 m with line of sight; woods reduce hit probability. Suppression slows movement and reduces firing effectiveness.
+- **SAVE & CAMPAIGN** preserves an unfinished battle and its campaign lock. **OPEN TACTICAL BATTLE** resumes it.
+- A battle ends on detachment elimination or after six intervals. Click **APPLY & CAMPAIGN** to apply the result and save. Vehicles stay in reserve; losses affect only the infantry actually deployed.
+- On restart, click **LOAD** to restore your save before starting another demo.
+
+See [native battle behavior and limits](docs/NATIVE_TACTICAL.md).
+
+### Campaign controls
 
 - Left-click a unit token to select it.
 - Left-click an adjacent sector to issue a movement order.
@@ -45,20 +59,20 @@ The terrain-bridge build is on `phase-2-terrain-bridge` until its pull request i
 
 - The battle center is the geographic center of its sector, not a detected real contact point. The uniform latitude/longitude grid spans about 20x20 km; `sector_size_km` is nominal, not an exact metric measurement.
 - The Python terrain bridge can prepare real OSM features, a projected elevation grid, and a CMAutoEditor elevation CSV. It does not create a CMBS scenario, launch the game, or import battle results.
-- Only the first same-sector opposing pair is exported each turn. Crossing moves and larger battles need later rules.
-- Campaign state can be saved and loaded explicitly. Startup opens the initial scenario until you click **LOAD**; there is no autosave. Units can still move after contact; battles do not lock turns yet. Battle-result entry and automatic loss application are not implemented.
+- Only the first same-sector opposing pair starts a battle. Crossing moves and larger battles need later rules.
+- Native battles currently use synthetic terrain and abstract infantry combat. OSM/DEM import, vehicles, fog of war, detailed ballistics and realistic force behavior are later work.
+- Contact, tactical interval boundaries and applied results autosave. Startup still opens the initial scenario until **LOAD**. An unfinished battle locks campaign turns and movement.
 
 ## Validation
 
 ```bash
-godot --headless --path . --editor --quit
-godot --headless --path . --script res://tests/campaign_smoke.gd
-godot --headless --path . --script res://tests/campaign_save_smoke.gd
+python tests/run_godot_checks.py --godot godot
+python -m pytest -q tests/test_terrain_bridge.py
 ```
 
-The smoke test exercises click orders, illegal movement, simultaneous movement, contact detection, sector-center orientation, JSON file contents, invalid export filenames, and directory-write failure handling. Test exports use a separate temporary folder and are cleaned up.
+Checks cover campaign orders/exports, save validation, native combat, deterministic restart, actual mouse orders, navigation/LOS, locks, once-only results and failed-save rollback. GitHub Actions also renders the 3D view and captures a preview. Checks use temporary user-data folders.
 
-## Prepare real terrain
+## Optional legacy GIS / CMBS preparation
 
 On Windows, install Python 3.11 or 3.12, run `setup_terrain_bridge.cmd`, then run
 `run_terrain_bridge.cmd`. Choose **F** to fetch public OSM and elevation data for
@@ -75,47 +89,18 @@ local DEMs, the CLI, accuracy limits, and the manual editor handoff.
 - `scripts/battle_exporter.gd`: JSON file writing and write errors.
 - `data/campaign.json`: formations and geographic bounds.
 - `docs/BATTLE_EXPORT.md`: export fields and coordinate assumptions.
-- `docs/CODEX_NEXT_PROMPT.md`: Windows CMBS validation and campaign persistence milestones.
+- `scripts/tactical_battle.gd`: deterministic infantry simulation and validated saved state.
+- `scripts/tactical_view.gd`: 3D battlefield, squad input and playback controls.
+- `docs/NATIVE_TACTICAL.md`: complete native game loop, rules and limitations.
+- `docs/CODEX_NEXT_PROMPT.md`: next native tactical improvements.
 - `terrain_bridge/`: validated GIS requests, public-source fetching, elevation CSV, and previews.
 
 ## Architecture direction
 
-```text
-Godot campaign layer
-    |
-    +-- campaign state / formations / turns
-    +-- map + sectors
-    +-- movement + supply + fog of war
-    +-- battle detection
-    |
-    +--> battle_payload.json
-             |
-             v
-Python GIS bridge
-    +-- OpenStreetMap
-    +-- DEM/elevation
-    +-- battle bounding box
-    +-- CMAutoEditor integration
-             |
-             v
-Combat Mission: Black Sea
-             |
-             v
-battle result import
-             |
-             v
-Godot campaign state
-```
+The campaign launches a native tactical scene in the same Godot process. The simulation returns a validated result, the campaign applies losses once and saves, and operational play resumes. The standalone GIS bridge and CMBS tools remain optional.
 
-## Next milestones
-
-- Replace the abstract grid with a georeferenced map of Ukraine.
-- Replace uniform geographic interpolation with a projected metric sector grid.
-- Add operational movement costs by road/terrain.
-- Add formation composition and persistent losses.
-- Validate the generated terrain inside the Windows CMBS scenario editor.
-- Add battle-result import.
+Next milestones are tactical usability, stronger infantry behavior, native GIS terrain, and vehicles. See [the development queue](docs/AUTONOMOUS_DEVELOPMENT.md).
 
 ## Design rule
 
-The campaign sector is **not** the CMBS tactical battlefield. A campaign sector may be 5–10 km across, while a contact inside that sector generates a smaller tactical window such as 2x2 km centered on the engagement location.
+Campaign sectors and tactical battlefields are separate. The native first slice uses a 512 m test map; the optional GIS export still requests a 2 km window around the placeholder sector center.

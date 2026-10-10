@@ -22,6 +22,7 @@ func write_json(path: String, value: Variant) -> void:
 
 func _run() -> void:
     var game = load("res://scenes/main.tscn").instantiate()
+    game.auto_launch_battles = false
     root.add_child(game)
     await process_frame
     var folder := "user://save_test_%d" % Time.get_ticks_usec()
@@ -68,7 +69,7 @@ func _run() -> void:
     check(not game._load_campaign()["ok"] and same_state(game._snapshot(), contact), "Malformed JSON must leave live state unchanged.")
     var cases: Array = []
     var bad: Dictionary = contact.duplicate(true)
-    bad["schema_version"] = 2
+    bad["schema_version"] = CampaignSave.VERSION + 1
     cases.append(bad)
     bad = contact.duplicate(true)
     bad["scenario_hash"] = "different"
