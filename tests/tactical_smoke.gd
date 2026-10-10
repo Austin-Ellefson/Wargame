@@ -165,6 +165,57 @@ func _run() -> void:
     finish(timed, false)
     check(timed.state["elapsed"] == Battle.MAX_SECONDS and timed.result()["forces"]["UKR"]["losses"] == 0, "Ammunition exhaustion must prevent fire and the battle clock must still terminate.")
     check(timed.state["winner"] == "RU", "Uncontested objective control must determine the timed result.")
+    # Transient shot events must describe actual attacks without entering saved state.
+    var event_battle = Battle.new()
+    event_battle.setup(payload)
+    for squad in event_battle.state["squads"]:
+        squad["alive"] = 0
+    var blue: Dictionary = event_battle.squad_by_id("UKR_S1")
+    var red: Dictionary = event_battle.squad_by_id("RU_S1")
+    blue["alive"] = 9
+    red["alive"] = 9
+    blue["position"] = [120, 220]
+    red["position"] = [180, 220]
+    event_battle.execute()
+    for tick in range(3):
+        event_battle.step()
+    var events := event_battle.consume_events()
+    check(events.size() == 2, "Both eligible squads must emit an event when they actually fire.")
+    for event in events:
+        check(event["type"] == "shot" and event["rounds"] > 0 and event.has("shooter") and event.has("target"), "Shot events must identify shooter, target and expended rounds.")
+    check(not event_battle.state.has("events") and event_battle.consume_events().is_empty(), "Presentation events must be transient and excluded from authoritative state.")
+    var no_fire = Battle.new()
+    no_fire.setup(payload)
+    for squad in no_fire.state["squads"]:
+        squad["ammo"] = 0
+    no_fire.execute()
+    for tick in range(3):
+        no_fire.step()
+    check(no_fire.consume_events().is_empty(), "Empty-ammunition squads must not emit firing events.")
+    var blocked = Battle.new()
+    blocked.setup(payload)
+    for squad in blocked.state["squads"]:
+        squad["alive"] = 0
+    blocked.squad_by_id("UKR_S1")["alive"] = 9
+    blocked.squad_by_id("RU_S1")["alive"] = 9
+    blocked.squad_by_id("UKR_S1")["position"] = [200, 166]
+    blocked.squad_by_id("RU_S1")["position"] = [270, 166]
+    blocked.execute()
+    for tick in range(3):
+        blocked.step()
+    check(blocked.consume_events().is_empty(), "Building-blocked fire must not emit a cue.")
+    var distant = Battle.new()
+    distant.setup(payload)
+    for squad in distant.state["squads"]:
+        squad["alive"] = 0
+    distant.squad_by_id("UKR_S1")["alive"] = 9
+    distant.squad_by_id("RU_S1")["alive"] = 9
+    distant.squad_by_id("UKR_S1")["position"] = [40, 40]
+    distant.squad_by_id("RU_S1")["position"] = [470, 470]
+    distant.execute()
+    for tick in range(3):
+        distant.step()
+    check(distant.consume_events().is_empty(), "Out-of-range fire must not emit a cue.")
     game.units[0]["personnel"] = 0
     game.units[0]["sector"] = game.units[1]["sector"].duplicate(true)
     var occupied: Dictionary = game.units[1]["sector"]

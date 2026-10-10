@@ -51,11 +51,16 @@ func _run() -> void:
     view._execute()
     check(view.execute_button.disabled and view.back_button.disabled, "Execution must freeze turn/back controls.")
     view.set_process(false)
-    for index in range(60):
+    # Put one opposing pair in unobstructed range, then feed events produced by
+    # the actual simulation tick into the view. This is also the rendered shot fixture.
+    game.tactical_simulation.squad_by_id("UKR_S1")["position"] = [180, 245]
+    game.tactical_simulation.squad_by_id("RU_S1")["position"] = [300, 245]
+    for index in range(3):
         game.tactical_simulation.step()
+    var actual_events: Array = game.tactical_simulation.consume_events()
+    view._show_shot_events(actual_events)
     view._refresh()
-    view.checkpoint.emit()
-    check(not view.back_button.disabled, "Planning or result controls must return after execution.")
+    check(actual_events.size() >= 2 and view.shot_cues.size() == actual_events.size(), "Actual firing events must create visible transient cues for eligible shooters.")
     var capture := ""
     for argument in OS.get_cmdline_user_args():
         if argument.begins_with("--capture="):
@@ -72,7 +77,13 @@ func _run() -> void:
         check(terrain_pixels > 2500, "Rendered ground must occupy a substantial visible area, not just trees against a blank viewport.")
         var background := image.get_pixel(10, 100)
         check(background.r < 0.15 and background.g < 0.2, "The battle canvas must cover the campaign viewport.")
+        check(game.tactical_simulation.state["phase"] == "execution" and not view.observed_shot_events.is_empty(), "Rendered execution must contain an actual observed shot event.")
         check(image.save_png(capture) == OK, "Rendered preview must save.")
+    for index in range(57):
+        game.tactical_simulation.step()
+    view._refresh()
+    view.checkpoint.emit()
+    check(not view.back_button.disabled, "Planning or result controls must return after execution.")
     view._back()
     check(not is_instance_valid(game.tactical_view), "Save/back must restore the campaign view.")
     check(not game.battle_payload.is_empty(), "Save/back must preserve the unresolved battle lock.")

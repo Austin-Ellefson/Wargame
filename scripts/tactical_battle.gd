@@ -13,6 +13,9 @@ const WOODS := [Vector3(212, 290, 29), Vector3(298, 210, 30), Vector3(108, 130, 
 
 var state: Dictionary = {}
 var navigation := AStarGrid2D.new()
+## Presentation-only events from the most recent simulated second. They are
+## deliberately excluded from state/save validation and never affect RNG.
+var last_events: Array = []
 
 static func terrain_height(x: float, z: float) -> float:
     return 3.5 * exp(-Vector2(x - 160, z - 140).length_squared() / 9000.0) + 5.0 * exp(-Vector2(x - 360, z - 390).length_squared() / 12000.0)
@@ -48,11 +51,18 @@ func setup(payload: Dictionary) -> void:
     state = {"version": 1, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
+    last_events = []
     _build_navigation()
 
 func restore(saved: Dictionary) -> void:
     state = saved.duplicate(true)
+    last_events = []
     _build_navigation()
+
+func consume_events() -> Array:
+    var events := last_events.duplicate(true)
+    last_events = []
+    return events
 
 func _build_navigation() -> void:
     navigation.region = Rect2i(0, 0, 64, 64)
@@ -114,6 +124,7 @@ func execute() -> bool:
     return true
 
 func step() -> void:
+    last_events = []
     if state["phase"] != "execution":
         return
     state["elapsed"] = int(state["elapsed"]) + 1
@@ -158,6 +169,10 @@ func step() -> void:
             for round_index in range(rounds):
                 if random.randf() < chance:
                     losses += 1
+            var event := {"type": "shot", "tick": state["elapsed"], "shooter": shooter["id"],
+                "target": target["id"], "from": shooter["position"].duplicate(),
+                "to": target["position"].duplicate(), "rounds": rounds, "losses": losses}
+            last_events.append(event)
             attacks.append({"target": target["id"], "losses": losses, "pressure": 0.07 + rounds * 0.012})
     for attack in attacks:
         var target := squad_by_id(attack["target"])

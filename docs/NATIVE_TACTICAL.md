@@ -18,7 +18,9 @@ Python, CMAutoEditor and Combat Mission are not required for native play.
 4. Execute a 60-second interval. Orders freeze, and both forces move/fire in
    simultaneous one-second ticks. The red opponent advances toward the objective.
    Playback at 4x takes approximately 15 real seconds per complete interval; 8x
-   changes presentation speed without changing simulated results.
+   changes presentation speed without changing simulated results. Each actual
+   automatic attack flashes briefly at the firing squad and draws an orange shot
+   cue toward its target. A cue means rounds were fired, not that they hit.
 5. Capture the gold objective. It scores one point per uncontested second within
    52 m of the flag. A surviving side wins if its opposing detachment is eliminated;
    otherwise objective time determines the winner at 360 seconds. Equal scores draw.
@@ -47,6 +49,11 @@ with an abstract pool of 40 rounds. Morale decreases with casualties; independen
 morale-driven behavior is subsequent work. Expenditure reduces operational supply
 by up to five abstract percentage points per battle, rather than inventing a
 campaign-wide ammunition inventory.
+
+Shot cues come directly from the simulation's eligible attacks, so blocked,
+out-of-range and empty-ammunition squads do not flash. They are short-lived
+presentation events: they are not added to the save schema, do not consume random
+numbers, and cannot change the authoritative result or deterministic restart.
 
 Enemy positions remain visible. This first model has no detailed ballistics,
 weapon classes, armor, animations, multi-contact battles, fog of war or realistic
