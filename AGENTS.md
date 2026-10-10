@@ -4,10 +4,11 @@
 Build a Godot 4 operational campaign with an integrated native 3D tactical simulator. The user approved this pivot on 2026-10-10; CMBS is an optional legacy handoff.
 Use fictional formations and scenario data. Campaign sectors and tactical battle windows are separate.
 Read README.md, docs/CODEX_NEXT_PROMPT.md, docs/BATTLE_EXPORT.md, and terrain_bridge/README.md before changing their contracts.
-Until the existing stacked PRs are merged, follow the latest native simulator branch codex/integrated-tactical-battle, based on codex/campaign-save-load. main currently contains only the starter README. Recheck branches and PR status each run.
+Until the existing stacked PRs are merged, start with codex/loop-feedback-workflow and the ledger in docs/LOOP_FEEDBACK_MILESTONE.md. It includes codex/integrated-tactical-battle, based on codex/campaign-save-load. Follow the latest validated milestone descendant recorded in the ledger; main currently contains only the starter README. Recheck branches and PR status each run.
 
 ## Autonomous work
 Use docs/AUTONOMOUS_DEVELOPMENT.md for the queue and completion criteria.
+The user requested unattended progress and a check-in when the repeatable campaign loop and visible firing/feedback are ready (2026-10-10). Prioritize docs/LOOP_FEEDBACK_MILESTONE.md until all its gates pass. Do not treat the initial one-battle smoke test as completion.
 Complete one small, independently verifiable task per run. Make routine implementation decisions without waiting for the user.
 Read existing code and instructions first. Preserve working movement, battle exports, GIS output, and Windows launchers.
 Prefer the existing architecture; SQLite is a possible future direction, not a required migration.
