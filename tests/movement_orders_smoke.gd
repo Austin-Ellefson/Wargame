@@ -88,6 +88,19 @@ func _run() -> void:
         var start := Battle.position(pinned.squad_by_id("UKR_S1"))
         pinned.step()
         check(Battle.position(pinned.squad_by_id("UKR_S1")) == start and pinned.movement_mode("UKR_S1") == mode, "Pinning must halt every mode while retaining it.")
+    var queue = Battle.new()
+    queue.setup(PAYLOAD)
+    check(queue.order_move("UKR_S1", Vector2(180, 250), true, "quick"), "Queue fixture must accept its first leg.")
+    var prefix: Array = queue.state["orders"]["UKR_S1"].duplicate(true)
+    check(queue.order_move("UKR_S1", Vector2(320, 300), true, "quick", true), "Append must route the next leg from the previous endpoint.")
+    check(same(queue.state["orders"]["UKR_S1"].slice(0, prefix.size()), prefix) and same(queue.state["orders"]["UKR_S1"].back(), [320, 300]), "Appending must preserve every queued point and final destination.")
+    var intact: Dictionary = queue.state.duplicate(true)
+    check(not queue.order_move("UKR_S1", Vector2(230, 160), true, "quick", true) and same(intact, queue.state), "Blocked append must reject atomically.")
+    check(not queue.order_move("UKR_S1", Vector2(340, 300), true, "hunt", true) and same(intact, queue.state), "Changing a mode during append must reject atomically.")
+    queue.state["orders"]["UKR_S1"] = []
+    for index in range(128): queue.state["orders"]["UKR_S1"].append([180, 250])
+    intact = queue.state.duplicate(true)
+    check(not queue.order_move("UKR_S1", Vector2(320, 300), true, "quick", true) and same(intact, queue.state), "Oversized appended paths must retain the old route unchanged.")
     var completed = fixture("quick")
     for tick in range(40):
         completed.step()
@@ -134,6 +147,7 @@ func _run() -> void:
     game.battle_export_directory = directory
     game._play_demo()
     game.tactical_simulation.order_move("UKR_S1", Vector2(180, 250), true, "hunt")
+    check(game.tactical_simulation.order_move("UKR_S1", Vector2(320, 300), true, "hunt", true), "Actual campaign must append a second leg before disk checkpoint.")
     game.tactical_simulation.order_move("UKR_S2", Vector2(180, 272), true, "quick")
     game.tactical_simulation.execute()
     game.tactical_simulation.step()

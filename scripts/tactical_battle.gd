@@ -205,7 +205,7 @@ func movement_status(squad: Dictionary) -> String:
     var mode := movement_mode(squad["id"])
     return "HUNT PAUSED" if hunt_paused(squad) else mode.to_upper()
 
-func order_move(id: String, target: Vector2, player: bool = true, mode: String = "move") -> bool:
+func order_move(id: String, target: Vector2, player: bool = true, mode: String = "move", append: bool = false) -> bool:
     if mode not in ["move", "quick", "hunt"] or (int(state["version"]) < 5 and mode != "move"):
         return false
     var squad := squad_by_id(id)
@@ -215,7 +215,10 @@ func order_move(id: String, target: Vector2, player: bool = true, mode: String =
         return false
     if not is_finite(target.x) or not is_finite(target.y) or target.x < 4 or target.y < 4 or target.x > SIZE - 4 or target.y > SIZE - 4 or inside_building(target, 5.0):
         return false
-    var origin := position(squad)
+    var previous: Array = state["orders"].get(id, []).duplicate(true) if append else []
+    if append and not previous.is_empty() and movement_mode(id) != mode:
+        return false
+    var origin := Vector2(previous.back()[0], previous.back()[1]) if not previous.is_empty() else position(squad)
     var start := Vector2i(int(origin.x / CELL), int(origin.y / CELL))
     var finish := Vector2i(int(target.x / CELL), int(target.y / CELL))
     if navigation.is_point_solid(finish):
@@ -223,11 +226,13 @@ func order_move(id: String, target: Vector2, player: bool = true, mode: String =
     var points := navigation.get_point_path(start, finish)
     if points.is_empty():
         return false
-    var path: Array = []
+    var path: Array = previous
     # Preserve the actual start and finish; intermediate cells route around buildings.
     for index in range(1, points.size()):
         path.append([points[index].x, points[index].y])
     path.append([target.x, target.y])
+    if path.size() > 128:
+        return false
     state["orders"][id] = path
     if int(state["version"]) >= 5:
         state["movement_modes"][id] = mode

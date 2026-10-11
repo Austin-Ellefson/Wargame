@@ -227,3 +227,17 @@ V7 adds `fire_targets` for all squad IDs: empty string or known opposing squad I
 Strict validation rejects missing/extra IDs, friendly/unknown targets and nonstrings.
 A saved preference may be out of sight; every shot still rechecks current local
 range/LOS. V1-v6 retain original fields/rules; no silent migration or extra RNG.
+
+## Queued movement waypoints
+
+Right-click replaces a selected squad's route. Shift-right-click appends a routed
+leg from its existing final destination, preserving the queued mode and earlier
+points; with no existing route it starts a normal order in the selected mode.
+The bright dotted preview displays the full queue. Hold clears all legs.
+Blocked destinations, a mismatched append mode and paths exceeding 128 points
+reject atomically without discarding the current route. Routing follows the
+existing 8 m building-clearance grid. Each queue uses one movement mode.
+
+No save fields or simulation rules change: complete routes already persist in
+`orders`. Tactical v7 remains current; old engagements keep their fields/rules.
+Disk-restart regression now includes a multi-leg campaign route.

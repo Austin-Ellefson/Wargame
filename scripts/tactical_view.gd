@@ -321,7 +321,8 @@ func _map_input(event: InputEvent) -> void:
         _refresh()
     elif event.button_index == MOUSE_BUTTON_RIGHT and simulation.state["phase"] == "planning":
         var target := _ground_point(event.position)
-        if target.x >= 0 and simulation.order_move(selected, target, true, command_mode):
+        var mode: String = simulation.movement_mode(selected) if event.shift_pressed and simulation.state["orders"].has(selected) else command_mode
+        if target.x >= 0 and simulation.order_move(selected, target, true, mode, event.shift_pressed):
             _refresh()
 
 func _update_camera() -> void:
@@ -578,7 +579,7 @@ func _refresh() -> void:
     if int(state["version"]) >= 5:
         report_label.text = "Mode + right-click. Amber = last seen."
     if int(state["version"]) >= 7:
-        report_label.text = simulation.target_status(selected) + "\nShift-click contact to prefer target."
+        report_label.text = simulation.target_status(selected) + " | Shift-click target\nShift-right: append route"
     if state["phase"] == "finished":
         var result: Dictionary = simulation.result()
         completed_report_label.text = _battle_report(result)
