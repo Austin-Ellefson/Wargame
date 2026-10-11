@@ -457,3 +457,7 @@ is delivered as the scheduled task result in ChatGPT.
 - Inspected artifact 11706762606: cover-routing log proves real wooded traversal and disk outcome equality; actual 00:03 shot/ammunition/casualty/pinning capture and completed two-sided report are readable. Rendering verifies existing feedback, not realistic cover tactics. CI emits VSync/anchor/test-event warnings; no script errors or failed checks.
 - Frozen original milestone and completed five-step download preserved. No Windows or Combat Mission fidelity validation. Fixed destinations may be open; contact can halt an advance before reaching cover.
 - Next: covered opponent objective destinations without hidden enemy-position input.
+
+## Covered objective positions — 2026-10-11
+
+- In validation: codex/covered-objective-positions, base tested codex/opponent-cover-routing PR #22. All 16 local Godot checks pass; actual occupation and restart regression added. CI pending.
