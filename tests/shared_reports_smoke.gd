@@ -46,13 +46,15 @@ func _run() -> void:
     var reports: Array = sim.shared_reports("UKR","UKR_S2")
     check(reports.size() == 1 and reports[0]["position"] == [240,245] and reports[0]["seen_at"] == 3, "Delivery must reveal only captured position/time, never the hidden current position.")
     check(not sim.can_engage(sim.squad_by_id("UKR_S2"),sim.squad_by_id("RU_S1")), "Reports must grant no local firing/target permission.")
+    var planning = Battle.new()
+    planning.restore(sim.state)
+    for tick in range(52): planning.step()
+    check(planning.state["phase"] == "planning" and planning.squad_by_id("RU_S1")["alive"] > 0 and not planning.shared_reports("UKR","UKR_S2").is_empty() and not planning.order_target("UKR_S2","RU_S1"), "Actual planning target command must reject a living unseen enemy known only by delivered report.")
     sim.squad_by_id("RU_S2")["alive"] = 9
     sim.squad_by_id("RU_S2")["position"] = [470,470]
     sim.squad_by_id("RU_S1")["alive"] = 0
     sim.step()
     check(same(reports,sim.shared_reports("UKR","UKR_S2")), "Hidden death cannot erase reports or reveal an outcome.")
-    for tick in range(51): sim.step()
-    check(sim.state["phase"] == "planning" and not sim.order_target("UKR_S2","RU_S1"), "An actual planning target command cannot use only a delivered report.")
     var visible = fixture()
     for tick in range(8): visible.step()
     visible.squad_by_id("RU_S2")["alive"] = 9
