@@ -71,3 +71,16 @@ This setup change contains instructions only; these missing tools must be addres
 - Verification for this documentation-only task: branch/PR baseline inspected, local documentation consistency and git diff --check. No new gameplay/Windows validation claimed.
 - Next: implement and test the two-battle/restart gate, then actual-shot visual feedback.
 - Follow-up authorization: hourly passes while pursuing this milestone; an immediate run was requested. The user also authorized project testing on their PC if a supported desktop connection is actually available. No desktop-control connection is present in the current session; continue cloud/repository testing and do not claim local Windows tests ran.
+
+## Camera navigation — 2026-10-10
+- Branch: codex/tactical-camera-controls, stacked on codex/order-path-preview.
+- Status: ready for review; draft PR #12, gameplay commit 8f50548.
+- Validation: editor and all five Godot smoke checks, 26 GIS tests and diff check
+  passed. CI 38112521064 passed; rotated camera, execution and report previews
+  inspected in artifact 11692042769. Windows remains unverified.
+- Added bounded middle-drag pan, Shift-middle orbit and one-click reset. Actual
+  GUI-event regression covers picking/orders after navigation, state isolation,
+  reset and camera use during execution. No save/simulation contract changed.
+- Preserve the completed-battle-report milestone download.
+- Next: preserve the tested camera descendant and frozen milestone build; a
+  small morale behavior with deterministic restart tests is a subsequent task.

@@ -39,4 +39,5 @@ jobs:
             ${{ runner.temp }}/tactical-preview.png
             ${{ runner.temp }}/battle-report-preview.png
             ${{ runner.temp }}/order-path-preview.png
+            ${{ runner.temp }}/camera-preview.png
             ${{ runner.temp }}/godot-logs/

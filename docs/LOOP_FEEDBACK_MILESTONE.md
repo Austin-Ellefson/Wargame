@@ -218,3 +218,25 @@ Synthetic terrain and infantry remain the baseline. Vehicles, real GIS maps,
 fog of war, campaign AI and deeper behavior are later milestones. No merge,
 force push, branch deletion, settings changes or external messaging. The check-in
 is delivered as the scheduled task result in ChatGPT.
+
+## Post-milestone run record — camera navigation, 2026-10-10
+
+- Status: ready for review; draft PR #12. Gameplay commit: 8f50548e32b12291c0dd282f597e518f78f47350.
+- Branch: codex/tactical-camera-controls, based on the validated
+  codex/order-path-preview branch (PR #11). The frozen milestone build remains
+  available from codex/completed-battle-report.
+- Middle drag pans, Shift + middle drag orbits, and RESET CAMERA restores the
+  overview. Pitch/focus are bounded. Controls work in planning and execution
+  without changing simulation state, save data or RNG. Reopen uses the overview.
+- Regression uses actual GUI mouse events to pan/orbit/reset, proves projected
+  terrain picking and issuing a new order still work, and checks state isolation
+  during execution. CI captures camera-preview.png for visual review.
+- Evidence: Godot 4.5.1 editor and all five smoke checks passed; 26 GIS tests
+  passed; git diff --check passed. CI run 38112521064 succeeded at the gameplay
+  commit. Artifact 11692042769 was inspected: camera-preview.png shows the rotated
+  map and route; execution shot cues and completed report remain readable.
+  CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38112521064
+  Latest tested descendant: codex/tactical-camera-controls / PR #12.
+  Windows input/performance remain unverified.
+- Next: preserve the milestone build for user testing; a later focused task may
+  add a small morale behavior with deterministic save/restart regressions.
