@@ -61,8 +61,9 @@ above remains available separately.
 
 Up to 36 personnel deploy from each current formation, split into squads of up
 to nine. A depleted formation deploys only its available personnel. The remaining
-battalion personnel and all vehicles stay in reserve. Three simple figures
-represent a squad; the label gives its actual surviving headcount.
+battalion personnel and all vehicles stay in reserve. The frozen milestone uses three simple figures
+per squad; newer soldier descendants use up to nine procedural display slots.
+Friendly labels show surviving headcount; live enemy counts remain concealed.
 
 Terrain is a synthetic 512 x 512 m test map with procedural hills, buildings,
 woods and a road. This slice does not load the existing OSM/DEM packages.
