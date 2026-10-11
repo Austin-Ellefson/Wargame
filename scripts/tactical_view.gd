@@ -489,7 +489,7 @@ func _refresh() -> void:
     completed_report_label.visible = state["phase"] == "finished"
     report_label.text = "Capture the gold circle. Fire is automatic when enemies are visible and in range. Six intervals maximum."
     if simulation.limited_visibility():
-        report_label.text = "Spot enemies before firing. Woods conceal distant squads. Contacts show current sight only. Six intervals maximum."
+        report_label.text = "Spot before firing. Woods conceal distant squads. Contacts show current sight."
     if state["phase"] == "finished":
         var result: Dictionary = simulation.result()
         completed_report_label.text = _battle_report(result)
