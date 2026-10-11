@@ -504,3 +504,9 @@ is delivered as the scheduled task result in ChatGPT.
 - Regression exercises real commands/movement/attacks and actual disk restart.
   Initial test parse/version/routed-distance assumptions fixed. CI pending.
 - Frozen milestone build preserved; no Windows or realistic-fidelity claim.
+
+- Initial candidate 48cb1774d9592842044ae93c50422f1c9d3384e1 passed CI
+  38163805273 and artifact 11711526519 showed actual PRONE/shot execution
+  at 00:06. Visual inspection caught completed-summary/roster overlap after
+  the denser controls. Compact summary/selection labels and bounds regressions
+  added before final validation; readiness remains pending the corrected CI.

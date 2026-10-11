@@ -385,6 +385,9 @@ func _run() -> void:
         await RenderingServer.frame_post_draw
         var report_image := root.get_texture().get_image()
         check(report_image.save_png(report_capture) == OK, "Rendered completed report must save.")
+    await process_frame
+    check(view.summary_label.get_rect().end.y <= view.squad_buttons["UKR_S1"].position.y, "Completed summary must fit above the roster without covering the first squad.")
+    check(view.selection_label.get_rect().end.y <= view.posture_buttons["stand"].position.y, "Selected completed state must fit above posture controls.")
     var completed_id := str(completed_result["battle_id"])
     view._back()
     check(not is_instance_valid(game.tactical_view) and game.battle_payload.is_empty(), "Apply must close the report and unlock the campaign.")
