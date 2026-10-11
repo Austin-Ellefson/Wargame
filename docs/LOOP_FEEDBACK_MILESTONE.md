@@ -21,8 +21,8 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/opponent-cover-routing / PR #22
-- Post-milestone next task: covered opponent objective destinations without hidden enemy-position input
+- Latest validated post-milestone descendant: codex/covered-objective-positions / PR #23
+- Post-milestone next task: persistent infantry fatigue and visible movement cost
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -461,3 +461,11 @@ is delivered as the scheduled task result in ChatGPT.
 ## Covered objective positions — 2026-10-11
 
 - In validation: codex/covered-objective-positions, base tested codex/opponent-cover-routing PR #22. All 16 local Godot checks pass; actual occupation and restart regression added. CI pending.
+
+## codex/covered-objective-positions — validated 2026-10-11
+
+- Ready for review, draft PR #23, base codex/opponent-cover-routing.
+- Tested gameplay: 9220f10fd0e071fa4086dcfd996ccc1315a624c3. All Godot checks, 26 terrain tests and diff check passed.
+- CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38153202700 succeeded. Inspected artifact 11707776142: Real covered arrival/objective scoring and disk outcome equality in regression logs; actual shot/ammunition/pinning execution and readable completed report inspected. Rendering does not prove realistic cover tactics.
+- Frozen milestone and prior downloads preserved; no Windows or Combat Mission fidelity claim.
+- Next: persistent infantry fatigue and visible movement cost.
