@@ -457,9 +457,9 @@ func _refresh_contact_markers() -> void:
             disk.height = 0.4
             _mesh(disk, Vector3.ZERO, _material(Color("e2b859"), true), marker)
             var label := Label3D.new()
-            label.font_size = 28
-            label.pixel_size = 0.35
-            label.position = Vector3(0, 14, 0)
+            label.font_size = 40
+            label.pixel_size = 0.5
+            label.position = Vector3(0, 30, 0)
             label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
             label.no_depth_test = true
             label.modulate = Color("ffe0a0")
