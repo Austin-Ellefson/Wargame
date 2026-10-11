@@ -19,7 +19,7 @@ and separated covered capture positions. Fatigue and morale-driven withdrawal/ra
 1. Validate and refine morale retreat/rally with user playtests; add leaders/C2 later.
 2. Standing/crouched/prone posture with movement, observation and protection tradeoffs: implemented on tested codex/infantry-posture PR #26 (v14); playtest tuning and transition delays remain future work.
 3. Squad weapon roles and fire cadence, ammunition and bounded casualty accounting: implemented on tested codex/infantry-fire-profiles PR #27 (v15). Individual weapon inventories and reloads remain future work.
-4. Local acquisition delay: implemented on tested codex/spotting-acquisition PR #28 (v16). Five-second movement response implemented on tested codex/movement-command-response PR #29 (v17). Delayed shared-contact reports are next; leaders/radios remain future work and no hidden target tracking.
+4. Local acquisition delay: implemented on tested codex/spotting-acquisition PR #28 (v16). Five-second movement response implemented on tested codex/movement-command-response PR #29 (v17). Delayed shared-contact reports and selected local visibility are implemented on tested codex/delayed-contact-reports PR #30 (v18). Observer-level contact memory is next; leaders/radios remain future work and no hidden target tracking.
 5. More credible opponent support, maneuver and withdrawal, using observed information.
 
 ## Larger milestones after infantry is stable
