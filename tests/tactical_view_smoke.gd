@@ -175,6 +175,26 @@ func _run() -> void:
         check(background.r < 0.15 and background.g < 0.2, "The battle canvas must cover the campaign viewport.")
         check(game.tactical_simulation.state["phase"] == "execution" and not view.observed_shot_events.is_empty(), "Rendered execution must contain an actual observed shot event.")
         check(image.save_png(capture) == OK, "Rendered preview must save.")
+    # The observed execution contact becomes stale without tracking hidden motion.
+    var memory_checkpoint: Dictionary = game.tactical_simulation.state.duplicate(true)
+    var remembered: Dictionary = memory_checkpoint["contacts"]["UKR"]["RU_S1"]
+    game.tactical_simulation.squad_by_id("RU_S1")["position"] = [470, 470]
+    game.tactical_simulation.state["orders"].erase("RU_S1")
+    game.tactical_simulation.step()
+    view._age_shot_cues(1.0)
+    view._refresh()
+    check(not view.actors["RU_S1"].visible and view.contact_markers["RU_S1"].visible, "Lost contact must replace the hidden actor with an uncertain marker.")
+    var ghost: Node3D = view.contact_markers["RU_S1"]
+    check(ghost.position.x == remembered["position"][0] and ghost.position.z == remembered["position"][1] and "LAST SEEN" in view.contact_labels["RU_S1"].text, "Marker must show the saved location and observation age.")
+    var memory_state: Dictionary = game.tactical_simulation.state.duplicate(true)
+    view._refresh()
+    check(same(memory_state, game.tactical_simulation.state), "Contact rendering must not mutate simulation state.")
+    if not capture.is_empty() and DisplayServer.get_name() != "headless":
+        await RenderingServer.frame_post_draw
+        check(root.get_texture().get_image().save_png(capture.get_base_dir().path_join("contact-memory-preview.png")) == OK, "Lost-contact preview must save.")
+    game.tactical_simulation.restore(memory_checkpoint)
+    view._refresh()
+    check(not view.contact_markers["RU_S1"].visible, "Current contact must hide its uncertain marker.")
     for index in range(60 - executed_ticks):
         game.tactical_simulation.step()
     view._refresh()

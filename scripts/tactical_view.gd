@@ -21,6 +21,8 @@ var world: Node3D
 var actors := {}
 var labels := {}
 var markers := {}
+var contact_markers := {}
+var contact_labels := {}
 var order_preview: Node3D
 var shot_cues: Array = []
 var observed_shot_events: Array = []
@@ -440,6 +442,34 @@ func _refresh_order_preview() -> void:
             _mesh(dot, Vector3(point.x, Battle.terrain_height(point.x, point.y) + 0.8, point.y), material, order_preview)
         previous = finish
 
+func _refresh_contact_markers() -> void:
+    for marker in contact_markers.values():
+        marker.visible = false
+    for contact in simulation.last_known_contacts("UKR"):
+        var id: String = contact["id"]
+        if not contact_markers.has(id):
+            var marker := Node3D.new()
+            world.add_child(marker)
+            contact_markers[id] = marker
+            var disk := CylinderMesh.new()
+            disk.top_radius = 6.0
+            disk.bottom_radius = 6.0
+            disk.height = 0.4
+            _mesh(disk, Vector3.ZERO, _material(Color("e2b859"), true), marker)
+            var label := Label3D.new()
+            label.font_size = 28
+            label.pixel_size = 0.35
+            label.position = Vector3(0, 14, 0)
+            label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+            label.no_depth_test = true
+            label.modulate = Color("ffe0a0")
+            marker.add_child(label)
+            contact_labels[id] = label
+        var point := Vector2(float(contact["position"][0]), float(contact["position"][1]))
+        contact_markers[id].position = Vector3(point.x, Battle.terrain_height(point.x, point.y) + 0.6, point.y)
+        contact_markers[id].visible = true
+        contact_labels[id].text = "? LAST SEEN %ds" % (int(simulation.state["elapsed"]) - int(contact["seen_at"]))
+
 func _back() -> void:
     if simulation.state["phase"] == "finished":
         commit_result.emit(simulation.result())
@@ -490,11 +520,14 @@ func _refresh() -> void:
     report_label.text = "Capture the gold circle. Fire is automatic when enemies are visible and in range. Six intervals maximum."
     if simulation.limited_visibility():
         report_label.text = "Spot before firing. Woods conceal distant squads. Contacts show current sight."
+    if int(state["version"]) >= 4:
+        report_label.text = "Amber ? = last seen, not current. Woods conceal distant squads."
     if state["phase"] == "finished":
         var result: Dictionary = simulation.result()
         completed_report_label.text = _battle_report(result)
         report_label.text = "Review the completed report. APPLY commits it once and returns to the campaign."
     _refresh_order_preview()
+    _refresh_contact_markers()
     for squad in state["squads"]:
         var point: Vector2 = Battle.position(squad)
         actors[squad["id"]].position = Vector3(point.x, Battle.terrain_height(point.x, point.y), point.y)

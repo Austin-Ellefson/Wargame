@@ -50,11 +50,13 @@ static func visible(a: Vector2, b: Vector2) -> bool:
     return true
 
 func setup(payload: Dictionary) -> void:
-    state = {"version": 3, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
+    state = {"version": 4, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
+    state["contacts"] = {"UKR": {}, "RU": {}}
     last_events = []
     _build_navigation()
+    _update_contacts()
 
 func restore(saved: Dictionary) -> void:
     state = saved.duplicate(true)
@@ -121,6 +123,35 @@ func observed_contacts(faction: String) -> int:
         if target["faction"] != faction and int(target["alive"]) > 0 and is_observed(faction, target):
             count += 1
     return count
+
+func _update_contacts() -> void:
+    if int(state["version"]) < 4:
+        return
+    for faction in ["UKR", "RU"]:
+        for target in state["squads"]:
+            if target["faction"] == faction:
+                continue
+            if is_observed(faction, target):
+                state["contacts"][faction][target["id"]] = {"position": target["position"].duplicate(), "seen_at": int(state["elapsed"])}
+            elif int(target["alive"]) == 0:
+                # Death can be confirmed only by a living observer with sight
+                # of the position. A hidden death must leave memory untouched.
+                for observer in state["squads"]:
+                    if observer["faction"] == faction and int(observer["alive"]) > 0:
+                        var limit := WOODS_SPOT_RANGE if cover(position(target)) > 0.2 else SPOT_RANGE
+                        if position(observer).distance_to(position(target)) <= limit and visible(position(observer), position(target)):
+                            state["contacts"][faction].erase(target["id"])
+                            break
+
+func last_known_contacts(faction: String) -> Array:
+    var contacts: Array = []
+    if int(state["version"]) < 4 or state["phase"] == "finished":
+        return contacts
+    for id in state["contacts"][faction]:
+        if not is_observed(faction, squad_by_id(id)):
+            var record: Dictionary = state["contacts"][faction][id]
+            contacts.append({"id": id, "position": record["position"].duplicate(), "seen_at": record["seen_at"]})
+    return contacts
 
 func order_move(id: String, target: Vector2, player: bool = true) -> bool:
     var squad := squad_by_id(id)
@@ -193,6 +224,7 @@ func step() -> void:
                 speed = 0
         if path.is_empty():
             state["orders"].erase(squad["id"])
+    _update_contacts()
     # Collect attacks before applying damage: both sides fire from the same tick state.
     var attacks: Array = []
     if int(state["elapsed"]) % 3 == 0:
@@ -226,6 +258,7 @@ func step() -> void:
         target["alive"] = int(target["alive"]) - losses
         target["suppression"] = minf(1, float(target["suppression"]) + float(attack["pressure"]))
         target["morale"] = maxi(0, int(target["morale"]) - losses * 3)
+    _update_contacts()
     var on_objective := {"UKR": false, "RU": false}
     for squad in state["squads"]:
         if int(squad["alive"]) > 0 and position(squad).distance_to(Vector2(256, 256)) <= 52:
@@ -288,7 +321,9 @@ func result() -> Dictionary:
         "elapsed": state["elapsed"], "objective": state["objective"].duplicate(true), "forces": forces}
 
 static func validate(saved: Variant, payload: Dictionary) -> bool:
-    if not saved is Dictionary or saved.size() != 9:
+    if not saved is Dictionary or not _integer(saved.get("version"), 1, 4):
+        return false
+    if saved.size() != (10 if int(saved["version"]) == 4 else 9):
         return false
     for key in ["version", "battle_id", "phase", "elapsed", "remaining", "objective", "squads", "orders", "winner"]:
         if not saved.has(key):
@@ -302,7 +337,7 @@ static func _point(value: Variant) -> bool:
     return value is Array and value.size() == 2 and (typeof(value[0]) == TYPE_INT or typeof(value[0]) == TYPE_FLOAT) and (typeof(value[1]) == TYPE_INT or typeof(value[1]) == TYPE_FLOAT) and is_finite(float(value[0])) and is_finite(float(value[1])) and value[0] >= 4 and value[0] <= SIZE - 4 and value[1] >= 4 and value[1] <= SIZE - 4
 
 static func _validate_fields(saved: Dictionary, payload: Dictionary) -> bool:
-    if not _integer(saved["version"], 1, 3) or saved["battle_id"] != payload.get("battle_id") or saved["phase"] not in ["planning", "execution", "finished"]:
+    if saved["battle_id"] != payload.get("battle_id") or saved["phase"] not in ["planning", "execution", "finished"]:
         return false
     if not _integer(saved["elapsed"], 0, MAX_SECONDS) or not _integer(saved["remaining"], 0, INTERVAL):
         return false
@@ -349,6 +384,23 @@ static func _validate_fields(saved: Dictionary, payload: Dictionary) -> bool:
         for point in saved["orders"][id]:
             if not _point(point) or inside_building(Vector2(point[0], point[1]), 0.5):
                 return false
+    if int(saved["version"]) == 4:
+        if not saved.get("contacts") is Dictionary or saved["contacts"].size() != 2:
+            return false
+        for faction in ["UKR", "RU"]:
+            var contacts = saved["contacts"].get(faction)
+            if not contacts is Dictionary:
+                return false
+            for id in contacts:
+                var enemy := false
+                for squad in expected:
+                    if squad["id"] == id and squad["faction"] != faction:
+                        enemy = true
+                var record = contacts[id]
+                if not enemy or not record is Dictionary or record.size() != 2 or not _point(record.get("position")) or not _integer(record.get("seen_at"), 0, int(saved["elapsed"])):
+                    return false
+                if inside_building(Vector2(record["position"][0], record["position"][1]), 0.5):
+                    return false
     var survivors := {"UKR": 0, "RU": 0}
     for squad in saved["squads"]:
         survivors[squad["faction"]] += int(squad["alive"])
