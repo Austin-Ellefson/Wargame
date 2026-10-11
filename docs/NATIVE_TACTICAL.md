@@ -40,6 +40,15 @@ Python, CMAutoEditor and Combat Mission are not required for native play.
    the withdrawing formation and the resulting campaign unlock. Applying closes
    the report; restart returns to the unlocked campaign rather than a stale result.
 
+## Camera controls on the latest descendant
+
+The `codex/tactical-camera-controls` descendant adds middle-button drag to pan,
+Shift + middle-button drag to rotate, wheel zoom, and **RESET CAMERA** to restore
+the overview. Navigation also works during execution and changes presentation
+only. Pitch and map-focus limits keep the camera usable. Camera position is not
+saved: reopening a battle starts with the overview. The preserved milestone ZIP
+above remains available separately.
+
 ## Simulation scope
 
 Up to 36 personnel deploy from each current formation, split into squads of up

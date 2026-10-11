@@ -25,6 +25,25 @@ func click(point: Vector2, button: int) -> void:
     event.pressed = false
     Input.parse_input_event(event)
 
+func drag_camera(point: Vector2, relative: Vector2, rotate: bool = false) -> void:
+    var press := InputEventMouseButton.new()
+    press.position = point
+    press.global_position = point
+    press.button_index = MOUSE_BUTTON_MIDDLE
+    press.pressed = true
+    Input.parse_input_event(press)
+    var motion := InputEventMouseMotion.new()
+    motion.position = point + relative
+    motion.global_position = motion.position
+    motion.relative = relative
+    motion.button_mask = MOUSE_BUTTON_MASK_MIDDLE
+    motion.shift_pressed = rotate
+    Input.parse_input_event(motion)
+    press.position = motion.position
+    press.global_position = motion.position
+    press.pressed = false
+    Input.parse_input_event(press)
+
 func _run() -> void:
     root.size = Vector2i(1280, 720)
     var game = load("res://scenes/main.tscn").instantiate()
@@ -58,6 +77,35 @@ func _run() -> void:
     for argument in OS.get_cmdline_user_args():
         if argument.begins_with("--path-capture="):
             path_capture = argument.trim_prefix("--path-capture=")
+    var default_camera: Transform3D = view.camera.transform
+    drag_camera(Vector2(710, 470), Vector2(-40, 20))
+    await process_frame
+    check(view.camera_focus.distance_to(Vector2(256, 256)) > 10, "Actual middle drag must pan the camera focus.")
+    drag_camera(Vector2(710, 470), Vector2(65, -20), true)
+    await process_frame
+    check(absf(view.camera_yaw) > 0.1 and view.camera.transform != default_camera, "Actual Shift-middle drag must rotate the camera.")
+    check(same(game.tactical_simulation.state, ordered_state), "Pan and rotation must leave the authoritative simulation unchanged.")
+    var rotated_screen: Vector2 = view.camera.unproject_position(intended)
+    check(view._ground_point(rotated_screen).distance_to(Vector2(210, 245)) < 6, "Ground picking must remain correct after pan and rotation.")
+    game.tactical_simulation.order_hold("UKR_S1")
+    click(rotated_screen + Vector2(24, 112), MOUSE_BUTTON_RIGHT)
+    await process_frame
+    check(game.tactical_simulation.state["orders"].has("UKR_S1"), "Movement commands must remain available from a rotated camera.")
+    if not path_capture.is_empty() and DisplayServer.get_name() != "headless":
+        await RenderingServer.frame_post_draw
+        check(root.get_texture().get_image().save_png(path_capture.get_base_dir().path_join("camera-preview.png")) == OK, "Rendered pan/orbit preview must save.")
+    var extreme := InputEventMouseMotion.new()
+    extreme.button_mask = MOUSE_BUTTON_MASK_MIDDLE
+    extreme.relative = Vector2(10000, 10000)
+    extreme.shift_pressed = true
+    view._map_input(extreme)
+    check(view.camera_pitch <= deg_to_rad(75), "Orbit must clamp before a vertical or underground view.")
+    extreme.shift_pressed = false
+    view._map_input(extreme)
+    check(view.camera_focus.x >= 32 and view.camera_focus.y >= 32 and view.camera_focus.x <= Battle.SIZE - 32 and view.camera_focus.y <= Battle.SIZE - 32, "Panning must keep the focus on the battlefield.")
+    click(Vector2(860, 85), MOUSE_BUTTON_LEFT)
+    await process_frame
+    check(view.camera.transform.is_equal_approx(default_camera) and is_equal_approx(view.camera.fov, 52), "Reset-camera button must restore the original overview.")
     if not path_capture.is_empty() and DisplayServer.get_name() != "headless":
         await RenderingServer.frame_post_draw
         var path_image := root.get_texture().get_image()
@@ -67,6 +115,11 @@ func _run() -> void:
     check(view.execute_button.disabled and view.back_button.disabled, "Execution must freeze turn/back controls.")
     check(view.order_preview.get_child_count() == 0, "Route preview must clear when execution begins.")
     view.set_process(false)
+    var executing_state: Dictionary = game.tactical_simulation.state.duplicate(true)
+    drag_camera(Vector2(710, 470), Vector2(-30, 0))
+    await process_frame
+    check(view.camera_focus != Vector2(256, 256) and same(game.tactical_simulation.state, executing_state), "Camera navigation during execution must not advance or change simulation state.")
+    view._reset_camera()
     # Put one opposing pair in close, unobstructed range. Advance only until an
     # actual casualty occurs so the rendered execution fixture shows personnel,
     # ammunition and suppression feedback together with real shot cues.

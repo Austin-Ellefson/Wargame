@@ -12,6 +12,11 @@ var speed := 4.0
 var accumulator := 0.0
 var viewport: SubViewport
 var camera: Camera3D
+var camera_focus := Vector2(256, 256)
+var camera_yaw := 0.0
+var camera_pitch := atan2(520.0, 394.0)
+var camera_distance := Vector2(520, 394).length()
+var reset_camera_button: Button
 var world: Node3D
 var actors := {}
 var labels := {}
@@ -85,6 +90,7 @@ func _build_interface() -> void:
     _label("TACTICAL ENGAGEMENT", Vector2(24, 16), 13)
     _label(str(simulation.state["battle_id"]) + "  /  INFANTRY DETACHMENTS", Vector2(24, 36), 24)
     phase_label = _label("", Vector2(24, 70), 15)
+    reset_camera_button = _button("RESET CAMERA", Rect2(776, 70, 168, 30), _reset_camera)
     _panel(Rect2(966, 112, 290, 572), Color("1a2b34"))
     var container := SubViewportContainer.new()
     container.position = Vector2(24, 112)
@@ -122,7 +128,7 @@ func _build_interface() -> void:
         speed_button.text = "PLAYBACK %dx" % int(speed))
     back_button = _button("SAVE & CAMPAIGN", Rect2(986, 566, 248, 38), _back)
     report_label = _label("", Vector2(986, 615), 13, 244)
-    _label("Left-click a blue squad  /  Right-click ground to move  /  Wheel to zoom", Vector2(24, 691), 14)
+    _label("Left: select  /  Right: move  /  Wheel: zoom  /  Middle-drag: pan  /  Shift + middle-drag: rotate", Vector2(24, 691), 13)
 
 func _material(color: Color, unshaded: bool = false) -> StandardMaterial3D:
     var material := StandardMaterial3D.new()
@@ -244,6 +250,18 @@ func _build_world() -> void:
     world.add_child(order_preview)
 
 func _map_input(event: InputEvent) -> void:
+    if event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_MIDDLE:
+        if event.shift_pressed:
+            camera_yaw = wrapf(camera_yaw - event.relative.x * 0.008, -PI, PI)
+            camera_pitch = clampf(camera_pitch + event.relative.y * 0.006, deg_to_rad(25), deg_to_rad(75))
+        else:
+            var scale := 0.9 * tan(deg_to_rad(camera.fov * 0.5)) / tan(deg_to_rad(26))
+            var right := Vector2(cos(camera_yaw), -sin(camera_yaw))
+            var forward := Vector2(-sin(camera_yaw), -cos(camera_yaw))
+            camera_focus += (-right * event.relative.x + forward * event.relative.y) * scale
+            camera_focus = camera_focus.clamp(Vector2(32, 32), Vector2(Battle.SIZE - 32, Battle.SIZE - 32))
+        _update_camera()
+        return
     if not event is InputEventMouseButton or not event.pressed:
         return
     if event.button_index == MOUSE_BUTTON_WHEEL_UP or event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
@@ -264,6 +282,19 @@ func _map_input(event: InputEvent) -> void:
         var target := _ground_point(event.position)
         if target.x >= 0 and simulation.order_move(selected, target):
             _refresh()
+
+func _update_camera() -> void:
+    var focus := Vector3(camera_focus.x, 0, camera_focus.y)
+    var horizontal := camera_distance * cos(camera_pitch)
+    camera.position = focus + Vector3(sin(camera_yaw) * horizontal, camera_distance * sin(camera_pitch), cos(camera_yaw) * horizontal)
+    camera.look_at(focus)
+
+func _reset_camera() -> void:
+    camera_focus = Vector2(256, 256)
+    camera_yaw = 0
+    camera_pitch = atan2(520.0, 394.0)
+    camera.fov = 52
+    _update_camera()
 
 func _ground_point(screen: Vector2) -> Vector2:
     var origin := camera.project_ray_origin(screen)
