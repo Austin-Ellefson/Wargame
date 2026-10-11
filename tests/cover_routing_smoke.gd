@@ -12,6 +12,8 @@ func fixture(version: int = 10) -> RefCounted:
     var battle = Battle.new()
     battle.setup(PAYLOAD)
     battle.state["version"] = version
+    if version < 13: battle.state.erase("morale_states")
+    if version < 13: battle.state.erase("rally_remaining")
     if version < 12: battle.state.erase("fatigue")
     for squad in battle.state["squads"]: squad["ammo"] = 0
     battle.squad_by_id("RU_S2")["position"] = [432, 240]

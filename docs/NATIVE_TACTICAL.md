@@ -6,10 +6,10 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/infantry-fatigue` descendant includes route previews,
+The newer `codex/morale-retreat-rally` descendant includes route previews,
 camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
 queued waypoints, timed pauses, local-contact reactions and cover-weighted red routes. The milestone
-branch above remains frozen. Fresh battles use tactical rules v12. See the five-step
+branch above remains frozen. Fresh battles use tactical rules v13. See the five-step
 batch test guide in [FIVE_STEP_TACTICAL_PROGRESS.md](FIVE_STEP_TACTICAL_PROGRESS.md).
 
 ## Complete game loop
@@ -327,3 +327,60 @@ storage avoids JSON precision drift discovered during development. Existing
 V1–V11 saves retain their original fields and speeds. New engagements start
 fresh; fatigue currently ends with the battle and does not modify campaign
 forces or result fields. Campaign v2/result v1/export/GIS/launchers are unchanged.
+
+## Morale, withdrawal and rally (tactical v13)
+
+Morale updates after suppression recovery each execution second. A living squad
+is shaken with half-or-more personnel lost, morale below 60, or suppression at
+least 50 percent. Shaken squads move and fire at 75 percent effectiveness; old
+pinning/fatigue rules still apply. Otherwise they return to steady. A squad breaks
+with suppression at least 65 percent plus either morale at most 35, or half-or-more
+losses and morale at most 70. These are abstract prototype thresholds.
+
+Broken squads replace orders/waits with a routed QUICK withdrawal to their own
+rear edge (blue x32, red x480), stop firing and reject manual movement/fire/target/
+pause/Hold commands. Pinning can still stop them, and retreat incurs fatigue.
+They do not halt to engage enemies or accept red objective orders. At the rear,
+after their route ends, 30 consecutive stationary execution seconds with
+suppression below 25 percent rally them to shaken. Disruption resets the timer.
+If a route cannot be found, they remain broken and retry; they do not teleport.
+The sidebar shows BROKEN, WITHDRAWING/NO FIRE or the remaining RALLY countdown.
+Hidden enemy morale/intent remains concealed. Numerical formation morale still
+reflects casualties; tactical rally does not restore personnel or rewrite it.
+
+V13 adds strict `morale_states` (steady/shaken/broken) and `rally_remaining`
+(integer 0–30) for every squad. Nonbroken squads require zero rally time; living
+broken squads require a positive timer. State, automatic paths and partial rally
+progress survive restart. V1–V12 preserve original fields and rules. No extra RNG
+or campaign/result/GIS/export/launcher fields change. Morale state does not yet
+carry across battles; no leaders, C2, surrender, formations or coordinated retreat.
+Real-fire regression triggers a break without injected damage; rendered withdrawal/
+rally uses a seeded damaged checkpoint, actual movement and timer progression.
+
+## Combined infantry playtest
+
+Download codex/morale-retreat-rally, open project.godot in Godot 4.5.1 and press F5.
+Start a fresh PLAY INTEGRATED DEMO to use V13; older pending engagements retain
+their saved versions. Existing controls and two-battle/resume steps remain in
+FIVE_STEP_TACTICAL_PROGRESS.md.
+
+1. Select a living squad, choose QUICK and right-click a distant clear point.
+   Execute and watch FAT increase as it moves. On a later planning interval,
+   queue a route with PAUSE: stationary execution seconds recover fatigue.
+2. Watch incoming suppression, casualties and numerical morale. Shaken squads
+   slow down; severe pressure/heavy losses can cause BROKEN, WITHDRAWING and
+   NO FIRE. They choose a rear route automatically and reject manual overrides.
+   A break is conditional, not guaranteed in every encounter.
+3. A broken survivor at its rear shows RALLY with remaining seconds. After 30
+   quiet stationary seconds it returns to shaken; renewed suppression resets
+   progress. Elimination correctly removes the withdrawal/rally display.
+4. After an interval, SAVE & CAMPAIGN, quit/reopen and load the campaign. Verify
+   the same pending battle, positions, orders, FAT and any rally countdown.
+5. Finish/apply once, inspect both sides and campaign consequences, then use
+   surviving opposing formations for the documented next-contact test.
+
+The headless suite also tests mid-execution saves and 17-second partial rally
+restoration directly, plus duplicate/stale results and two consecutive contacts.
+Rendered morale evidence uses a seeded damaged checkpoint; separate regression
+triggers break from actual simulated fire. Linux checks do not establish Windows
+validation, realistic infantry fidelity, or combined-arms completeness.

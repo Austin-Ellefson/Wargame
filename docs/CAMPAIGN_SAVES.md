@@ -188,3 +188,32 @@ storage avoids JSON precision drift discovered during development. Existing
 V1–V11 saves retain their original fields and speeds. New engagements start
 fresh; fatigue currently ends with the battle and does not modify campaign
 forces or result fields. Campaign v2/result v1/export/GIS/launchers are unchanged.
+
+## Morale, withdrawal and rally (tactical v13)
+
+Morale updates after suppression recovery each execution second. A living squad
+is shaken with half-or-more personnel lost, morale below 60, or suppression at
+least 50 percent. Shaken squads move and fire at 75 percent effectiveness; old
+pinning/fatigue rules still apply. Otherwise they return to steady. A squad breaks
+with suppression at least 65 percent plus either morale at most 35, or half-or-more
+losses and morale at most 70. These are abstract prototype thresholds.
+
+Broken squads replace orders/waits with a routed QUICK withdrawal to their own
+rear edge (blue x32, red x480), stop firing and reject manual movement/fire/target/
+pause/Hold commands. Pinning can still stop them, and retreat incurs fatigue.
+They do not halt to engage enemies or accept red objective orders. At the rear,
+after their route ends, 30 consecutive stationary execution seconds with
+suppression below 25 percent rally them to shaken. Disruption resets the timer.
+If a route cannot be found, they remain broken and retry; they do not teleport.
+The sidebar shows BROKEN, WITHDRAWING/NO FIRE or the remaining RALLY countdown.
+Hidden enemy morale/intent remains concealed. Numerical formation morale still
+reflects casualties; tactical rally does not restore personnel or rewrite it.
+
+V13 adds strict `morale_states` (steady/shaken/broken) and `rally_remaining`
+(integer 0–30) for every squad. Nonbroken squads require zero rally time; living
+broken squads require a positive timer. State, automatic paths and partial rally
+progress survive restart. V1–V12 preserve original fields and rules. No extra RNG
+or campaign/result/GIS/export/launcher fields change. Morale state does not yet
+carry across battles; no leaders, C2, surrender, formations or coordinated retreat.
+Real-fire regression triggers a break without injected damage; rendered withdrawal/
+rally uses a seeded damaged checkpoint, actual movement and timer progression.

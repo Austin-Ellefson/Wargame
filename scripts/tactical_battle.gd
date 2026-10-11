@@ -51,7 +51,7 @@ static func visible(a: Vector2, b: Vector2) -> bool:
     return true
 
 func setup(payload: Dictionary) -> void:
-    state = {"version": 12, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
+    state = {"version": 13, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
     state["contacts"] = {"UKR": {}, "RU": {}}
@@ -60,11 +60,15 @@ func setup(payload: Dictionary) -> void:
     state["fire_targets"] = {}
     state["pause_remaining"] = {}
     state["fatigue"] = {}
+    state["morale_states"] = {}
+    state["rally_remaining"] = {}
     for squad in state["squads"]:
         state["fire_modes"][squad["id"]] = "auto"
         state["fire_targets"][squad["id"]] = ""
         state["pause_remaining"][squad["id"]] = 0
         state["fatigue"][squad["id"]] = 0
+        state["morale_states"][squad["id"]] = "steady"
+        state["rally_remaining"][squad["id"]] = 0
     last_events = []
     _build_navigation()
     _update_contacts()
@@ -104,6 +108,40 @@ func squad_by_id(id: String) -> Dictionary:
             return squad
     return {}
 
+func morale_state(id: String) -> String:
+    return str(state["morale_states"][id]) if int(state["version"]) >= 13 else "steady"
+
+func _retreat_route(squad: Dictionary) -> void:
+    var id: String = squad["id"]
+    state["orders"].erase(id)
+    state["movement_modes"].erase(id)
+    state["pause_remaining"][id] = 0
+    _assign_route(id, Vector2(32 if squad["faction"] == "UKR" else 480, clampf(position(squad).y, 24, 488)), "quick")
+
+func _update_morale(squad: Dictionary) -> void:
+    if int(state["version"]) < 13: return
+    var id: String = squad["id"]
+    if int(squad["alive"]) <= 0:
+        state["rally_remaining"][id] = 0
+        return
+    var suppression := float(squad["suppression"])
+    var heavy_losses := int(squad["alive"]) * 2 <= int(squad["initial"])
+    if morale_state(id) == "broken":
+        var at_rear := position(squad).x <= 40 if squad["faction"] == "UKR" else position(squad).x >= 472
+        if not at_rear and not state["orders"].has(id): _retreat_route(squad)
+        if at_rear and not state["orders"].has(id) and suppression < 0.25:
+            state["rally_remaining"][id] = maxi(0, int(state["rally_remaining"][id]) - 1)
+            if state["rally_remaining"][id] == 0: state["morale_states"][id] = "shaken"
+        else:
+            state["rally_remaining"][id] = 30
+        return
+    if suppression >= 0.65 and (int(squad["morale"]) <= 35 or (heavy_losses and int(squad["morale"]) <= 70)):
+        state["morale_states"][id] = "broken"
+        state["rally_remaining"][id] = 30
+        _retreat_route(squad)
+    else:
+        state["morale_states"][id] = "shaken" if heavy_losses or int(squad["morale"]) < 60 or suppression >= 0.5 else "steady"
+
 func is_pinned(squad: Dictionary) -> bool:
     # V1 engagements retain their original rules when resumed. V2 pinning is
     # derived from saved morale/suppression; no hidden state or random samples.
@@ -115,7 +153,8 @@ static func pin_threshold(squad: Dictionary) -> float:
 func combat_status(squad: Dictionary) -> String:
     if int(squad["alive"]) <= 0:
         return "ELIMINATED"
-    return "PINNED" if is_pinned(squad) else "READY"
+    if morale_state(squad["id"]) == "broken": return "BROKEN"
+    return "PINNED" if is_pinned(squad) else ("SHAKEN" if morale_state(squad["id"]) == "shaken" else "READY")
 
 func limited_visibility() -> bool:
     return int(state["version"]) >= 3
@@ -177,7 +216,7 @@ func can_engage(shooter: Dictionary, target: Dictionary) -> bool:
 
 func order_target(id: String, target_id: String, player: bool = true) -> bool:
     var squad := squad_by_id(id)
-    if int(state["version"]) < 7 or state["phase"] != "planning" or squad.is_empty() or int(squad["alive"]) <= 0 or (player and squad["faction"] != "UKR"):
+    if int(state["version"]) < 7 or state["phase"] != "planning" or squad.is_empty() or int(squad["alive"]) <= 0 or morale_state(id) == "broken" or (player and squad["faction"] != "UKR"):
         return false
     if not target_id.is_empty() and not can_engage(squad, squad_by_id(target_id)):
         return false
@@ -194,14 +233,14 @@ func fire_mode(id: String) -> String:
 
 func order_fire(id: String, mode: String, player: bool = true) -> bool:
     var squad := squad_by_id(id)
-    if int(state["version"]) < 6 or state["phase"] != "planning" or mode not in ["auto", "hold"] or squad.is_empty() or int(squad["alive"]) <= 0 or (player and squad["faction"] != "UKR"):
+    if int(state["version"]) < 6 or state["phase"] != "planning" or mode not in ["auto", "hold"] or squad.is_empty() or int(squad["alive"]) <= 0 or morale_state(id) == "broken" or (player and squad["faction"] != "UKR"):
         return false
     state["fire_modes"][id] = mode
     return true
 
 func order_pause(id: String, seconds: Variant, player: bool = true) -> bool:
     var squad := squad_by_id(id)
-    if int(state["version"]) < 8 or state["phase"] != "planning" or not _integer(seconds, 0, 60) or squad.is_empty() or int(squad["alive"]) <= 0 or not state["orders"].has(id) or (player and squad["faction"] != "UKR"):
+    if int(state["version"]) < 8 or state["phase"] != "planning" or not _integer(seconds, 0, 60) or squad.is_empty() or int(squad["alive"]) <= 0 or not state["orders"].has(id) or morale_state(id) == "broken" or (player and squad["faction"] != "UKR"):
         return false
     state["pause_remaining"][id] = int(seconds)
     return true
@@ -225,6 +264,9 @@ func hunt_paused(squad: Dictionary) -> bool:
     return false
 
 func movement_status(squad: Dictionary) -> String:
+    if int(squad["alive"]) <= 0: return "NONE"
+    if morale_state(squad["id"]) == "broken":
+        return "WITHDRAWING" if state["orders"].has(squad["id"]) else "RALLY %ds" % int(state["rally_remaining"][squad["id"]])
     var mode := movement_mode(squad["id"])
     if int(state["version"]) >= 8 and int(state["pause_remaining"][squad["id"]]) > 0:
         return "WAIT %ds (%s)" % [state["pause_remaining"][squad["id"]], mode.to_upper()]
@@ -234,10 +276,14 @@ func order_move(id: String, target: Vector2, player: bool = true, mode: String =
     if mode not in ["move", "quick", "hunt"] or (int(state["version"]) < 5 and mode != "move"):
         return false
     var squad := squad_by_id(id)
-    if state["phase"] != "planning" or squad.is_empty() or int(squad["alive"]) <= 0:
+    if state["phase"] != "planning" or squad.is_empty() or int(squad["alive"]) <= 0 or morale_state(id) == "broken":
         return false
     if player and squad["faction"] != "UKR":
         return false
+    return _assign_route(id, target, mode, append)
+
+func _assign_route(id: String, target: Vector2, mode: String = "move", append: bool = false) -> bool:
+    var squad := squad_by_id(id)
     if not is_finite(target.x) or not is_finite(target.y) or target.x < 4 or target.y < 4 or target.x > SIZE - 4 or target.y > SIZE - 4 or inside_building(target, 5.0):
         return false
     var previous: Array = state["orders"].get(id, []).duplicate(true) if append else []
@@ -268,7 +314,7 @@ func order_move(id: String, target: Vector2, player: bool = true, mode: String =
 
 func order_hold(id: String) -> bool:
     var squad := squad_by_id(id)
-    if state["phase"] != "planning" or squad.is_empty() or squad["faction"] != "UKR" or int(squad["alive"]) <= 0:
+    if state["phase"] != "planning" or squad.is_empty() or squad["faction"] != "UKR" or int(squad["alive"]) <= 0 or morale_state(id) == "broken":
         return false
     state["orders"].erase(id)
     if int(state["version"]) >= 5:
@@ -283,6 +329,9 @@ func execute() -> bool:
     var reserved: Array[Vector2] = []
     for squad in state["squads"]:
         if squad["faction"] == "RU" and int(squad["alive"]) > 0:
+            if morale_state(squad["id"]) == "broken":
+                _retreat_route(squad)
+                continue
             var destination := opponent_destination(squad, reserved)
             if order_move(squad["id"], destination, false):
                 reserved.append(destination)
@@ -321,7 +370,7 @@ func opponent_destination(squad: Dictionary, reserved: Array[Vector2]) -> Vector
 func opponent_engaging(squad: Dictionary) -> bool:
     # React only to this squad's currently engageable contact, never shared
     # memory or hidden positions. The objective route remains queued.
-    if int(state["version"]) < 9 or squad["faction"] != "RU" or int(squad["alive"]) <= 0 or int(squad["ammo"]) <= 0 or fire_mode(squad["id"]) != "auto":
+    if int(state["version"]) < 9 or squad["faction"] != "RU" or int(squad["alive"]) <= 0 or int(squad["ammo"]) <= 0 or fire_mode(squad["id"]) != "auto" or morale_state(squad["id"]) == "broken":
         return false
     for enemy in state["squads"]:
         if can_engage(squad, enemy):
@@ -335,10 +384,11 @@ func step() -> void:
     state["elapsed"] = int(state["elapsed"]) + 1
     state["remaining"] = int(state["remaining"]) - 1
     for squad in state["squads"]:
+        squad["suppression"] = maxf(0, float(squad["suppression"]) - 0.035)
+        _update_morale(squad)
         var waiting := int(state["version"]) >= 8 and int(state["pause_remaining"][squad["id"]]) > 0
         if waiting:
             state["pause_remaining"][squad["id"]] = int(state["pause_remaining"][squad["id"]]) - 1
-        squad["suppression"] = maxf(0, float(squad["suppression"]) - 0.035)
         if int(squad["alive"]) <= 0:
             state["orders"].erase(squad["id"])
             if int(state["version"]) >= 5:
@@ -349,7 +399,7 @@ func step() -> void:
         var path: Array = state["orders"].get(squad["id"], [])
         var base_speed: float = {"move": 2.4, "quick": 4.0, "hunt": 1.2}[movement_mode(squad["id"])] if not path.is_empty() else 0.0
         var mode := movement_mode(squad["id"])
-        var speed: float = float(base_speed) * (1.0 - 0.8 * float(squad["suppression"])) * (1.0 - 0.5 * fatigue(squad["id"]))
+        var speed: float = float(base_speed) * (1.0 - 0.8 * float(squad["suppression"])) * (1.0 - 0.5 * fatigue(squad["id"])) * (0.75 if morale_state(squad["id"]) == "shaken" else 1.0)
         if waiting or is_pinned(squad) or hunt_paused(squad) or opponent_engaging(squad):
             speed = 0.0
         var travelled := 0.0
@@ -383,7 +433,7 @@ func step() -> void:
     var attacks: Array = []
     if int(state["elapsed"]) % 3 == 0:
         for shooter in state["squads"]:
-            if int(shooter["alive"]) <= 0 or int(shooter["ammo"]) <= 0 or fire_mode(shooter["id"]) == "hold":
+            if int(shooter["alive"]) <= 0 or int(shooter["ammo"]) <= 0 or fire_mode(shooter["id"]) == "hold" or morale_state(shooter["id"]) == "broken":
                 continue
             var target := _nearest_target(shooter)
             if target.is_empty():
@@ -391,7 +441,7 @@ func step() -> void:
             var rounds := mini(int(shooter["alive"]), int(shooter["ammo"]))
             shooter["ammo"] = int(shooter["ammo"]) - rounds
             var distance := position(shooter).distance_to(position(target))
-            var chance := 0.14 * (1.0 - distance / 400.0) * (1.0 - cover(position(target))) * (1.0 - 0.75 * float(shooter["suppression"]))
+            var chance := 0.14 * (1.0 - distance / 400.0) * (1.0 - cover(position(target))) * (1.0 - 0.75 * float(shooter["suppression"])) * (0.75 if morale_state(shooter["id"]) == "shaken" else 1.0)
             var random := RandomNumberGenerator.new()
             random.seed = (str(state["battle_id"]) + ":" + str(state["elapsed"]) + ":" + str(shooter["id"])).sha256_text().left(8).hex_to_int()
             var losses := 0
@@ -479,10 +529,10 @@ func result() -> Dictionary:
         "elapsed": state["elapsed"], "objective": state["objective"].duplicate(true), "forces": forces}
 
 static func validate(saved: Variant, payload: Dictionary) -> bool:
-    if not saved is Dictionary or not _integer(saved.get("version"), 1, 12):
+    if not saved is Dictionary or not _integer(saved.get("version"), 1, 13):
         return false
     var version := int(saved["version"])
-    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12)
+    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12) + 2 * int(version >= 13)
     if saved.size() != field_count:
         return false
     for key in ["version", "battle_id", "phase", "elapsed", "remaining", "objective", "squads", "orders", "winner"]:
@@ -605,6 +655,15 @@ static func _validate_fields(saved: Dictionary, payload: Dictionary) -> bool:
             var value = fatigue_map.get(id)
             if not _integer(value, 0, 1000):
                 return false
+    if int(saved["version"]) >= 13:
+        var states = saved.get("morale_states")
+        var rally = saved.get("rally_remaining")
+        if not states is Dictionary or not rally is Dictionary or states.size() != known.size() or rally.size() != known.size(): return false
+        for squad in saved["squads"]:
+            var id: String = squad["id"]
+            if states.get(id) not in ["steady", "shaken", "broken"] or not _integer(rally.get(id), 0, 30): return false
+            if states[id] != "broken" and rally[id] != 0: return false
+            if states[id] == "broken" and int(squad["alive"]) > 0 and rally[id] == 0: return false
     var survivors := {"UKR": 0, "RU": 0}
     for squad in saved["squads"]:
         survivors[squad["faction"]] += int(squad["alive"])

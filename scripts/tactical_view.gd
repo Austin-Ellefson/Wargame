@@ -558,22 +558,26 @@ func _refresh() -> void:
     if int(state["version"]) >= 5 and not selected_squad.is_empty():
         selection_label.text += "\nOrder: " + simulation.movement_status(selected_squad)
     if int(state["version"]) >= 6 and not selected_squad.is_empty():
-        selection_label.text += " | " + ("HOLD FIRE" if simulation.fire_mode(selected) == "hold" else "AUTO")
+        selection_label.text += " | " + ("NO FIRE" if simulation.morale_state(selected) == "broken" else "HOLD FIRE" if simulation.fire_mode(selected) == "hold" else "AUTO")
     clear_target_button.visible = int(state["version"]) >= 7
-    clear_target_button.disabled = state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0
+    clear_target_button.disabled = state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0 or simulation.morale_state(selected) == "broken"
     for mode in fire_buttons:
         fire_buttons[mode].visible = int(state["version"]) >= 6
-        fire_buttons[mode].disabled = state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0
+        fire_buttons[mode].disabled = state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0 or simulation.morale_state(selected) == "broken"
         fire_buttons[mode].text = ("AUTO" if mode == "auto" else "HOLD FIRE") + (" *" if simulation.fire_mode(selected) == mode else "")
     for mode in movement_buttons:
         movement_buttons[mode].visible = int(state["version"]) >= 5
-        movement_buttons[mode].disabled = state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0
+        movement_buttons[mode].disabled = state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0 or simulation.morale_state(selected) == "broken"
         movement_buttons[mode].text = mode.to_upper() + (" *" if command_mode == mode else "")
     for id in squad_buttons:
         var squad: Dictionary = simulation.squad_by_id(id)
-        if simulation.is_pinned(squad):
+        if int(squad.get("alive", 0)) <= 0: continue
+        if simulation.morale_state(id) == "broken":
+            squad_buttons[id].text += " BROKEN"
+        elif simulation.is_pinned(squad):
             squad_buttons[id].text += " PINNED"
-    hold_button.disabled = state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0
+        elif simulation.morale_state(id) != "steady": squad_buttons[id].text += " " + simulation.morale_state(id).to_upper()
+    hold_button.disabled = state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0 or simulation.morale_state(selected) == "broken"
     pause_button.visible = int(state["version"]) >= 8
     pause_button.disabled = hold_button.disabled or not state["orders"].has(selected)
     pause_button.text = "PAUSE %ds" % int(state["pause_remaining"].get(selected, 0)) if int(state["version"]) >= 8 and int(state["pause_remaining"].get(selected, 0)) > 0 else "PAUSE +15s"
@@ -594,6 +598,8 @@ func _refresh() -> void:
         report_label.text = "Mode + right-click. Amber = last seen."
     if int(state["version"]) >= 7:
         report_label.text = simulation.target_status(selected) + " | Shift-click target\nShift-right: append route"
+    if not selected_squad.is_empty() and simulation.morale_state(selected) == "broken":
+        report_label.text = "BROKEN: automatic withdrawal.\n30 quiet rear seconds to rally."
     if state["phase"] == "finished":
         var result: Dictionary = simulation.result()
         completed_report_label.text = _battle_report(result)
@@ -606,7 +612,9 @@ func _refresh() -> void:
         var observed: bool = state["phase"] == "finished" or simulation.is_observed("UKR", squad)
         actors[squad["id"]].visible = int(squad["alive"]) > 0 and observed
         labels[squad["id"]].text = "%s %dP %dR SUP%d%s" % [str(squad["id"]).replace("_", " "), squad["alive"], squad["ammo"], int(float(squad["suppression"]) * 100), " *" if squad["id"] == selected else ""]
-        if simulation.is_pinned(squad):
+        if simulation.morale_state(squad["id"]) == "broken":
+            labels[squad["id"]].text += "\nBROKEN"
+        elif simulation.is_pinned(squad):
             labels[squad["id"]].text += "\nPINNED"
         if simulation.limited_visibility() and squad["faction"] != "UKR" and state["phase"] != "finished":
             labels[squad["id"]].text = "ENEMY CONTACT" if observed and int(squad["alive"]) > 0 else ""

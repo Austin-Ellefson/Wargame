@@ -21,8 +21,8 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/infantry-fatigue / PR #24
-- Post-milestone next task: morale states and deterministic retreat/rally behavior
+- Latest validated post-milestone descendant: codex/morale-retreat-rally / PR #25
+- Post-milestone next task: standing crouched and prone infantry posture commands
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -481,3 +481,15 @@ is delivered as the scheduled task result in ChatGPT.
 - CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38153705906 succeeded. Inspected artifact 11707716785: All 17 Godot checks plus 26 terrain tests pass together. Inspected actual earned FAT28 percent after QUICK movement at 00:57 (ammunition disabled only in that render checkpoint), real 00:03 shot/casualty/pinning feedback and readable completed report. Full disk/combat outcome equality passes after integer storage fixed initial JSON drift; initial parse-scope error corrected. CI retains nonfatal VSync/anchor/test-event warnings.
 - Frozen milestone and prior downloads preserved; no Windows or Combat Mission fidelity claim.
 - Next: morale states and deterministic retreat/rally behavior.
+
+## Morale retreat/rally — 2026-10-11
+
+- In validation on codex/morale-retreat-rally, based on tested infantry-fatigue PR #24. V13 persists morale states and rally counters. Real-fire break, rearward withdrawal, withheld commands/fire, rear rally and actual disk continuation regression added. Old pinning return-fire fixture now explicitly isolates high morale from break behavior. Full CI pending.
+
+## codex/morale-retreat-rally — validated 2026-10-11
+
+- Ready for review, draft PR #25, base codex/infantry-fatigue.
+- Tested gameplay: 9c260fa18d063d4e0488f6fc5a9862266f3ef99e. All Godot checks, 26 terrain tests and diff check passed.
+- CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38154770519 succeeded. Inspected artifact 11707872681: All 18 Godot checks and 26 terrain tests pass on the combined candidate. Inspected actual shot/casualty/pinning execution, completed two-sided report with eliminated-order fix, withdrawal at 00:09 and RALLY25s at the rear at 00:54. Morale render uses seeded stress and ammunition disabled; separate actual concentrated fire regression triggers break. Actual disk restart preserves routes, a 17-second partial rally and full outcomes. First pinning regression exposed expected broken-versus-return-fire interaction; fixture now isolates high morale. Initial render exposed eliminated RALLY labels, corrected with regression before this successful CI. Nonfatal renderer/test harness warnings remain.
+- Frozen milestone and prior downloads preserved; no Windows or Combat Mission fidelity claim.
+- Next: standing crouched and prone infantry posture commands.

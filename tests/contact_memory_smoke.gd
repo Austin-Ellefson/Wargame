@@ -103,6 +103,8 @@ func _run() -> void:
     var legacy = Battle.new()
     legacy.setup(payload)
     legacy.state["version"] = 3
+    legacy.state.erase("morale_states")
+    legacy.state.erase("rally_remaining")
     legacy.state.erase("fatigue")
     legacy.state.erase("contacts")
     legacy.state.erase("movement_modes")

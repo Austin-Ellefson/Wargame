@@ -45,6 +45,8 @@ func _run() -> void:
     var legacy = Battle.new()
     legacy.setup(payload)
     legacy.state["version"] = 1
+    legacy.state.erase("morale_states")
+    legacy.state.erase("rally_remaining")
     legacy.state.erase("fatigue")
     legacy.state.erase("contacts")
     legacy.state.erase("movement_modes")
@@ -65,7 +67,7 @@ func _run() -> void:
     check(Battle.position(legacy.squad_by_id("UKR_S1")) != Vector2(80, 208), "V1 suppression must keep its original slowed movement behavior.")
     check(same(legacy.state, legacy_restart.state) and legacy_restart.state["version"] == 1, "Loading a V1 engagement must not silently switch its combat rules.")
     var invalid: Dictionary = battle.state.duplicate(true)
-    invalid["version"] = 13
+    invalid["version"] = 14
     check(not Battle.validate(invalid, payload), "Unknown tactical rule versions must be rejected.")
     # Actual incoming simulated volleys pin a living squad, not just a UI fixture.
     var firefight = Battle.new()
@@ -92,6 +94,9 @@ func _run() -> void:
     resumed.restore(JSON.parse_string(JSON.stringify(firefight.state)))
     check(resumed.is_pinned(resumed.squad_by_id("UKR_S1")), "JSON restart must retain the same pinning status.")
     # Give the pinned squad ammunition: pinning stops movement, not return fire.
+    # Isolate pinning return fire from the new low-morale break rule.
+    victim["morale"] = payload["ukraine"]["morale"]
+    resumed.squad_by_id("UKR_S1")["morale"] = payload["ukraine"]["morale"]
     victim["ammo"] = 100
     resumed.squad_by_id("UKR_S1")["ammo"] = 100
     var returned_fire := false

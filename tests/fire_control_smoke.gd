@@ -59,6 +59,8 @@ func _run() -> void:
     for version in range(1, 6):
         var old = fixture()
         old.state["version"] = version
+        if version < 13: old.state.erase("morale_states")
+        if version < 13: old.state.erase("rally_remaining")
         if version < 12: old.state.erase("fatigue")
         old.state.erase("fire_modes")
         old.state.erase("fire_targets")
