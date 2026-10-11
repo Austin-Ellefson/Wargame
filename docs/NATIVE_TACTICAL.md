@@ -356,3 +356,31 @@ or campaign/result/GIS/export/launcher fields change. Morale state does not yet
 carry across battles; no leaders, C2, surrender, formations or coordinated retreat.
 Real-fire regression triggers a break without injected damage; rendered withdrawal/
 rally uses a seeded damaged checkpoint, actual movement and timer progression.
+
+## Combined infantry playtest
+
+Download codex/morale-retreat-rally, open project.godot in Godot 4.5.1 and press F5.
+Start a fresh PLAY INTEGRATED DEMO to use V13; older pending engagements retain
+their saved versions. Existing controls and two-battle/resume steps remain in
+FIVE_STEP_TACTICAL_PROGRESS.md.
+
+1. Select a living squad, choose QUICK and right-click a distant clear point.
+   Execute and watch FAT increase as it moves. On a later planning interval,
+   queue a route with PAUSE: stationary execution seconds recover fatigue.
+2. Watch incoming suppression, casualties and numerical morale. Shaken squads
+   slow down; severe pressure/heavy losses can cause BROKEN, WITHDRAWING and
+   NO FIRE. They choose a rear route automatically and reject manual overrides.
+   A break is conditional, not guaranteed in every encounter.
+3. A broken survivor at its rear shows RALLY with remaining seconds. After 30
+   quiet stationary seconds it returns to shaken; renewed suppression resets
+   progress. Elimination correctly removes the withdrawal/rally display.
+4. After an interval, SAVE & CAMPAIGN, quit/reopen and load the campaign. Verify
+   the same pending battle, positions, orders, FAT and any rally countdown.
+5. Finish/apply once, inspect both sides and campaign consequences, then use
+   surviving opposing formations for the documented next-contact test.
+
+The headless suite also tests mid-execution saves and 17-second partial rally
+restoration directly, plus duplicate/stale results and two consecutive contacts.
+Rendered morale evidence uses a seeded damaged checkpoint; separate regression
+triggers break from actual simulated fire. Linux checks do not establish Windows
+validation, realistic infantry fidelity, or combined-arms completeness.
