@@ -59,6 +59,7 @@ func _run() -> void:
     for version in range(1, 6):
         var old = fixture()
         old.state["version"] = version
+        if version < 12: old.state.erase("fatigue")
         old.state.erase("fire_modes")
         old.state.erase("fire_targets")
         old.state.erase("pause_remaining")

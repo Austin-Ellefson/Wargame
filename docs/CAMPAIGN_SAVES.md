@@ -168,3 +168,23 @@ V11 has the same fields as V10; queued destinations persist in orders. V1–V10
 keep original destinations on restart. Campaign/result/GIS/export contracts and
 Windows launchers are preserved. Tests exercise real arrival, objective scoring,
 separation, fallback, hidden-input isolation and actual disk continuation.
+
+## Infantry fatigue (tactical v12)
+
+Moving squads earn fatigue from metres actually travelled: QUICK 2 points/m,
+MOVE 1 point/m, HUNT 0.5 points/m, rounded to integer points each simulated
+second. Fatigue is 0–1000 points; speed multiplies by `1 - fatigue/2000`.
+A fully tired squad still moves at half its otherwise available speed. Existing
+suppression, pinning, timed wait, local HUNT and opponent halts still apply.
+Stationary living squads recover 3 points per simulated second, including waits
+and pinning. Planning time and playback/render speed do not change fatigue.
+Eliminated squads retain their last value. FAT percentage appears for the selected
+blue squad; hidden enemy fatigue is never shown. This is abstract tuning: no
+load, slope, injury, weather or weapon-specific fatigue effects.
+
+V12 adds `fatigue` for exactly every squad ID, as integer 0–1000. Missing/extra
+IDs, fractional, nonnumeric, nonfinite and out-of-range values reject. Integer
+storage avoids JSON precision drift discovered during development. Existing
+V1–V11 saves retain their original fields and speeds. New engagements start
+fresh; fatigue currently ends with the battle and does not modify campaign
+forces or result fields. Campaign v2/result v1/export/GIS/launchers are unchanged.

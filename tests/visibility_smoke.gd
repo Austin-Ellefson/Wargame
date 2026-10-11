@@ -29,7 +29,7 @@ func _run() -> void:
     battle.setup(payload)
     var blue: Dictionary = battle.squad_by_id("UKR_S1")
     var red: Dictionary = battle.squad_by_id("RU_S1")
-    check(battle.state["version"] == 11 and battle.observed_contacts("UKR") == 0, "Fresh contacts must not start with omniscient enemy positions.")
+    check(battle.state["version"] == 12 and battle.observed_contacts("UKR") == 0, "Fresh contacts must not start with omniscient enemy positions.")
     var snapshot: Dictionary = battle.state.duplicate(true)
     for repeat in range(10):
         battle.observed_contacts("UKR")
@@ -91,6 +91,7 @@ func _run() -> void:
         var legacy = Battle.new()
         legacy.setup(payload)
         legacy.state["version"] = version
+        if version < 12: legacy.state.erase("fatigue")
         legacy.state.erase("contacts")
         legacy.state.erase("movement_modes")
         legacy.state.erase("fire_modes")

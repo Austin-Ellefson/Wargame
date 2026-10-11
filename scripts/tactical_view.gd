@@ -552,6 +552,9 @@ func _refresh() -> void:
     var selected_squad: Dictionary = simulation.squad_by_id(selected)
     if not selected_squad.is_empty():
         selection_label.text = "Squad %s  |  %s\n%d rounds  /  Morale %d  /  SUP%d%%" % [selected.right(1), simulation.combat_status(selected_squad), selected_squad["ammo"], selected_squad["morale"], int(float(selected_squad["suppression"]) * 100)]
+        if int(state["version"]) >= 12:
+            selection_label.text = selection_label.text.replace("\n", " | FAT%d%%\n" % int(round(simulation.fatigue(selected) * 100)))
+            selection_label.tooltip_text = "FAT: movement fatigue. QUICK tires fastest; fatigue reduces speed. Stationary execution seconds restore it. Planning time does not."
     if int(state["version"]) >= 5 and not selected_squad.is_empty():
         selection_label.text += "\nOrder: " + simulation.movement_status(selected_squad)
     if int(state["version"]) >= 6 and not selected_squad.is_empty():

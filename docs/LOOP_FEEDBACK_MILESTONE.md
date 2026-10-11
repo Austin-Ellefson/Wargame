@@ -469,3 +469,7 @@ is delivered as the scheduled task result in ChatGPT.
 - CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38153202700 succeeded. Inspected artifact 11707776142: Real covered arrival/objective scoring and disk outcome equality in regression logs; actual shot/ammunition/pinning execution and readable completed report inspected. Rendering does not prove realistic cover tactics.
 - Frozen milestone and prior downloads preserved; no Windows or Combat Mission fidelity claim.
 - Next: persistent infantry fatigue and visible movement cost.
+
+## Infantry fatigue — 2026-10-11
+
+- In validation on codex/infantry-fatigue, based on tested covered-objective-positions PR #23. Integer fatigue storage fixes JSON round-trip drift discovered by tactical_smoke. Initial validation scope parse error corrected. Full checks/render CI pending.

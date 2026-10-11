@@ -51,7 +51,7 @@ static func visible(a: Vector2, b: Vector2) -> bool:
     return true
 
 func setup(payload: Dictionary) -> void:
-    state = {"version": 11, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
+    state = {"version": 12, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
     state["contacts"] = {"UKR": {}, "RU": {}}
@@ -59,10 +59,12 @@ func setup(payload: Dictionary) -> void:
     state["fire_modes"] = {}
     state["fire_targets"] = {}
     state["pause_remaining"] = {}
+    state["fatigue"] = {}
     for squad in state["squads"]:
         state["fire_modes"][squad["id"]] = "auto"
         state["fire_targets"][squad["id"]] = ""
         state["pause_remaining"][squad["id"]] = 0
+        state["fatigue"][squad["id"]] = 0
     last_events = []
     _build_navigation()
     _update_contacts()
@@ -209,6 +211,9 @@ func movement_mode(id: String) -> String:
         return "hold"
     return str(state["movement_modes"].get(id, "move")) if int(state["version"]) >= 5 else "move"
 
+func fatigue(id: String) -> float:
+    return float(state["fatigue"][id]) / 1000.0 if int(state["version"]) >= 12 else 0.0
+
 func hunt_paused(squad: Dictionary) -> bool:
     if movement_mode(squad["id"]) != "hunt" or int(squad["alive"]) <= 0:
         return false
@@ -343,13 +348,16 @@ func step() -> void:
             continue
         var path: Array = state["orders"].get(squad["id"], [])
         var base_speed: float = {"move": 2.4, "quick": 4.0, "hunt": 1.2}[movement_mode(squad["id"])] if not path.is_empty() else 0.0
-        var speed: float = float(base_speed) * (1.0 - 0.8 * float(squad["suppression"]))
+        var mode := movement_mode(squad["id"])
+        var speed: float = float(base_speed) * (1.0 - 0.8 * float(squad["suppression"])) * (1.0 - 0.5 * fatigue(squad["id"]))
         if waiting or is_pinned(squad) or hunt_paused(squad) or opponent_engaging(squad):
             speed = 0.0
+        var travelled := 0.0
         while speed > 0 and not path.is_empty():
             var current := position(squad)
             var target := Vector2(float(path[0][0]), float(path[0][1]))
             var distance := current.distance_to(target)
+            travelled += minf(distance, speed)
             if distance <= speed:
                 squad["position"] = [target.x, target.y]
                 path.pop_front()
@@ -358,6 +366,12 @@ func step() -> void:
                 var next := current.move_toward(target, speed)
                 squad["position"] = [next.x, next.y]
                 speed = 0
+        if int(state["version"]) >= 12:
+            # Per-metre costs charge actual motion, not an order that was halted.
+            # Rest uses simulated seconds, including PAUSE/HUNT/pinning holds.
+            var cost: float = {"move": 0.001, "quick": 0.002, "hunt": 0.0005}.get(mode, 0.0)
+            var change := travelled * cost if travelled > 0.0 else -0.003
+            state["fatigue"][squad["id"]] = clampi(int(state["fatigue"][squad["id"]]) + roundi(change * 1000.0), 0, 1000)
         if path.is_empty():
             state["orders"].erase(squad["id"])
             if int(state["version"]) >= 5:
@@ -465,10 +479,10 @@ func result() -> Dictionary:
         "elapsed": state["elapsed"], "objective": state["objective"].duplicate(true), "forces": forces}
 
 static func validate(saved: Variant, payload: Dictionary) -> bool:
-    if not saved is Dictionary or not _integer(saved.get("version"), 1, 11):
+    if not saved is Dictionary or not _integer(saved.get("version"), 1, 12):
         return false
     var version := int(saved["version"])
-    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8)
+    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12)
     if saved.size() != field_count:
         return false
     for key in ["version", "battle_id", "phase", "elapsed", "remaining", "objective", "squads", "orders", "winner"]:
@@ -582,6 +596,14 @@ static func _validate_fields(saved: Dictionary, payload: Dictionary) -> bool:
             return false
         for id in known:
             if not _integer(pauses.get(id), 0, 60) or (pauses[id] > 0 and (not saved["orders"].has(id) or saved["orders"][id].is_empty())):
+                return false
+    if int(saved["version"]) >= 12:
+        var fatigue_map = saved.get("fatigue")
+        if not fatigue_map is Dictionary or fatigue_map.size() != known.size():
+            return false
+        for id in known:
+            var value = fatigue_map.get(id)
+            if not _integer(value, 0, 1000):
                 return false
     var survivors := {"UKR": 0, "RU": 0}
     for squad in saved["squads"]:
