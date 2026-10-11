@@ -394,9 +394,9 @@ func _execute() -> void:
 func _process(delta: float) -> void:
     _age_shot_cues(delta)
     if simulation == null: return
-    if simulation.state["phase"] != "execution":
-        _animate_soldiers(delta)
-        return
+    # Age old cues before this frame creates new shot events, including slow frames.
+    _animate_soldiers(delta)
+    if simulation.state["phase"] != "execution": return
     accumulator += delta * speed
     while accumulator >= 1.0 and simulation.state["phase"] == "execution":
         var before := _status_snapshot()
@@ -405,7 +405,6 @@ func _process(delta: float) -> void:
         _show_combat_changes(before)
         accumulator -= 1.0
     _refresh()
-    _animate_soldiers(delta)
     if simulation.state["phase"] != "execution":
         checkpoint.emit()
 
