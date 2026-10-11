@@ -72,7 +72,7 @@ func _run() -> void:
     check(view.execute_button.text == "EXECUTE 60 SECONDS", "Planning controls must be available.")
     for id in ["RU_S1", "RU_S2", "RU_S3", "RU_S4"]:
         check(not view.actors[id].visible and view.labels[id].text.is_empty(), "Initial unspotted enemies must have no visible actor or label.")
-    check("S1 local 0" in view.summary_label.text and "Reports 0" in view.summary_label.text and "Red" not in view.summary_label.text, "The live HUD must not reveal total enemy strength or enemy objective score.")
+    check("S1 local 0" in view.summary_label.text and "Memory 0" in view.summary_label.text and "Red" not in view.summary_label.text, "The live HUD must not reveal total enemy strength or enemy objective score.")
     var hidden_before: int = view.shot_cues.size()
     view._show_shot_events([{"type": "shot", "player_visible": false, "shooter": "RU_S1", "target": "UKR_S1"}])
     check(view.shot_cues.size() == hidden_before and view.observed_shot_events.is_empty(), "Unobserved shot events must not create cues or recorded visible endpoints.")
@@ -190,6 +190,7 @@ func _run() -> void:
     # planning target input. UI refresh and Shift-click cannot skip the delay.
     view.set_process(false)
     for squad in game.tactical_simulation.state["squads"]: squad["ammo"] = 0
+    game.tactical_simulation.squad_by_id("UKR_S2")["position"] = [40,450]
     game.tactical_simulation.order_move("UKR_S1", Vector2(210,245))
     game.tactical_simulation.execute()
     for id in game.tactical_simulation.state["orders"].keys():
@@ -234,6 +235,19 @@ func _run() -> void:
     if not capture.is_empty() and DisplayServer.get_name() != "headless":
         await RenderingServer.frame_post_draw
         check(root.get_texture().get_image().save_png(capture.get_base_dir().path_join("shared-report-preview.png")) == OK, "Actual delivered-report capture must save.")
+    # Selected witness now loses sight: its own newer memory beats the old report.
+    game.tactical_simulation.squad_by_id("RU_S1")["position"] = [470,470]
+    game.tactical_simulation.state["orders"].erase("RU_S1")
+    game.tactical_simulation.state["movement_modes"].erase("RU_S1")
+    game.tactical_simulation.step()
+    var observer_snapshot: Dictionary = game.tactical_simulation.state.duplicate(true)
+    click(Vector2(1100,221), MOUSE_BUTTON_LEFT)
+    await process_frame
+    view._refresh()
+    check(view.selected == "UKR_S1" and not view.actors["RU_S1"].visible and "LOCAL 1s" in view.contact_labels["RU_S1"].text and view.contact_markers["RU_S1"].position.x == 270 and same(observer_snapshot,game.tactical_simulation.state), "Actual selection shows own newer last sight without tracking hidden movement or changing state.")
+    if not capture.is_empty() and DisplayServer.get_name() != "headless":
+        await RenderingServer.frame_post_draw
+        check(root.get_texture().get_image().save_png(capture.get_base_dir().path_join("observer-memory-preview.png")) == OK, "Actual observer-memory capture must save.")
     game.tactical_simulation.restore(report_checkpoint)
     view.selected = "UKR_S1"
     for tick in range(57): game.tactical_simulation.step()
@@ -408,7 +422,7 @@ func _run() -> void:
     view._refresh()
     # The observed execution contact becomes stale without tracking hidden motion.
     var memory_checkpoint: Dictionary = game.tactical_simulation.state.duplicate(true)
-    var remembered: Dictionary = memory_checkpoint["pending_reports"]["UKR"]["RU_S1"]
+    var remembered: Dictionary = memory_checkpoint["observer_contacts"][view.selected]["RU_S1"]
     game.tactical_simulation.squad_by_id("RU_S1")["position"] = [470, 470]
     game.tactical_simulation.state["orders"].erase("RU_S1")
     game.tactical_simulation.state["movement_modes"].erase("RU_S1")
@@ -419,7 +433,7 @@ func _run() -> void:
     view._refresh()
     check(not view.actors["RU_S1"].visible and view.contact_markers["RU_S1"].visible, "Lost contact must replace the hidden actor with an uncertain marker.")
     var ghost: Node3D = view.contact_markers["RU_S1"]
-    check(ghost.position.x == remembered["position"][0] and ghost.position.z == remembered["position"][1] and "REPORT" in view.contact_labels["RU_S1"].text, "Marker must show the saved location and observation age.")
+    check(ghost.position.x == remembered["position"][0] and ghost.position.z == remembered["position"][1] and "LOCAL" in view.contact_labels["RU_S1"].text, "Marker must show the saved location and observation age.")
     var memory_state: Dictionary = game.tactical_simulation.state.duplicate(true)
     view._refresh()
     check(same(memory_state, game.tactical_simulation.state), "Contact rendering must not mutate simulation state.")

@@ -280,3 +280,25 @@ waits until it is free. Actual hidden positions/deaths never replace report data
 Packets, delivered memories and full combat outcomes restore exactly from disk.
 V1–V17 retain their fields/rules; campaign v2/result v1/rollback remain unchanged.
 Shot local-observer lists remain transient outside saved authoritative state.
+
+
+## Tactical observer memory v19
+
+New engagements add `observer_contacts`, exactly one dictionary per known squad
+ID. Each sparse map records only opposing known squad IDs with exactly `position`,
+integer `seen_at` (3 through elapsed) and `kind` (`contact` or `lost`). Valid bounded
+non-building positions are required; `lost` requires an eliminated target. Missing/extra
+observer maps, friendly/unknown targets, malformed fields/times/coordinates reject.
+This is observation metadata; acquisition, fire permission and simulation RNG are
+unchanged. A local sighting advances only from actual acquired execution sight;
+unseen movement/death leaves it unchanged. A witnessed elimination leaves a local
+tombstone so older in-flight reports cannot resurrect that witness's contact.
+
+Queries combine own sightings with delivered reports using original observation
+time, prefer own sight on ties, return copied data and hide currently acquired
+contacts. Dead/missing observers and completed battles have no uncertain markers.
+No camera/UI query advances clocks or writes knowledge. Bilateral records and
+full combat outcomes continue exactly after actual campaign disk restart. V1–V18
+retain their original shape/rules; existing saves are not silently upgraded.
+Campaign v2/result v1, battle locks, bounded once-only loss/result application,
+save-write rollback, export/GIS and optional Windows launchers remain unchanged.

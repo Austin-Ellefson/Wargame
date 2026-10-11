@@ -6,10 +6,10 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/soldier-motion-fire-animation` descendant includes route previews,
+The newer `codex/observer-contact-memory` descendant includes route previews,
 camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
 queued waypoints, timed pauses, local-contact reactions and cover-weighted red routes. The milestone
-branch above remains frozen. Fresh battles use tactical rules v18, including selected-squad visibility and delayed shared reports. See the five-step
+branch above remains frozen. Fresh battles use tactical rules v19, including selected-squad visibility and delayed shared reports. See the five-step
 batch test guide in [FIVE_STEP_TACTICAL_PROGRESS.md](FIVE_STEP_TACTICAL_PROGRESS.md).
 
 ## Complete game loop
@@ -589,3 +589,28 @@ still apply; changing observers clears old firing, and hidden movement history
 is discarded. Casualty slots never animate/fire. Animations reset on reopening
 and are outside saved state, simulation RNG and outcomes. Tactical v18/campaign
 v2/result v1 unchanged. No Windows performance or realistic fidelity validation.
+
+
+## Selected squad remembered contacts (v19)
+
+The selected squad keeps its own acquired last sight. After losing sight, an amber
+`? LOCAL Ns` marker shows that recorded position and observation age, immediately.
+A squad that never acquired the contact receives only `? REPORT Ns` after the
+existing five-second report delay. The newer observation wins; own sight wins ties.
+Switching squads can therefore change the marker location, source and age without
+changing any battle state. Live acquired enemies hide their uncertain markers;
+remembered positions grant no direct-target or firing permission. The Memory
+count includes selected-squad uncertain local/report markers.
+
+Neither kind follows hidden movement or learns hidden deaths. An observer who
+witnessed elimination immediately suppresses that contact, including older
+in-flight reports; others retain their report until the ordered death confirmation
+arrives. This prototype has no report reliability/error, uncertainty radius, radio
+network or per-soldier perception. It is not Combat Mission fidelity or Windows
+validation. Procedural soldier movement, witnessed real-shot recoil/muzzle cues,
+completed reports and the frozen milestone build remain preserved.
+
+Try the integrated demo, execute until contact is acquired, move out of sight and
+select other squads. Compare LOCAL and REPORT ages, Save/Load during execution
+using the existing checkpoint workflow, and confirm hidden markers cannot be
+Shift-clicked as direct targets. Godot 4.5.1/project.godot/F5 remains the launch path.

@@ -859,3 +859,23 @@ is delivered as the scheduled task result in ChatGPT.
   authoritative shooters. Nominal enemy figures preserve hidden survivor counts.
   Not Windows/performance/realistic-fidelity validation. Frozen milestone preserved.
 - Next focused task: observer-level contact memory with distinct local/shared times.
+
+
+## Observer contact memory — in validation 2026-10-11
+
+- Branch `codex/observer-contact-memory`, explicit tested PR #32 base
+  a5bfcc33c57e46e571ad9c6ed2f6559fd5add062; final baseline CI38172926001 success.
+- Tactical v19 adds bilateral per-observer sight memory and observed elimination
+  tombstones. Selected marker chooses freshest local/report observation and labels
+  source/age. Hidden movement/death never updates knowledge; no new fire permission.
+- Focused regression covers separate observers, report recency/ties, query-copy
+  purity, real lethal shots, strict saves, complete v18 authoritative comparison
+  and exact every-tick actual campaign disk continuation. GUI input compares local
+  and report markers. Old fixtures explicitly erase the new v19 field.
+- Initial UI report-only fixture accidentally had prior local sight; corrected by
+  placing that observer out of sight before acquisition. Combined final checks,
+  draft PR/CI and rendered artifact evidence pending; do not promote yet.
+- Limits: squad-level deterministic knowledge, no uncertain area/error/radio network
+  or individual perception; no Windows/fidelity claim. Frozen downloads preserved.
+- Next focused task: explicit squad facing and bounded fire arcs with versioned
+  orders, local-visibility-only targeting and exact disk continuation.

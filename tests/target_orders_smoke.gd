@@ -22,6 +22,7 @@ func _run() -> void:
     battle.state.erase("command_remaining")
     battle.state.erase("shared_contacts")
     battle.state.erase("pending_reports")
+    battle.state.erase("observer_contacts")
     for squad in battle.state["squads"]:
         if squad["id"] not in ["UKR_S1", "RU_S1", "RU_S2"]: squad["alive"] = 0
         if squad["faction"] == "RU": squad["ammo"] = 0
@@ -60,6 +61,7 @@ func _run() -> void:
     old.state.erase("command_remaining")
     old.state.erase("shared_contacts")
     old.state.erase("pending_reports")
+    old.state.erase("observer_contacts")
     old.state["version"] = 6
     if int(old.state["version"]) < 15: old.state.erase("weapon_roles")
     if int(old.state["version"]) < 14: old.state.erase("postures")
@@ -82,6 +84,7 @@ func _run() -> void:
     game.tactical_simulation.state.erase("command_remaining")
     game.tactical_simulation.state.erase("shared_contacts")
     game.tactical_simulation.state.erase("pending_reports")
+    game.tactical_simulation.state.erase("observer_contacts")
     game.tactical_simulation.squad_by_id("UKR_S1")["position"] = [180, 245]
     game.tactical_simulation.squad_by_id("RU_S1")["position"] = [240, 245]
     check(game.tactical_simulation.order_target("UKR_S1", "RU_S1"), "Campaign fixture must accept its actually observed contact.")
