@@ -68,6 +68,7 @@ func _run() -> void:
     check(not blocked.opponent_engaging(blocked.squad_by_id("RU_S1")), "Building-blocked contact cannot cause the firing reaction.")
     var legacy = fixture()
     legacy.state["version"] = 8
+    legacy.state.erase("fatigue")
     check(Battle.validate(legacy.state, PAYLOAD), "V8 retains exactly its prior fields.")
     legacy.execute()
     origin = Battle.position(legacy.squad_by_id("RU_S1"))

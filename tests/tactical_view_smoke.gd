@@ -243,6 +243,20 @@ func _run() -> void:
     if not capture.is_empty() and DisplayServer.get_name() != "headless":
         await RenderingServer.frame_post_draw
         check(root.get_texture().get_image().save_png(capture.get_base_dir().path_join("timed-pause-preview.png")) == OK, "Timed-wait execution capture must save.")
+    # Earn fatigue through actual QUICK movement in a detached render checkpoint.
+    # Disable fixture ammunition, then restore the original combat before continuing.
+    var fatigue_checkpoint: Dictionary = game.tactical_simulation.state.duplicate(true)
+    for squad in game.tactical_simulation.state["squads"]: squad["ammo"] = 0
+    for tick in range(54): game.tactical_simulation.step()
+    view.selected = "UKR_S3"
+    view._age_shot_cues(1.0)
+    view._refresh()
+    var fatigue_percent := int(round(game.tactical_simulation.fatigue("UKR_S3") * 100))
+    check(fatigue_percent > 10 and ("FAT%d%%" % fatigue_percent) in view.selection_label.text, "Actual QUICK movement must produce visible fatigue derived from authoritative state.")
+    if not capture.is_empty() and DisplayServer.get_name() != "headless":
+        await RenderingServer.frame_post_draw
+        check(root.get_texture().get_image().save_png(capture.get_base_dir().path_join("fatigue-preview.png")) == OK, "Actual earned-fatigue capture must save.")
+    game.tactical_simulation.restore(fatigue_checkpoint)
     view.selected = "UKR_S2"
     view._refresh()
     # The observed execution contact becomes stale without tracking hidden motion.

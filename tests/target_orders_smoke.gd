@@ -51,6 +51,7 @@ func _run() -> void:
     var old = Battle.new()
     old.setup(PAYLOAD)
     old.state["version"] = 6
+    old.state.erase("fatigue")
     old.state.erase("fire_targets")
     old.state.erase("pause_remaining")
     check(Battle.validate(old.state, PAYLOAD) and not old.order_target("UKR_S1", "RU_S1"), "V6 must preserve nearest-target rules without preferences.")

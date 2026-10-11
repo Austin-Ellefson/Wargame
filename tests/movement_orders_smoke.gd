@@ -126,6 +126,7 @@ func _run() -> void:
     for version in [1, 2, 3, 4]:
         var legacy = fixture("move")
         legacy.state["version"] = version
+        if version < 12: legacy.state.erase("fatigue")
         legacy.state.erase("movement_modes")
         legacy.state.erase("fire_modes")
         legacy.state.erase("fire_targets")
