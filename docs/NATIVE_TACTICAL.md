@@ -14,8 +14,11 @@ Python, CMAutoEditor and Combat Mission are not required for native play.
    the result is applied; export failure does not discard the native battle.
 3. Command blue squads with the side-panel buttons or left-click their markers.
    Right-click ground to move; small blue disks mark destinations. Hold clears
-   the selected squad's movement. An order stays in effect across intervals until
-   reached or replaced. Buildings are impassable.
+   the selected squad's movement. Bright blue dots preview the selected squad's
+   complete routed path during planning, including turns around buildings. The
+   preview clears during execution and never changes the saved order or outcome.
+   An order stays in effect across intervals until reached or replaced. Buildings
+   are impassable.
 4. Execute a 60-second interval. Orders freeze, and both forces move/fire in
    simultaneous one-second ticks. The red opponent advances toward the objective.
    Playback at 4x takes approximately 15 real seconds per complete interval; 8x
