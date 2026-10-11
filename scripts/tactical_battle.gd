@@ -51,7 +51,7 @@ static func visible(a: Vector2, b: Vector2) -> bool:
     return true
 
 func setup(payload: Dictionary) -> void:
-    state = {"version": 10, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
+    state = {"version": 11, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
     state["contacts"] = {"UKR": {}, "RU": {}}
@@ -275,13 +275,43 @@ func order_hold(id: String) -> bool:
 func execute() -> bool:
     if state["phase"] != "planning":
         return false
+    var reserved: Array[Vector2] = []
     for squad in state["squads"]:
         if squad["faction"] == "RU" and int(squad["alive"]) > 0:
-            var lane := int(str(squad["id"]).right(1)) - 1
-            order_move(squad["id"], Vector2(272, 218 + lane * 24), false)
+            var destination := opponent_destination(squad, reserved)
+            if order_move(squad["id"], destination, false):
+                reserved.append(destination)
     state["phase"] = "execution"
     state["remaining"] = INTERVAL
     return true
+
+func opponent_destination(squad: Dictionary, reserved: Array[Vector2]) -> Vector2:
+    var lane := int(str(squad["id"]).right(1)) - 1
+    var fallback := Vector2(272, 218 + lane * 24)
+    if int(state["version"]) < 11:
+        return fallback
+    # Fixed terrain and own route reachability only. Reserve separated positions
+    # for living squads in stable roster order, without consulting enemy state.
+    var best := fallback
+    var best_score := INF
+    var start := Vector2i(position(squad) / CELL)
+    for y in range(25, 39):
+        for x in range(25, 39):
+            var cell := Vector2i(x, y)
+            var point := cover_navigation.get_point_position(cell)
+            if point.distance_to(Vector2(256, 256)) >= 52.0 or cover(point) <= 0.2 or cover_navigation.is_point_solid(cell):
+                continue
+            var separated := true
+            for taken in reserved:
+                if point.distance_to(taken) < 12.0:
+                    separated = false
+                    break
+            var score := point.distance_squared_to(fallback)
+            if not separated or score >= best_score or cover_navigation.get_point_path(start, cell).is_empty():
+                continue
+            best = point
+            best_score = score
+    return best
 
 func opponent_engaging(squad: Dictionary) -> bool:
     # React only to this squad's currently engageable contact, never shared
@@ -435,7 +465,7 @@ func result() -> Dictionary:
         "elapsed": state["elapsed"], "objective": state["objective"].duplicate(true), "forces": forces}
 
 static func validate(saved: Variant, payload: Dictionary) -> bool:
-    if not saved is Dictionary or not _integer(saved.get("version"), 1, 10):
+    if not saved is Dictionary or not _integer(saved.get("version"), 1, 11):
         return false
     var version := int(saved["version"])
     var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8)

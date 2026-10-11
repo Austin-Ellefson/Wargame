@@ -191,3 +191,11 @@ This setup change contains instructions only; these missing tools must be addres
 - Inspected artifact 11706762606: cover-routing log proves real wooded traversal and disk outcome equality; actual 00:03 shot/ammunition/casualty/pinning capture and completed two-sided report are readable. Rendering verifies existing feedback, not realistic cover tactics. CI emits VSync/anchor/test-event warnings; no script errors or failed checks.
 - Frozen original milestone and completed five-step download preserved. No Windows or Combat Mission fidelity validation. Fixed destinations may be open; contact can halt an advance before reaching cover.
 - Next: covered opponent objective destinations without hidden enemy-position input.
+
+## codex/covered-objective-positions — validated 2026-10-11
+
+- Ready for review, draft PR #23, base codex/opponent-cover-routing.
+- Tested gameplay: 9220f10fd0e071fa4086dcfd996ccc1315a624c3. All Godot checks, 26 terrain tests and diff check passed.
+- CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38153202700 succeeded. Inspected artifact 11707776142: Real covered arrival/objective scoring and disk outcome equality in regression logs; actual shot/ammunition/pinning execution and readable completed report inspected. Rendering does not prove realistic cover tactics.
+- Frozen milestone and prior downloads preserved; no Windows or Combat Mission fidelity claim.
+- Next: persistent infantry fatigue and visible movement cost.

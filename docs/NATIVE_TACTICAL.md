@@ -6,10 +6,10 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/opponent-cover-routing` descendant includes route previews,
+The newer `codex/covered-objective-positions` descendant includes route previews,
 camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
 queued waypoints, timed pauses, local-contact reactions and cover-weighted red routes. The milestone
-branch above remains frozen. Fresh battles use tactical rules v10. See the five-step
+branch above remains frozen. Fresh battles use tactical rules v11. See the five-step
 batch test guide in [FIVE_STEP_TACTICAL_PROGRESS.md](FIVE_STEP_TACTICAL_PROGRESS.md).
 
 ## Complete game loop
@@ -292,3 +292,18 @@ original routing rules with no migration. No simulation RNG calls or campaign,
 result, terrain/export or launcher contract changes. Regression covers actual
 wood traversal, modest detour, hidden-information independence, player/V9
 isolation, blocked destinations and complete actual campaign disk outcomes.
+
+## Covered objective positions (tactical v11)
+
+Red squads reserve reachable wooded grid positions inside the existing 52 m
+objective radius, at least 12 m apart, in stable roster order. Each position is
+chosen nearest its former lane goal using terrain and its own route reachability.
+Enemy positions, contact memory and RNG do not enter selection. Squads hold
+these points across intervals; uncovered/unreachable choices fall back to the
+old lane goal. Local contact still halts an advance before its destination.
+This does not provide flanking, mutual support, dynamic threat scoring or collision avoidance.
+
+V11 has the same fields as V10; queued destinations persist in orders. V1–V10
+keep original destinations on restart. Campaign/result/GIS/export contracts and
+Windows launchers are preserved. Tests exercise real arrival, objective scoring,
+separation, fallback, hidden-input isolation and actual disk continuation.
