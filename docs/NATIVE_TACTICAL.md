@@ -8,7 +8,7 @@ Python, CMAutoEditor and Combat Mission are not required for native play.
 
 The newer `codex/opponent-cover-routing` descendant includes route previews,
 camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
-queued waypoints, timed pauses and local-contact opponent reactions. The milestone
+queued waypoints, timed pauses, local-contact reactions and cover-weighted red routes. The milestone
 branch above remains frozen. Fresh battles use tactical rules v10. See the five-step
 batch test guide in [FIVE_STEP_TACTICAL_PROGRESS.md](FIVE_STEP_TACTICAL_PROGRESS.md).
 

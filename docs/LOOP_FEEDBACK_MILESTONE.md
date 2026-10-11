@@ -21,8 +21,8 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/opponent-contact-reaction / PR #21
-- Post-milestone next task: cover-aware opponent movement using deterministic terrain and local knowledge
+- Latest validated post-milestone descendant: codex/opponent-cover-routing / PR #22
+- Post-milestone next task: covered opponent objective destinations without hidden enemy-position input
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -450,6 +450,10 @@ is delivered as the scheduled task result in ChatGPT.
 
 ## Cover-aware opponent routing — 2026-10-11
 
-- In validation on codex/opponent-cover-routing, base codex/opponent-contact-reaction (PR #21, head 5a3605294c3ca2e257f2c9a6e4fadf2e59fd0f82).
-- Tactical v10 separates red terrain costs from player/legacy paths. No hidden enemy position input or new RNG. Actual wood traversal, bounded reference detour and disk restart regression added.
-- Frozen milestone and completed five-step branch preserved. Pending full candidate CI/evidence before marking ready.
+- Ready for review: codex/opponent-cover-routing, draft PR #22, explicit base codex/opponent-contact-reaction (PR #21 head 5a3605294c3ca2e257f2c9a6e4fadf2e59fd0f82).
+- Tested code commit: c2050659ad46eace43a80e00c528d0047a01ef09. Tactical v10 uses V9 fields; old rules and blue routes preserved.
+- All 15 local Godot checks, 26 terrain tests and diff check passed; missing transient Godot/pytest/terrain dependencies were restored before running them.
+- Combined CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38152146018 succeeded on the same candidate.
+- Inspected artifact 11706762606: cover-routing log proves real wooded traversal and disk outcome equality; actual 00:03 shot/ammunition/casualty/pinning capture and completed two-sided report are readable. Rendering verifies existing feedback, not realistic cover tactics. CI emits VSync/anchor/test-event warnings; no script errors or failed checks.
+- Frozen original milestone and completed five-step download preserved. No Windows or Combat Mission fidelity validation. Fixed destinations may be open; contact can halt an advance before reaching cover.
+- Next: covered opponent objective destinations without hidden enemy-position input.
