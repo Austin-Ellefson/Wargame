@@ -355,7 +355,7 @@ func _status_snapshot() -> Dictionary:
     var snapshot := {}
     for squad in simulation.state["squads"]:
         snapshot[squad["id"]] = {"alive": int(squad["alive"]), "ammo": int(squad["ammo"]),
-            "suppression": int(round(float(squad["suppression"]) * 100.0))}
+            "suppression": int(round(float(squad["suppression"]) * 100.0)), "status": simulation.combat_status(squad)}
     return snapshot
 
 func _show_combat_changes(before: Dictionary) -> void:
@@ -368,7 +368,9 @@ func _show_combat_changes(before: Dictionary) -> void:
         var personnel_change := int(previous["alive"]) - int(squad["alive"])
         var ammunition_change := int(previous["ammo"]) - int(squad["ammo"])
         var suppression_change := int(round(float(squad["suppression"]) * 100.0)) - int(previous["suppression"])
-        if personnel_change <= 0 and ammunition_change <= 0 and suppression_change <= 0:
+        var status: String = simulation.combat_status(squad)
+        var status_changed: bool = status != previous.get("status", status)
+        if personnel_change <= 0 and ammunition_change <= 0 and suppression_change <= 0 and not status_changed:
             continue
         var changes: Array[String] = []
         if personnel_change > 0:
@@ -377,6 +379,8 @@ func _show_combat_changes(before: Dictionary) -> void:
             changes.append("-%dR" % ammunition_change)
         if suppression_change > 0:
             changes.append("SUP+%d" % suppression_change)
+        if status_changed:
+            changes.append(status)
         var line := "%s  %s" % [str(squad["id"]).replace("_", " "), "  ".join(changes)]
         if personnel_change > 0:
             casualty_lines.append(line)
@@ -463,7 +467,11 @@ func _refresh() -> void:
         squad_buttons[id].text = "S%s  %dP  %dR  SUP%d%%%s" % [str(id).right(1), int(squad.get("alive", 0)), int(squad.get("ammo", 0)), int(float(squad.get("suppression", 0)) * 100), "  <" if id == selected else ""]
     var selected_squad: Dictionary = simulation.squad_by_id(selected)
     if not selected_squad.is_empty():
-        selection_label.text = "Squad %s  |  %d rounds\nSuppression %d%%  /  Morale %d" % [selected.right(1), selected_squad["ammo"], int(float(selected_squad["suppression"]) * 100), selected_squad["morale"]]
+        selection_label.text = "Squad %s  |  %s\n%d rounds  /  Morale %d  /  SUP%d%%" % [selected.right(1), simulation.combat_status(selected_squad), selected_squad["ammo"], selected_squad["morale"], int(float(selected_squad["suppression"]) * 100)]
+    for id in squad_buttons:
+        var squad: Dictionary = simulation.squad_by_id(id)
+        if simulation.is_pinned(squad):
+            squad_buttons[id].text += " PINNED"
     hold_button.disabled = state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0
     execute_button.disabled = state["phase"] != "planning"
     execute_button.text = "%d SECONDS REMAINING" % state["remaining"] if state["phase"] == "execution" else "EXECUTE 60 SECONDS"
@@ -484,6 +492,8 @@ func _refresh() -> void:
         actors[squad["id"]].position = Vector3(point.x, Battle.terrain_height(point.x, point.y), point.y)
         actors[squad["id"]].visible = int(squad["alive"]) > 0
         labels[squad["id"]].text = "%s %dP %dR SUP%d%s" % [str(squad["id"]).replace("_", " "), squad["alive"], squad["ammo"], int(float(squad["suppression"]) * 100), " *" if squad["id"] == selected else ""]
+        if simulation.is_pinned(squad):
+            labels[squad["id"]].text += "\nPINNED"
         var path: Array = state["orders"].get(squad["id"], [])
         markers[squad["id"]].visible = not path.is_empty() and squad["faction"] == "UKR" and state["phase"] == "planning"
         if not path.is_empty():

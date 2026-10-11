@@ -125,6 +125,10 @@ func _run() -> void:
     # ammunition and suppression feedback together with real shot cues.
     game.tactical_simulation.squad_by_id("UKR_S1")["position"] = [180, 245]
     game.tactical_simulation.squad_by_id("RU_S1")["position"] = [240, 245]
+    # A separate high-pressure survivor exercises the pinned HUD alongside the
+    # real-shot/casualty fixture. Incoming-fire pinning is tested in suppression_smoke.
+    game.tactical_simulation.squad_by_id("UKR_S2")["suppression"] = 1.0
+    view.selected = "UKR_S2"
     var starting_personnel: int = game.tactical_simulation.alive("UKR") + game.tactical_simulation.alive("RU")
     var executed_ticks := 0
     while executed_ticks < 30 and game.tactical_simulation.alive("UKR") + game.tactical_simulation.alive("RU") == starting_personnel:
@@ -135,6 +139,7 @@ func _run() -> void:
         view._show_combat_changes(before)
         executed_ticks += 1
     view._refresh()
+    check("PINNED" in view.selection_label.text and "PINNED" in view.squad_buttons["UKR_S2"].text and "PINNED" in view.labels["UKR_S2"].text, "Pinned status must be visible in selection, roster and world labels.")
     check(game.tactical_simulation.alive("UKR") + game.tactical_simulation.alive("RU") < starting_personnel, "Rendered feedback fixture must reach an actual simulated casualty.")
     check(not view.shot_cues.is_empty(), "Actual firing events must create visible transient cues for eligible shooters.")
     check("P" in view.combat_label.text and "R" in view.combat_label.text and "SUP" in view.combat_label.text, "Live combat feedback must identify personnel, ammunition and suppression changes.")

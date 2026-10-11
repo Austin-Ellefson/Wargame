@@ -48,7 +48,7 @@ static func visible(a: Vector2, b: Vector2) -> bool:
     return true
 
 func setup(payload: Dictionary) -> void:
-    state = {"version": 1, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
+    state = {"version": 2, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
     last_events = []
@@ -80,6 +80,19 @@ func squad_by_id(id: String) -> Dictionary:
         if squad["id"] == id:
             return squad
     return {}
+
+func is_pinned(squad: Dictionary) -> bool:
+    # V1 engagements retain their original rules when resumed. V2 pinning is
+    # derived from saved morale/suppression; no hidden state or random samples.
+    return int(state["version"]) >= 2 and int(squad["alive"]) > 0 and float(squad["suppression"]) >= pin_threshold(squad)
+
+static func pin_threshold(squad: Dictionary) -> float:
+    return 0.5 + clampf(float(squad["morale"]), 0.0, 100.0) * 0.0035
+
+func combat_status(squad: Dictionary) -> String:
+    if int(squad["alive"]) <= 0:
+        return "ELIMINATED"
+    return "PINNED" if is_pinned(squad) else "READY"
 
 func order_move(id: String, target: Vector2, player: bool = true) -> bool:
     var squad := squad_by_id(id)
@@ -136,6 +149,8 @@ func step() -> void:
             continue
         var path: Array = state["orders"].get(squad["id"], [])
         var speed := 2.4 * (1.0 - 0.8 * float(squad["suppression"]))
+        if is_pinned(squad):
+            speed = 0.0
         while speed > 0 and not path.is_empty():
             var current := position(squad)
             var target := Vector2(float(path[0][0]), float(path[0][1]))
@@ -256,7 +271,7 @@ static func _point(value: Variant) -> bool:
     return value is Array and value.size() == 2 and (typeof(value[0]) == TYPE_INT or typeof(value[0]) == TYPE_FLOAT) and (typeof(value[1]) == TYPE_INT or typeof(value[1]) == TYPE_FLOAT) and is_finite(float(value[0])) and is_finite(float(value[1])) and value[0] >= 4 and value[0] <= SIZE - 4 and value[1] >= 4 and value[1] <= SIZE - 4
 
 static func _validate_fields(saved: Dictionary, payload: Dictionary) -> bool:
-    if not _integer(saved["version"], 1, 1) or saved["battle_id"] != payload.get("battle_id") or saved["phase"] not in ["planning", "execution", "finished"]:
+    if not _integer(saved["version"], 1, 2) or saved["battle_id"] != payload.get("battle_id") or saved["phase"] not in ["planning", "execution", "finished"]:
         return false
     if not _integer(saved["elapsed"], 0, MAX_SECONDS) or not _integer(saved["remaining"], 0, INTERVAL):
         return false

@@ -21,6 +21,8 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
+- Latest post-milestone descendant: codex/suppression-pinning / PR #13
+- Post-milestone next task: limited enemy visibility and deterministic spotting
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -240,3 +242,36 @@ is delivered as the scheduled task result in ChatGPT.
   Windows input/performance remain unverified.
 - Next: preserve the milestone build for user testing; a later focused task may
   add a small morale behavior with deterministic save/restart regressions.
+
+## Post-milestone run record — suppression pinning, 2026-10-10
+
+- Status: ready for review; draft PR #13, branch `codex/suppression-pinning`,
+  based on tested `codex/tactical-camera-controls` (PR #12). Gameplay commit:
+  `04f51274c505c1cc1e50170c72e4c875cf859677`.
+- User asked for battles as close to Combat Mission as possible. New v2 battles
+  halt a living squad's movement above a morale-sensitive suppression threshold,
+  retain its path, allow suppressed return fire, and resume movement after pressure
+  recovers. PINNED appears in roster, world and selection labels; live feedback
+  includes status transitions. Parameters are our prototype design, not recovered
+  Combat Mission values or real-world validation.
+- Tactical rules version is now 2 for new battles. Existing v1 saves remain v1
+  through completion with original behavior; no silent rules migration occurs.
+  Campaign schema v2, result/export contracts, RNG and squad fields are unchanged.
+- Local evidence: seven Godot checks passed (including the new suppression
+  regression), 26 terrain tests passed, `git diff --check` passed. Actual simulated
+  incoming volleys pin a survivor; tests cover queued-route retention, recovery,
+  morale sensitivity, return fire, JSON restart equality and v1 compatibility.
+- CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38112927417 succeeded.
+  Artifact `tactical-validation` ID 11692347558 inspected: execution capture at
+  00:03 shows visible firing, casualty feedback and selected S2 PINNED at SUP89%;
+  the completed two-sided report remains readable. The HUD capture initializes
+  S2 with high pressure; the separate logic regression proves actual-fire pinning.
+- Download this descendant:
+  https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/suppression-pinning
+  Open `project.godot` in Godot 4.5.1, F5, PLAY INTEGRATED DEMO.
+  The frozen milestone branch/ZIP/check-in commit are unchanged.
+- Limits: abstract squad-level pinning without panic, routing, leadership or
+  individual soldier behavior; full enemy visibility remains. Linux rendering
+  does not establish Windows validation or Combat Mission fidelity.
+- Next focused task: limited enemy visibility/spotting with deterministic saved
+  contacts and no hidden-enemy leakage through labels, shot cues or opponent logic.

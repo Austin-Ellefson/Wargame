@@ -25,10 +25,24 @@ Read docs/LOOP_FEEDBACK_MILESTONE.md first. The current user-requested milestone
 2. Add transient firing events tied to actual simulated attacks, render readable shot/muzzle cues, and show casualty/suppression feedback. Presentation must not change outcomes or restart determinism.
 3. Add a readable completed battle report and practical command feedback; camera pan/orbit and order-path previews are supporting tasks if needed. Validate the combined milestone and prepare the requested check-in with a playable download.
 4. After the milestone check-in, add more tactical depth in small steps: morale behavior, player/enemy visibility, and stronger opponent decisions. Preserve deterministic outcomes across save/load.
+   The user reiterated the goal of Combat Mission-like battles on 2026-10-10.
+   Prioritize meaningful infantry decisions: suppression/pinning, limited enemy
+   visibility, then explicit movement/fire orders and opponent reactions. Keep
+   behavior documented and tested; do not imply parity with Combat Mission.
 5. Import prepared elevation into the native renderer and simulation together; validate orientation, movement and LOS against known synthetic fixtures before adding OSM features. Keep source provenance and distinguish generated test terrain from real GIS data.
 6. Add vehicles and equipment composition with a versioned simulation/save contract and bounded formation losses.
 
 Campaign save/load, pending battle locks, and native once-only result application already exist on the stacked branches. The old manual CMBS result form is no longer the primary development priority.
+
+## Suppression pinning task — 2026-10-10
+- Status: ready for review; `codex/suppression-pinning`, draft PR #13, based on PR #12.
+- Heavy suppression halts movement, retains orders and permits suppressed return
+  fire; morale changes the threshold and recovery resumes the queued route.
+- New tactical rules v2; existing v1 engagements keep their behavior on load.
+- Seven Godot checks and 26 terrain tests passed; CI 38112927417 succeeded and
+  execution/report captures were inspected. Full evidence is in the milestone ledger.
+- Limits: abstract squad behavior, full enemy visibility, no Windows validation.
+- Next: limited enemy visibility and spotting, then richer movement/fire commands.
 
 ## User-dependent validation
 Compare real terrain output against the Windows CMBS editor with the user's installed CMAutoEditor version.
