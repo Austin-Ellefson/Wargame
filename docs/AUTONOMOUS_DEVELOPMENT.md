@@ -131,3 +131,13 @@ This setup change contains instructions only; these missing tools must be addres
   shots/feedback and completed report readable. Full evidence is in the ledger.
 - Frozen milestone preserved. No fatigue, Windows or Combat Mission fidelity claim.
 - Next: explicit AUTO/HOLD FIRE infantry control with deterministic save validation.
+
+## Five-step batch: codex/infantry-fire-control — 2026-10-11
+
+- Ready for review; draft PR #17, base codex/infantry-movement-orders.
+- Tested code: 1ad7350fc9ff0bbf67f7bcaae5893b983a99ec76.
+- Full local Godot suite, 26 terrain tests and diff check passed.
+- CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38146581297 succeeded.
+- Inspected artifact 11705446305: Readable AUTO/HOLD FIRE controls and separated order status during actual shot execution; completed report retained. First capture exposed tight spacing, corrected and rerendered.
+- Frozen milestone preserved; no Windows or Combat Mission fidelity validation.
+- Next: observed preferred-target orders.
