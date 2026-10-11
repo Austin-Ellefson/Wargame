@@ -133,6 +133,15 @@ func _run() -> void:
         await RenderingServer.frame_post_draw
         var path_image := root.get_texture().get_image()
         check(path_image.save_png(path_capture) == OK, "Rendered route preview must save.")
+    var queued_prefix: Array = game.tactical_simulation.state["orders"]["UKR_S1"].duplicate(true)
+    var queued_point := Vector3(320, Battle.terrain_height(320, 300), 300)
+    click(view.camera.unproject_position(queued_point) + Vector2(24, 112), MOUSE_BUTTON_RIGHT, true)
+    await process_frame
+    var queued_path: Array = game.tactical_simulation.state["orders"]["UKR_S1"]
+    check(queued_path.size() > queued_prefix.size() and same(queued_path.slice(0, queued_prefix.size()), queued_prefix) and game.tactical_simulation.movement_mode("UKR_S1") == "hunt", "Actual Shift-right input must append from the queued endpoint while preserving the route and mode.")
+    if not path_capture.is_empty() and DisplayServer.get_name() != "headless":
+        await RenderingServer.frame_post_draw
+        check(root.get_texture().get_image().save_png(path_capture.get_base_dir().path_join("queued-waypoints-preview.png")) == OK, "Queued-route capture must save.")
     var planning_checkpoint: Dictionary = game.tactical_simulation.state.duplicate(true)
     game.tactical_simulation.squad_by_id("UKR_S1")["position"] = [180, 245]
     game.tactical_simulation.squad_by_id("RU_S1")["position"] = [240, 245]
