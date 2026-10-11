@@ -39,6 +39,7 @@ func _run() -> void:
     game.tactical_simulation.state.erase("pending_reports")
     game.tactical_simulation.state.erase("observer_contacts")
     game.tactical_simulation.state.erase("facing_orders")
+    game.tactical_simulation.state.erase("area_fire")
     var battle = game.tactical_simulation
     var payload: Dictionary = game.battle_payload.duplicate(true)
     for squad in battle.state["squads"]:
@@ -116,6 +117,7 @@ func _run() -> void:
     legacy.state.erase("pending_reports")
     legacy.state.erase("observer_contacts")
     legacy.state.erase("facing_orders")
+    legacy.state.erase("area_fire")
     legacy.state["version"] = 3
     if int(legacy.state["version"]) < 15: legacy.state.erase("weapon_roles")
     if int(legacy.state["version"]) < 14: legacy.state.erase("postures")

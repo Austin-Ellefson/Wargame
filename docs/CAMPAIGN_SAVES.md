@@ -331,3 +331,35 @@ Known casualty figures do not rotate. Camera/preview queries cannot alter state.
 Actual campaign disk restart restores angles/arcs, each tick, shots and complete
 results exactly. Campaign v2/result v1, once-only losses, locks, save rollback,
 export/GIS and optional Windows launchers remain unchanged.
+
+
+## Tactical ground area fire v21
+
+New engagements add `area_fire`: exactly one array per known squad ID. Empty
+means no area order; otherwise exactly two finite bounded coordinates outside
+buildings. Missing/extra IDs, malformed points and simultaneous preferred entity
+targets reject. Broken squads require empty area orders. Dead squads may retain
+their last point but cannot shoot or receive commands. Saved orders may become
+out of LOS/range/arc after movement; restore retains them rather than inventing
+a new endpoint or switching to targeted fire. V1–V20 keep original fields/rules.
+
+Planning-only ground commands require living nonbroken squads, at least1m and
+less than230m distance, terrain/building LOS to a0.3m endpoint, and the saved fire
+arc. Player commands cannot order red. Area and preferred target are exclusive;
+accepting either replaces the other, and clearing target also clears the area.
+HOLD FIRE pauses but retains the area; breaking clears it before withdrawal.
+
+Execution uses the existing rifle/support cadence and bounded real round count.
+Nearby living opposing squads with LOS from the endpoint receive deterministic
+pressure `(0.04 + rounds*0.008)*(1-distance/16)` within16m; exactly16m receives
+none. No damage/loss RNG, friendly effects or hit feedback is added. A chosen
+point can be fired upon without identifying an enemy; it never creates acquisition
+or updates observation memory. Hidden-hit IDs/positions/pressure do not enter
+shot events. Friendly endpoints are explicit player orders; enemy area cues require
+local acquired sight of the shooter and sight/range of its ground endpoint.
+
+Events and previews remain transient; pure queries copy saved arrays. Exact
+actual campaign disk restart restores orders, rounds, suppression, every tick/event
+and completed outcomes. No-area v21 reproduces all v20 authoritative fields and
+results except its new empty map. Campaign v2/result v1, battle locks, once-only
+bounded losses, save rollback, export/GIS and optional Windows launchers unchanged.

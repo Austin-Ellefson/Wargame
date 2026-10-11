@@ -13,6 +13,7 @@ func fixture() -> RefCounted:
     sim.setup(PAYLOAD)
     sim.state["version"] = 19
     sim.state.erase("facing_orders")
+    sim.state.erase("area_fire")
     for squad in sim.state["squads"]:
         squad["ammo"] = 0
         if squad["id"] not in ["UKR_S1","UKR_S2","RU_S1","RU_S2"]: squad["alive"] = 0
@@ -93,6 +94,7 @@ func _run() -> void:
         match corruption:
             0: bad.erase("observer_contacts")
             0: bad.erase("facing_orders")
+            0: bad.erase("area_fire")
             1: bad["observer_contacts"].erase("UKR_S2")
             2: bad["observer_contacts"]["UNKNOWN"] = {}
             3: bad["observer_contacts"]["UKR_S1"]["UKR_S2"] = record.duplicate(true)
@@ -111,6 +113,7 @@ func _run() -> void:
     legacy.state["version"] = 18
     legacy.state.erase("observer_contacts")
     legacy.state.erase("facing_orders")
+    legacy.state.erase("area_fire")
     check(Battle.validate(legacy.state,PAYLOAD), "Old v18 shape remains valid without migration.")
     for battle in [current,legacy]:
         battle.squad_by_id("UKR_S1")["ammo"] = 360
@@ -120,6 +123,7 @@ func _run() -> void:
     authoritative["version"] = 18
     authoritative.erase("observer_contacts")
     authoritative.erase("facing_orders")
+    authoritative.erase("area_fire")
     check(same(authoritative,legacy.state) and same(current.result(),legacy.result()), "Added observer knowledge cannot alter any legacy authoritative combat field or RNG outcome.")
     check(current.remembered_contacts("UKR_S1").is_empty(), "Finished battle hides uncertain contacts.")
     # Actual campaign disk continuation with acquired local memory and a packet.

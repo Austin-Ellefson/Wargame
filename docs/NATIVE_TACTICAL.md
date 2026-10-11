@@ -6,10 +6,10 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/squad-facing-fire-arcs` descendant includes route previews,
+The newer `codex/ground-area-suppression` descendant includes route previews,
 camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
 queued waypoints, timed pauses, local-contact reactions and cover-weighted red routes. The milestone
-branch above remains frozen. Fresh battles use tactical rules v20, including selected-squad visibility and delayed shared reports. See the five-step
+branch above remains frozen. Fresh battles use tactical rules v21, including selected-squad visibility and delayed shared reports. See the five-step
 batch test guide in [FIVE_STEP_TACTICAL_PROGRESS.md](FIVE_STEP_TACTICAL_PROGRESS.md).
 
 ## Complete game loop
@@ -643,3 +643,29 @@ turning delays; no quick self-defense exception, traverse speed, per-soldier
 sectors or ammunition inventory is modeled. Existing saves keep their version;
 start a fresh integrated demo for v20. This remains a synthetic prototype, with
 no Windows or Combat Mission fidelity validation.
+
+
+## Ground-directed suppressive fire (v21)
+
+In planning, select a squad, click **AREA FIRE**, then left-click reachable
+ground. An orange16m disk marks your explicitly chosen area; it is not an enemy
+location/hit report. Right-click cancels the cursor without a movement order.
+**CLEAR FIRE** removes the saved area or preferred target. HOLD FIRE pauses an
+area order; AUTO resumes it. Facing/arc restrictions still apply. Choosing an
+identified preferred target replaces area fire, and area fire replaces that target.
+
+During execution the squad spends actual rounds at its rifle/support cadence
+and flashes/traces to the selected ground point. Nearby opposing squads can
+receive suppression even when concealed, without becoming spotted or targetable.
+The selected panel shows Area: active, HOLD FIRE, empty or waiting for LOS/range/arc;
+rounds and your own combat changes remain visible. No hidden-hit feedback or enemy
+pressure appears. Nearby suppression falls linearly to zero at16m and requires
+LOS from the area center. This increment applies no casualties or friendly effects.
+
+Routes carry the shooter away from its fixed ground point; invalid geometry
+withholds fire while retaining the order. It never auto-snaps to a remembered
+contact or falls back to a live enemy. Breaking cancels the order; ammunition
+used still contributes to the existing campaign supply result. Saved orders and
+full outcomes resume exactly. Start a fresh integrated demo for v21; old battles
+retain their rules. This is abstract suppression, without ballistics, blast,
+individual aim/traverse, friendly fire or validated Combat Mission/Windows fidelity.

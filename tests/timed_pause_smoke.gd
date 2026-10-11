@@ -24,6 +24,7 @@ func _run() -> void:
     battle.state.erase("pending_reports")
     battle.state.erase("observer_contacts")
     battle.state.erase("facing_orders")
+    battle.state.erase("area_fire")
     for squad in battle.state["squads"]: squad["ammo"] = 0
     check(not battle.order_pause("UKR_S1", 15), "Wait requires a queued route.")
     battle.order_move("UKR_S1", Vector2(180, 250), true, "quick")
@@ -51,6 +52,7 @@ func _run() -> void:
     firing.state.erase("pending_reports")
     firing.state.erase("observer_contacts")
     firing.state.erase("facing_orders")
+    firing.state.erase("area_fire")
     firing.squad_by_id("UKR_S1")["position"] = [180, 245]
     firing.squad_by_id("RU_S1")["position"] = [240, 245]
     firing.order_move("UKR_S1", Vector2(200, 245))
@@ -67,6 +69,7 @@ func _run() -> void:
     replacement.state.erase("pending_reports")
     replacement.state.erase("observer_contacts")
     replacement.state.erase("facing_orders")
+    replacement.state.erase("area_fire")
     replacement.order_move("UKR_S1", Vector2(180, 250))
     replacement.order_pause("UKR_S1", 30)
     replacement.order_move("UKR_S1", Vector2(160, 250))
@@ -83,6 +86,7 @@ func _run() -> void:
     old.state.erase("pending_reports")
     old.state.erase("observer_contacts")
     old.state.erase("facing_orders")
+    old.state.erase("area_fire")
     old.state["version"] = 7
     if int(old.state["version"]) < 15: old.state.erase("weapon_roles")
     if int(old.state["version"]) < 14: old.state.erase("postures")
@@ -106,6 +110,7 @@ func _run() -> void:
     game.tactical_simulation.state.erase("pending_reports")
     game.tactical_simulation.state.erase("observer_contacts")
     game.tactical_simulation.state.erase("facing_orders")
+    game.tactical_simulation.state.erase("area_fire")
     for squad in game.tactical_simulation.state["squads"]: squad["ammo"] = 0
     game.tactical_simulation.order_move("UKR_S1", Vector2(180, 250), true, "quick")
     game.tactical_simulation.order_pause("UKR_S1", 30)

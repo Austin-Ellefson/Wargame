@@ -690,3 +690,24 @@ This setup change contains instructions only; these missing tools must be addres
   future work must reacquire/fetch the remote branch before changing files.
 - Next focused task: ammunition-consuming area suppression at explicit ground points,
   without turning remembered reports into live knowledge or entity-target permissions.
+
+
+## Ground area suppression — in validation 2026-10-11
+
+- Branch codex/ground-area-suppression, tested PR #34 base
+  e285903d94a3a8b58635959f0ea5e33a84e2c2f5; final CI38175577819 success.
+- Reacquired working runtime and fresh isolated worktree; preserved unsynchronized
+  old worktree. Restored Godot4.5.1, pytest and terrain dependencies after reset.
+- v21 ground-point orders, real cadence/ammo, deterministic16m pressure-only effect,
+  safe actual cues and orange order preview. HOLD/arc/clear/posture/memory behavior
+  remains isolated. No hidden hit IDs or casual damage; area does not grant sight.
+- New regression covers real concealed pinning/expenditure, falloff/boundary,
+  actual old observation followed by a legal concealment/posture command, direct
+  target rejection, hidden enemy cues, mode replacement, query/render purity,
+  strict saves, complete v20 parity and every-tick actual campaign disk restart.
+- Initial endpoint array assertion fixed for int/float representation (event was
+  correct). Combined final checks, draft PR and actual rendered CI review pending.
+- Limits: synthetic squad pressure; no casualty/friendly effects/ballistics or
+  Windows/fidelity validation. No changes to campaign/result/export/GIS/launchers.
+- Next: improve opponent reactions to received suppression using local knowledge,
+  or a focused area-fire usability fix discovered in actual review.

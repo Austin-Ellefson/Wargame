@@ -21,6 +21,9 @@ var inspect_button: Button
 var reset_camera_button: Button
 var facing_button: Button
 var arc_button: Button
+var area_button: Button
+var area_armed := false
+var area_preview: Node3D
 var facing_armed := false
 var arc_preview: Node3D
 var world: Node3D
@@ -125,8 +128,15 @@ func _build_interface() -> void:
     completed_report_label = _label("", Vector2(180, 167), 16, 610)
     completed_report_panel.visible = false
     completed_report_label.visible = false
+    area_button = _button("AREA FIRE",Rect2(244,70,118,36),func():
+        area_armed = not area_armed
+        facing_armed = false
+        _refresh())
+    area_button.add_theme_font_size_override("font_size",12)
+    area_button.tooltip_text = "Left-click ground to suppress a 16m area using real rounds. No casualty/hit reports. CLEAR FIRE cancels the order; right-click cancels cursor. HOLD FIRE pauses it."
     facing_button = _button("FACE", Rect2(370, 70, 104, 36), func():
         facing_armed = not facing_armed
+        area_armed = false
         _refresh())
     facing_button.tooltip_text = "Click FACE then left-click ground to face that direction; click FACE again or right-click to cancel. Routes are unchanged."
     arc_button = _button("ARC OFF", Rect2(480, 70, 104, 36), func():
@@ -141,6 +151,7 @@ func _build_interface() -> void:
         var button := _button("", Rect2(986, 208 + index * 34, 248, 32), func():
             selected = id
             facing_armed = false
+            area_armed = false
             _refresh())
         button.add_theme_font_size_override("font_size", 13)
         squad_buttons[id] = button
@@ -321,6 +332,8 @@ func _build_world() -> void:
         marker.bottom_radius = 5
         marker.height = 0.4
         markers[squad["id"]] = _mesh(marker, Vector3.ZERO, _material(color, true))
+    area_preview = Node3D.new()
+    world.add_child(area_preview)
     arc_preview = Node3D.new()
     world.add_child(arc_preview)
     order_preview = Node3D.new()
@@ -344,6 +357,15 @@ func _map_input(event: InputEvent) -> void:
     if event.button_index == MOUSE_BUTTON_WHEEL_UP or event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
         camera.fov = clampf(camera.fov + (-3 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 3), 30, 70)
         return
+    if area_armed:
+        if event.button_index == MOUSE_BUTTON_RIGHT:
+            area_armed = false
+            _refresh()
+            return
+        if event.button_index == MOUSE_BUTTON_LEFT:
+            if simulation.order_area_fire(selected,_ground_point(event.position)): area_armed = false
+            _refresh()
+            return
     if facing_armed:
         if event.button_index == MOUSE_BUTTON_RIGHT:
             facing_armed = false
@@ -446,7 +468,7 @@ func _show_shot_events(events: Array) -> void:
         var start := Vector2(float(event["from"][0]), float(event["from"][1]))
         var finish := Vector2(float(event["to"][0]), float(event["to"][1]))
         var start_3d := Vector3(start.x, Battle.terrain_height(start.x, start.y) + 0.75 * simulation.posture_height(event["shooter"]), start.y)
-        var finish_3d := Vector3(finish.x, Battle.terrain_height(finish.x, finish.y) + simulation.posture_height(event["target"]), finish.y)
+        var finish_3d := Vector3(finish.x, Battle.terrain_height(finish.x, finish.y) + (0.3 if event.get("area",false) else simulation.posture_height(event["target"])), finish.y)
         var heading := atan2(-(finish.x - start.x), -(finish.y - start.y))
         for body in bodies.get(event["shooter"], []):
             body.rotation.y = heading
@@ -606,6 +628,29 @@ func _player_contact_count() -> int:
     return count
 
 # Selected friendly order preview only: no target or hidden-contact query.
+func _refresh_area_preview() -> void:
+    for child in area_preview.get_children():
+        area_preview.remove_child(child)
+        child.queue_free()
+    var coords: Array = simulation.area_target(selected)
+    if coords.is_empty() or simulation.state["phase"] == "finished": return
+    var point := Vector2(coords[0],coords[1])
+    var disk := CylinderMesh.new()
+    disk.top_radius = 16.0
+    disk.bottom_radius = 16.0
+    disk.height = 0.2
+    var material := _material(Color(1.0,0.55,0.15,0.3),true)
+    material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+    _mesh(disk,Vector3(point.x,Battle.terrain_height(point.x,point.y)+0.3,point.y),material,area_preview)
+    var label := Label3D.new()
+    label.text = "AREA FIRE"
+    label.font_size = 32
+    label.pixel_size = 0.35
+    label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+    label.position = Vector3(point.x,Battle.terrain_height(point.x,point.y)+14,point.y)
+    label.modulate = Color("ffc687")
+    area_preview.add_child(label)
+
 func _refresh_arc_preview() -> void:
     for child in arc_preview.get_children():
         arc_preview.remove_child(child)
@@ -692,12 +737,18 @@ func _battle_report(result: Dictionary) -> String:
 func _refresh() -> void:
     _age_shot_cues(0.0)
     var state: Dictionary = simulation.state
-    if state["phase"] != "planning": facing_armed = false
+    if state["phase"] != "planning":
+        facing_armed = false
+        area_armed = false
     facing_button.visible = int(state["version"]) >= 20
     arc_button.visible = facing_button.visible
     var facing_squad: Dictionary = simulation.squad_by_id(selected)
     facing_button.disabled = state["phase"] != "planning" or facing_squad.is_empty() or int(facing_squad.get("alive",0)) <= 0 or simulation.morale_state(selected) == "broken"
     arc_button.disabled = facing_button.disabled
+    area_button.visible = int(state["version"]) >= 21
+    area_button.disabled = facing_button.disabled
+    area_button.text = "CLICK AREA" if area_armed else "AREA FIRE"
+    _refresh_area_preview()
     facing_button.text = "CLICK GROUND" if facing_armed else "FACE %d°" % simulation.facing(selected)
     facing_button.add_theme_font_size_override("font_size",12)
     arc_button.text = "ARC OFF" if simulation.arc_width(selected) == 0 else "ARC %d°" % simulation.arc_width(selected)
@@ -705,6 +756,8 @@ func _refresh() -> void:
     phase_label.text = "%s  |  %02d:%02d elapsed  |  512 x 512 m generated test terrain" % [str(state["phase"]).to_upper(), int(state["elapsed"]) / 60, int(state["elapsed"]) % 60]
     if int(state["version"]) >= 20:
         phase_label.text = "%s  |  %02d:%02d  |  512 m" % [str(state["phase"]).to_upper(), int(state["elapsed"]) / 60, int(state["elapsed"]) % 60]
+    if int(state["version"]) >= 21:
+        phase_label.text = "%s | %02d:%02d" % [str(state["phase"]).to_upper(), int(state["elapsed"]) / 60, int(state["elapsed"]) % 60]
     summary_label.text = "Blue %dP / Red %dP\nObjective: %ds / %ds" % [simulation.alive("UKR"), simulation.alive("RU"), state["objective"]["UKR"], state["objective"]["RU"]]
     if simulation.limited_visibility() and state["phase"] != "finished":
         summary_label.text = "Blue %dP / %d enemy contacts\nYour objective: %ds" % [simulation.alive("UKR"), _player_contact_count(), state["objective"]["UKR"]]
@@ -737,6 +790,7 @@ func _refresh() -> void:
         selection_label.tooltip_text += "\nNew movement orders wait 5 executed seconds; pauses count concurrently. Fire/spotting continue. Appending keeps the existing response timer; HOLD cancels it."
     if int(state["version"]) >= 18:
         selection_label.tooltip_text += "\nSelected squad local contacts are live. Amber REPORT markers arrive 5s after observation and never grant fire permission."
+    clear_target_button.text = "CLEAR FIRE" if int(state["version"]) >= 21 else "CLEAR TARGET"
     clear_target_button.visible = int(state["version"]) >= 7
     clear_target_button.disabled = state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0 or simulation.morale_state(selected) == "broken"
     for mode in fire_buttons:
@@ -780,6 +834,7 @@ func _refresh() -> void:
         report_label.text = "Mode + right-click. Amber = last seen."
     if int(state["version"]) >= 7:
         report_label.text = simulation.target_status(selected) + " | Shift-click target\nShift-right: append route"
+    if area_armed: report_label.text = "AREA: left-click reachable ground.\nRight-click cancels cursor."
     if facing_armed: report_label.text = "FACE: left-click ground.\nRight-click or FACE cancels."
     if not selected_squad.is_empty() and simulation.morale_state(selected) == "broken":
         report_label.text = "BROKEN: automatic withdrawal.\n30 quiet rear seconds to rally."
