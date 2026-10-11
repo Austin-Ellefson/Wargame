@@ -13,6 +13,7 @@ func fixture(id: String) -> RefCounted:
     battle.setup(PAYLOAD)
     battle.state["version"] = 15
     battle.state.erase("acquisition")
+    battle.state.erase("command_remaining")
     for squad in battle.state["squads"]:
         if squad["id"] not in [id,"RU_S1"]: squad["alive"] = 0
         squad["ammo"] = 360 if squad["id"] == id else 0
@@ -104,6 +105,7 @@ func _run() -> void:
     game._play_demo()
     game.tactical_simulation.state["version"] = 15
     game.tactical_simulation.state.erase("acquisition")
+    game.tactical_simulation.state.erase("command_remaining")
     var sim = game.tactical_simulation
     sim.squad_by_id("UKR_S2")["position"] = [180,245]
     sim.squad_by_id("RU_S1")["position"] = [240,245]

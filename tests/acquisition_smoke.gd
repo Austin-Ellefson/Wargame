@@ -11,6 +11,8 @@ func same(a: Variant,b: Variant) -> bool: return JSON.parse_string(JSON.stringif
 func fixture() -> RefCounted:
     var battle = Battle.new()
     battle.setup(PAYLOAD)
+    battle.state["version"] = 16
+    battle.state.erase("command_remaining")
     for squad in battle.state["squads"]:
         if squad["id"] not in ["UKR_S1","RU_S1"]: squad["alive"] = 0
         squad["ammo"] = 0
@@ -89,6 +91,7 @@ func _run() -> void:
     var legacy = fixture()
     legacy.state["version"] = 15
     legacy.state.erase("acquisition")
+    legacy.state.erase("command_remaining")
     check(legacy.can_spot(legacy.squad_by_id("UKR_S1"),legacy.squad_by_id("RU_S1")) and Battle.validate(legacy.state,PAYLOAD), "V15 retains immediate spotting and its original field contract.")
     for value in [0,4,-1,1.5,"3",null,{},[]]:
         var bad: Dictionary = battle.state.duplicate(true)
@@ -112,6 +115,8 @@ func _run() -> void:
     game.save_path = directory.path_join("campaign.json")
     game.battle_export_directory = directory
     game._play_demo()
+    game.tactical_simulation.state["version"] = 16
+    game.tactical_simulation.state.erase("command_remaining")
     var sim = game.tactical_simulation
     sim.squad_by_id("UKR_S1")["position"] = [180,245]
     sim.squad_by_id("RU_S1")["position"] = [240,245]

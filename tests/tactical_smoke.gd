@@ -159,11 +159,13 @@ func _run() -> void:
     small.setup(depleted)
     small.state["version"] = 15
     small.state.erase("acquisition")
+    small.state.erase("command_remaining")
     check(small.alive("UKR") == 5 and small.state["squads"].size() == 5, "Depleted formation must not fabricate a full platoon.")
     var timed = Battle.new()
     timed.setup(payload)
     timed.state["version"] = 15
     timed.state.erase("acquisition")
+    timed.state.erase("command_remaining")
     for squad in timed.state["squads"]:
         squad["ammo"] = 0
     finish(timed, false)
@@ -174,6 +176,7 @@ func _run() -> void:
     event_battle.setup(payload)
     event_battle.state["version"] = 15
     event_battle.state.erase("acquisition")
+    event_battle.state.erase("command_remaining")
     for squad in event_battle.state["squads"]:
         squad["alive"] = 0
     var blue: Dictionary = event_battle.squad_by_id("UKR_S1")
@@ -194,6 +197,7 @@ func _run() -> void:
     no_fire.setup(payload)
     no_fire.state["version"] = 15
     no_fire.state.erase("acquisition")
+    no_fire.state.erase("command_remaining")
     for squad in no_fire.state["squads"]:
         squad["ammo"] = 0
     no_fire.execute()
@@ -207,6 +211,7 @@ func _run() -> void:
     blocked.setup(payload)
     blocked.state["version"] = 15
     blocked.state.erase("acquisition")
+    blocked.state.erase("command_remaining")
     for squad in blocked.state["squads"]:
         squad["alive"] = 0
     blocked.squad_by_id("UKR_S1")["alive"] = 9
@@ -221,6 +226,7 @@ func _run() -> void:
     distant.setup(payload)
     distant.state["version"] = 15
     distant.state.erase("acquisition")
+    distant.state.erase("command_remaining")
     for squad in distant.state["squads"]:
         squad["alive"] = 0
     distant.squad_by_id("UKR_S1")["alive"] = 9

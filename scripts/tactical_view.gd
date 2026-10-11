@@ -580,6 +580,8 @@ func _refresh() -> void:
         selection_label.text += " | " + simulation.posture(selected).to_upper()
     if int(state["version"]) >= 6 and not selected_squad.is_empty():
         selection_label.text += " | " + ("NO FIRE" if simulation.morale_state(selected) == "broken" else "HOLD FIRE" if simulation.fire_mode(selected) == "hold" else "AUTO")
+    if int(state["version"]) >= 17:
+        selection_label.tooltip_text += "\nNew movement orders wait 5 executed seconds; pauses count concurrently. Fire/spotting continue. Appending keeps the existing response timer; HOLD cancels it."
     clear_target_button.visible = int(state["version"]) >= 7
     clear_target_button.disabled = state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0 or simulation.morale_state(selected) == "broken"
     for mode in fire_buttons:

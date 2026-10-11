@@ -488,3 +488,29 @@ Sight must be maintained for three simulated seconds before an enemy contact or
 eligible shot appears; actual rifle/support cadence still applies. Lose LOS and
 reacquire; saved last-seen markers alone permit no fire. SAVE & CAMPAIGN/LOAD must
 resume the same remaining delay. Existing pending battles retain their old rules.
+
+
+## Movement-command response (v17)
+
+New or replaced MOVE/QUICK/HUNT routes on either side wait five executed seconds
+before movement starts on the sixth. The delay is a fixed squad response rule,
+not a leader/radio model. Friendly selection shows MOVE/QUICK/HUNT IN Ns.
+Observation, acquisition and fire continue; no extra combat RNG is consumed.
+Manual PAUSE counts concurrently with response, so a 15-second pause remains
+15 seconds rather than becoming 20. WAIT/HUNT PAUSED labels show the dominant
+halt reason while the response clock still counts down. Planning/playback/UI
+queries cannot consume time. Pinning also does not restart the timer.
+
+Append preserves a pending or completed response on the existing route. A new
+route or replacement gets five seconds; unsuccessful commands change neither
+path nor timer. HOLD cancels movement and the response timer immediately. Dead
+squads clear their timer, including actual same-tick firing deaths. Automatic
+morale withdrawal bypasses response. Existing fire/posture commands keep their
+current timing; command-delay tuning, leaders, communications and delayed contact
+sharing remain future work. V1–V16 keep their original movement/save rules.
+
+Playtest: fresh demo, select MOVE or QUICK and right-click nearby clear ground.
+Execute: the IN Ns countdown must fall while position holds, then motion begins
+on second six unless another halt applies. A contact can be acquired/fired on
+during response. SAVE & CAMPAIGN/LOAD preserves unfinished response and route.
+Windows and Combat Mission fidelity remain unvalidated.

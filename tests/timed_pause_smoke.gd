@@ -19,6 +19,7 @@ func _run() -> void:
     battle.setup(PAYLOAD)
     battle.state["version"] = 15
     battle.state.erase("acquisition")
+    battle.state.erase("command_remaining")
     for squad in battle.state["squads"]: squad["ammo"] = 0
     check(not battle.order_pause("UKR_S1", 15), "Wait requires a queued route.")
     battle.order_move("UKR_S1", Vector2(180, 250), true, "quick")
@@ -41,6 +42,7 @@ func _run() -> void:
     firing.setup(PAYLOAD)
     firing.state["version"] = 15
     firing.state.erase("acquisition")
+    firing.state.erase("command_remaining")
     firing.squad_by_id("UKR_S1")["position"] = [180, 245]
     firing.squad_by_id("RU_S1")["position"] = [240, 245]
     firing.order_move("UKR_S1", Vector2(200, 245))
@@ -52,6 +54,7 @@ func _run() -> void:
     replacement.setup(PAYLOAD)
     replacement.state["version"] = 15
     replacement.state.erase("acquisition")
+    replacement.state.erase("command_remaining")
     replacement.order_move("UKR_S1", Vector2(180, 250))
     replacement.order_pause("UKR_S1", 30)
     replacement.order_move("UKR_S1", Vector2(160, 250))
@@ -63,6 +66,7 @@ func _run() -> void:
     old.setup(PAYLOAD)
     old.state["version"] = 15
     old.state.erase("acquisition")
+    old.state.erase("command_remaining")
     old.state["version"] = 7
     if int(old.state["version"]) < 15: old.state.erase("weapon_roles")
     if int(old.state["version"]) < 14: old.state.erase("postures")
@@ -81,6 +85,7 @@ func _run() -> void:
     game._play_demo()
     game.tactical_simulation.state["version"] = 15
     game.tactical_simulation.state.erase("acquisition")
+    game.tactical_simulation.state.erase("command_remaining")
     for squad in game.tactical_simulation.state["squads"]: squad["ammo"] = 0
     game.tactical_simulation.order_move("UKR_S1", Vector2(180, 250), true, "quick")
     game.tactical_simulation.order_pause("UKR_S1", 30)

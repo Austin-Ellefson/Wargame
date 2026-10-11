@@ -330,3 +330,21 @@ This setup change contains instructions only; these missing tools must be addres
 - Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/spotting-acquisition
   Godot 4.5.1: open project.godot/F5/fresh integrated demo for V16; old pending
   battles retain saved rules. Next: a separate command/communication-limits task.
+
+
+## Movement-command response — 2026-10-11
+
+- In validation: codex/movement-command-response, based on tested PR #28 head
+  71b641941218eba46f76cb69ba53b1883d824818 (CI 38167670786 success).
+  No overlapping task/newer branch or merges found.
+- V17 five-second new/replaced route response on both sides; fire/spotting continue.
+  Append retains timers, pause counts concurrently, hold/death clear, automatic
+  withdrawal bypasses. Fixed abstraction, no radio/leader model or Windows claim.
+- New regression proves actual delayed motion and firing, planning/query purity,
+  route replacement/append/hold, pause/withdrawal/death and strict save validation,
+  V16 isolation and full partial-response campaign disk outcomes.
+- Initial UI assertion exposed HUNT PAUSED priority while responding; halt-reason
+  label now takes priority without changing response. Review found same-tick
+  firing deaths needed timer cleanup before save; actual shot-death regression added.
+- Full candidate suite/CI/render review pending; frozen ready downloads preserved.
+- Next: delayed shared contact reports with local firing restrictions preserved.
