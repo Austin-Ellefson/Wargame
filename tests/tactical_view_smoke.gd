@@ -84,6 +84,12 @@ func _run() -> void:
     click(Vector2(1040, 427), MOUSE_BUTTON_LEFT)
     await process_frame
     check(game.tactical_simulation.posture("UKR_S1") == "stand", "Actual STAND input must restore posture.")
+    click(Vector2(1100, 258), MOUSE_BUTTON_LEFT)
+    await process_frame
+    check(view.selected == "UKR_S2" and "SUP" in view.selection_label.text and "every 2s" in view.selection_label.tooltip_text, "Support squad selection must explain its actual cadence and ammo cost.")
+    click(Vector2(1100, 224), MOUSE_BUTTON_LEFT)
+    await process_frame
+    check(view.selected == "UKR_S1" and "RIF" in view.selection_label.text, "Rifle squad selection must show its profile.")
     var intended := Vector3(210, Battle.terrain_height(210, 245), 245)
     var local: Vector2 = view.camera.unproject_position(intended)
     var hit: Vector2 = view._ground_point(local)
@@ -252,6 +258,27 @@ func _run() -> void:
     if not capture.is_empty() and DisplayServer.get_name() != "headless":
         await RenderingServer.frame_post_draw
         check(root.get_texture().get_image().save_png(capture.get_base_dir().path_join("timed-pause-preview.png")) == OK, "Timed-wait execution capture must save.")
+    var support_checkpoint: Dictionary = game.tactical_simulation.state.duplicate(true)
+    var support_squad: Dictionary = game.tactical_simulation.squad_by_id("UKR_S2")
+    support_squad["position"] = [180,245]
+    support_squad["suppression"] = 0.0
+    view.selected = "UKR_S2"
+    view._age_shot_cues(1.0)
+    var support_shot := false
+    for tick in range(2):
+        var before: Dictionary = view._status_snapshot()
+        game.tactical_simulation.step()
+        var events: Array = game.tactical_simulation.consume_events()
+        for event in events:
+            if event["shooter"] == "UKR_S2" and event.get("weapon_role") == "support" and event["player_visible"]: support_shot = true
+        view._show_shot_events(events)
+        view._show_combat_changes(before)
+    view._refresh()
+    check(support_shot and "SUP" in view.selection_label.text and not view.shot_cues.is_empty(), "Execution must show a real observed support volley and its selected profile.")
+    if not capture.is_empty() and DisplayServer.get_name() != "headless":
+        await RenderingServer.frame_post_draw
+        check(root.get_texture().get_image().save_png(capture.get_base_dir().path_join("support-fire-preview.png")) == OK, "Actual support-fire capture must save.")
+    game.tactical_simulation.restore(support_checkpoint)
     var posture_checkpoint: Dictionary = game.tactical_simulation.state.duplicate(true)
     game.tactical_simulation.state["postures"]["UKR_S1"] = "prone"
     game.tactical_simulation.state["postures"]["UKR_S3"] = "crouch"

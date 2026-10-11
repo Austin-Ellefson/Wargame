@@ -51,7 +51,7 @@ static func visible(a: Vector2, b: Vector2, observer_height: float = 1.6, target
     return true
 
 func setup(payload: Dictionary) -> void:
-    state = {"version": 14, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
+    state = {"version": 15, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
     state["contacts"] = {"UKR": {}, "RU": {}}
@@ -63,6 +63,7 @@ func setup(payload: Dictionary) -> void:
     state["morale_states"] = {}
     state["rally_remaining"] = {}
     state["postures"] = {}
+    state["weapon_roles"] = {}
     for squad in state["squads"]:
         state["fire_modes"][squad["id"]] = "auto"
         state["fire_targets"][squad["id"]] = ""
@@ -71,6 +72,7 @@ func setup(payload: Dictionary) -> void:
         state["morale_states"][squad["id"]] = "steady"
         state["rally_remaining"][squad["id"]] = 0
         state["postures"][squad["id"]] = "stand"
+        state["weapon_roles"][squad["id"]] = initial_weapon_role(squad["id"])
     last_events = []
     _build_navigation()
     _update_contacts()
@@ -109,6 +111,21 @@ func squad_by_id(id: String) -> Dictionary:
         if squad["id"] == id:
             return squad
     return {}
+
+static func initial_weapon_role(id: String) -> String:
+    # Fictional roster: alternating maneuver and support-fire squads. Equipment
+    # is abstract at squad level; this is not an individual weapon inventory.
+    return "support" if id.ends_with("S2") or id.ends_with("S4") else "rifle"
+
+func weapon_role(id: String) -> String:
+    return str(state["weapon_roles"][id]) if int(state["version"]) >= 15 else "rifle"
+
+func fire_interval(id: String) -> int:
+    return 2 if weapon_role(id) == "support" else 3
+
+func rounds_per_volley(squad: Dictionary) -> int:
+    var multiplier := 2 if weapon_role(squad["id"]) == "support" else 1
+    return mini(int(squad["alive"]) * multiplier, int(squad["ammo"]))
 
 func posture(id: String) -> String:
     return str(state["postures"][id]) if int(state["version"]) >= 14 else "stand"
@@ -466,30 +483,32 @@ func step() -> void:
     _update_contacts()
     # Collect attacks before applying damage: both sides fire from the same tick state.
     var attacks: Array = []
-    if int(state["elapsed"]) % 3 == 0:
-        for shooter in state["squads"]:
-            if int(shooter["alive"]) <= 0 or int(shooter["ammo"]) <= 0 or fire_mode(shooter["id"]) == "hold" or morale_state(shooter["id"]) == "broken":
-                continue
-            var target := _nearest_target(shooter)
-            if target.is_empty():
-                continue
-            var rounds := mini(int(shooter["alive"]), int(shooter["ammo"]))
-            shooter["ammo"] = int(shooter["ammo"]) - rounds
-            var chance := hit_probability(shooter, target)
-            var random := RandomNumberGenerator.new()
-            random.seed = (str(state["battle_id"]) + ":" + str(state["elapsed"]) + ":" + str(shooter["id"])).sha256_text().left(8).hex_to_int()
-            var losses := 0
-            for round_index in range(rounds):
-                if random.randf() < chance:
-                    losses += 1
-            var event := {"type": "shot", "tick": state["elapsed"], "shooter": shooter["id"],
-                "target": target["id"], "from": shooter["position"].duplicate(),
-                "to": target["position"].duplicate(), "rounds": rounds, "losses": losses}
-            # Snapshot visibility at firing time, before simultaneous losses.
-            # Hidden enemy endpoints must not be revealed by presentation cues.
-            event["player_visible"] = is_observed("UKR", shooter) and is_observed("UKR", target)
-            last_events.append(event)
-            attacks.append({"target": target["id"], "losses": losses, "pressure": 0.07 + rounds * 0.012})
+    for shooter in state["squads"]:
+        if int(state["elapsed"]) % fire_interval(shooter["id"]) != 0:
+            continue
+        if int(shooter["alive"]) <= 0 or int(shooter["ammo"]) <= 0 or fire_mode(shooter["id"]) == "hold" or morale_state(shooter["id"]) == "broken":
+            continue
+        var target := _nearest_target(shooter)
+        if target.is_empty():
+            continue
+        var rounds := rounds_per_volley(shooter)
+        shooter["ammo"] = int(shooter["ammo"]) - rounds
+        var chance := hit_probability(shooter, target) * (0.65 if weapon_role(shooter["id"]) == "support" else 1.0)
+        var random := RandomNumberGenerator.new()
+        random.seed = (str(state["battle_id"]) + ":" + str(state["elapsed"]) + ":" + str(shooter["id"])).sha256_text().left(8).hex_to_int()
+        var losses := 0
+        for round_index in range(rounds):
+            if random.randf() < chance:
+                losses += 1
+        var event := {"type": "shot", "tick": state["elapsed"], "shooter": shooter["id"],
+            "target": target["id"], "from": shooter["position"].duplicate(),
+            "to": target["position"].duplicate(), "rounds": rounds, "losses": losses}
+        # Snapshot visibility at firing time, before simultaneous losses.
+        # Hidden enemy endpoints must not be revealed by presentation cues.
+        if int(state["version"]) >= 15: event["weapon_role"] = weapon_role(shooter["id"])
+        event["player_visible"] = is_observed("UKR", shooter) and is_observed("UKR", target)
+        last_events.append(event)
+        attacks.append({"target": target["id"], "losses": losses, "pressure": 0.07 + rounds * 0.012})
     for attack in attacks:
         var target := squad_by_id(attack["target"])
         var losses := mini(int(target["alive"]), int(attack["losses"]))
@@ -563,10 +582,10 @@ func result() -> Dictionary:
         "elapsed": state["elapsed"], "objective": state["objective"].duplicate(true), "forces": forces}
 
 static func validate(saved: Variant, payload: Dictionary) -> bool:
-    if not saved is Dictionary or not _integer(saved.get("version"), 1, 14):
+    if not saved is Dictionary or not _integer(saved.get("version"), 1, 15):
         return false
     var version := int(saved["version"])
-    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12) + 2 * int(version >= 13) + int(version >= 14)
+    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12) + 2 * int(version >= 13) + int(version >= 14) + int(version >= 15)
     if saved.size() != field_count:
         return false
     for key in ["version", "battle_id", "phase", "elapsed", "remaining", "objective", "squads", "orders", "winner"]:
@@ -704,6 +723,11 @@ static func _validate_fields(saved: Dictionary, payload: Dictionary) -> bool:
         for id in known:
             if postures.get(id) not in ["stand", "crouch", "prone"]: return false
             if saved["morale_states"][id] == "broken" and postures[id] != "stand": return false
+    if int(saved["version"]) >= 15:
+        var roles = saved.get("weapon_roles")
+        if not roles is Dictionary or roles.size() != known.size(): return false
+        for id in known:
+            if not roles.get(id) is String or roles[id] != initial_weapon_role(id): return false
     var survivors := {"UKR": 0, "RU": 0}
     for squad in saved["squads"]:
         survivors[squad["faction"]] += int(squad["alive"])

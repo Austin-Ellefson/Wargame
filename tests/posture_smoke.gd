@@ -107,6 +107,7 @@ func _run() -> void:
     check(not Battle.validate(invalid,PAYLOAD), "Extra posture IDs must reject.")
     var legacy = fixture()
     legacy.state["version"] = 13
+    if int(legacy.state["version"]) < 15: legacy.state.erase("weapon_roles")
     legacy.state.erase("postures")
     check(Battle.validate(legacy.state,PAYLOAD) and not legacy.order_posture("UKR_S1","prone"), "V13 retains its field contract and cannot silently acquire posture orders.")
     legacy.order_move("UKR_S1",Vector2(180,250),true,"quick")

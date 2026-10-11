@@ -423,3 +423,43 @@ campaign contact/results remain covered by the combined regression suite.
 The multipliers are abstract prototype tuning, not empirical combat values.
 No transition delay, weapon-specific posture restrictions, automatic cover
 seeking, individual soldiers, leaders or Windows validation is claimed.
+
+
+## Rifle and support-fire profiles (tactical v15)
+
+Fresh battles assign S1/S3 on each side to RIF and S2/S4 to SUP. These are
+fictional squad-level fire profiles, not individual rifle/machine-gun inventories.
+Selection text and live friendly volley lines identify RIF/SUP; hover the selected
+status for cadence/ammunition details. A support shot uses a warmer muzzle cue
+only when the actual shot is visible. Unseen enemy roles and rounds stay hidden.
+
+| Profile | Cadence | Maximum rounds per volley | Per-round hit multiplier |
+| --- | --- | --- | --- |
+| RIF | Every 3 simulated seconds | 1 per living squad member | 1.0 |
+| SUP | Every 2 simulated seconds | 2 per living squad member | 0.65 |
+
+Volleys clamp to available rounds; both profiles start with the existing 40 rounds
+per deployed person. More support rounds apply more pressure through the existing
+`0.07 + rounds * 0.012` suppression rule, but spend the finite supply faster.
+No extra personnel/ammunition is granted. Casualties remain bounded by survivors,
+and same-tick attacks are collected before either side takes damage. Support fire
+is still aimed at a currently locally engageable enemy, not an area-fire command.
+HOLD FIRE, broken morale, zero ammo, LOS and spotting restrict both profiles.
+Posture, cover and suppression still modify hit probability.
+
+Cadence derives from saved elapsed seconds; restart cannot reset it or grant an
+extra volley. Rendering/playback never samples combat RNG. V1–V14 engagements
+retain their original three-second single-round-per-survivor behavior and event
+shape. New V15 saves add strict fixed role assignments; campaign/result/export/
+GIS contracts and Windows launchers are unchanged.
+
+Playtest: fresh PLAY INTEGRATED DEMO, select S2 and confirm SUP, then maneuver it
+to a locally visible contact. Execute and watch larger frequent round reductions
+and live SUP lines; use HOLD FIRE in a later planning interval to conserve ammo.
+Compare S1 RIF and save/reopen between intervals. Partial-ammo and one-second
+pre-volley disk restart are also covered by regression.
+
+This is abstract profile tuning: no individual weapon/ammo pools, gunner losses,
+reloads, overheating, ammunition transfer, penetration, realistic cyclic rates or
+platform-specific performance validation. Real support-fire tactics/fidelity and
+Windows playtesting remain unverified.

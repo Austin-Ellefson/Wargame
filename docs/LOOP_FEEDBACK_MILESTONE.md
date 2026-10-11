@@ -536,3 +536,18 @@ is delivered as the scheduled task result in ChatGPT.
   Combat Mission fidelity validation. Instant posture changes, abstract tuning,
   standing red planner and symbolic squad bodies remain limitations.
 - Next: infantry weapon roles and fire cadence, with bounded ammunition/casualties.
+
+
+## Infantry rifle/support profiles — 2026-10-11
+
+- In validation: codex/infantry-fire-profiles, explicit base tested PR #26 final
+  head 505b84c0e73812ff05327d0e81a36b7216e0fca4 (CI 38164319208 success).
+- V15 adds fixed strict roles, rifle 3s/support 2s cadence and finite burst/ammo
+  tradeoffs. Same-tick attacks and once-only campaign bounds remain unchanged.
+- All 20 local Godot checks, 26 terrain tests and diff check passed. Initial
+  GDScript type inference and malformed-role comparison errors fixed; runner
+  correctly rejected script errors even when a direct script printed PASS.
+- New regression uses actual volleys, partial ammo, hold/hidden restrictions,
+  simultaneous attacks, strict maps, V14 preservation and pre-volley campaign
+  disk restart with complete outcome equality. Actual support render CI pending.
+- No Windows/fidelity/individual-weapon validation; frozen ready branches preserved.
