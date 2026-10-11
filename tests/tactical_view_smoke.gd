@@ -178,9 +178,12 @@ func _run() -> void:
     # planning target input. UI refresh and Shift-click cannot skip the delay.
     view.set_process(false)
     for squad in game.tactical_simulation.state["squads"]: squad["ammo"] = 0
+    game.tactical_simulation.order_move("UKR_S1", Vector2(210,245))
     game.tactical_simulation.execute()
-    game.tactical_simulation.state["orders"].clear()
-    game.tactical_simulation.state["movement_modes"].clear()
+    for id in game.tactical_simulation.state["orders"].keys():
+        if id != "UKR_S1":
+            game.tactical_simulation.state["orders"].erase(id)
+            game.tactical_simulation.state["movement_modes"].erase(id)
     game.tactical_simulation.step()
     game.tactical_simulation.step()
     view._refresh()
@@ -194,10 +197,12 @@ func _run() -> void:
     view._show_shot_events(game.tactical_simulation.consume_events())
     view._show_combat_changes(acquisition_before)
     view._refresh()
+    check("MOVE IN 2s" in view.selection_label.text, "Executed response countdown must remain readable while an actual shot fires.")
     check(view.actors["RU_S1"].visible and not view.shot_cues.is_empty(), "Third second must reveal the identified contact with an actual delayed shot cue.")
     if not capture.is_empty() and DisplayServer.get_name() != "headless":
         await RenderingServer.frame_post_draw
         check(root.get_texture().get_image().save_png(capture.get_base_dir().path_join("acquisition-shot-preview.png")) == OK, "Actual acquisition-shot capture must save.")
+        check(root.get_texture().get_image().save_png(capture.get_base_dir().path_join("command-response-preview.png")) == OK, "Actual response-and-fire capture must save.")
     for tick in range(57): game.tactical_simulation.step()
     view._age_shot_cues(1.0)
     view._refresh()

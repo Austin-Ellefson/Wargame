@@ -51,7 +51,7 @@ static func visible(a: Vector2, b: Vector2, observer_height: float = 1.6, target
     return true
 
 func setup(payload: Dictionary) -> void:
-    state = {"version": 16, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
+    state = {"version": 17, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
     state["contacts"] = {"UKR": {}, "RU": {}}
@@ -65,8 +65,10 @@ func setup(payload: Dictionary) -> void:
     state["postures"] = {}
     state["weapon_roles"] = {}
     state["acquisition"] = {}
+    state["command_remaining"] = {}
     for squad in state["squads"]:
         state["acquisition"][squad["id"]] = {}
+        state["command_remaining"][squad["id"]] = 0
         state["fire_modes"][squad["id"]] = "auto"
         state["fire_targets"][squad["id"]] = ""
         state["pause_remaining"][squad["id"]] = 0
@@ -172,6 +174,7 @@ func _retreat_route(squad: Dictionary) -> void:
     state["pause_remaining"][id] = 0
     if int(state["version"]) >= 14: state["postures"][id] = "stand"
     _assign_route(id, Vector2(32 if squad["faction"] == "UKR" else 480, clampf(position(squad).y, 24, 488)), "quick")
+    if int(state["version"]) >= 17: state["command_remaining"][id] = 0
 
 func _update_morale(squad: Dictionary) -> void:
     if int(state["version"]) < 13: return
@@ -335,6 +338,9 @@ func hunt_paused(squad: Dictionary) -> bool:
             return true
     return false
 
+func command_delay(id: String) -> int:
+    return int(state["command_remaining"][id]) if int(state["version"]) >= 17 else 0
+
 func movement_status(squad: Dictionary) -> String:
     if int(squad["alive"]) <= 0: return "NONE"
     if morale_state(squad["id"]) == "broken":
@@ -342,7 +348,9 @@ func movement_status(squad: Dictionary) -> String:
     var mode := movement_mode(squad["id"])
     if int(state["version"]) >= 8 and int(state["pause_remaining"][squad["id"]]) > 0:
         return "WAIT %ds (%s)" % [state["pause_remaining"][squad["id"]], mode.to_upper()]
-    return "HUNT PAUSED" if hunt_paused(squad) else mode.to_upper()
+    if hunt_paused(squad): return "HUNT PAUSED"
+    if command_delay(squad["id"]) > 0: return "%s IN %ds" % [mode.to_upper(), command_delay(squad["id"])]
+    return mode.to_upper()
 
 func order_move(id: String, target: Vector2, player: bool = true, mode: String = "move", append: bool = false) -> bool:
     if mode not in ["move", "quick", "hunt"] or (int(state["version"]) < 5 and mode != "move"):
@@ -361,6 +369,7 @@ func _assign_route(id: String, target: Vector2, mode: String = "move", append: b
     var previous: Array = state["orders"].get(id, []).duplicate(true) if append else []
     if append and not previous.is_empty() and movement_mode(id) != mode:
         return false
+    var new_command := not append or previous.is_empty()
     var origin := Vector2(previous.back()[0], previous.back()[1]) if not previous.is_empty() else position(squad)
     var start := Vector2i(int(origin.x / CELL), int(origin.y / CELL))
     var finish := Vector2i(int(target.x / CELL), int(target.y / CELL))
@@ -378,6 +387,7 @@ func _assign_route(id: String, target: Vector2, mode: String = "move", append: b
     if path.size() > 128:
         return false
     state["orders"][id] = path
+    if int(state["version"]) >= 17 and new_command: state["command_remaining"][id] = 5
     if int(state["version"]) >= 5:
         state["movement_modes"][id] = mode
     if int(state["version"]) >= 8 and not append:
@@ -393,6 +403,7 @@ func order_hold(id: String) -> bool:
         state["movement_modes"].erase(id)
     if int(state["version"]) >= 8:
         state["pause_remaining"][id] = 0
+    if int(state["version"]) >= 17: state["command_remaining"][id] = 0
     return true
 
 func execute() -> bool:
@@ -458,6 +469,9 @@ func step() -> void:
     for squad in state["squads"]:
         squad["suppression"] = maxf(0, float(squad["suppression"]) - 0.035)
         _update_morale(squad)
+        if int(state["version"]) >= 17 and (not state["orders"].has(squad["id"]) or int(squad["alive"]) <= 0): state["command_remaining"][squad["id"]] = 0
+        var responding := command_delay(squad["id"]) > 0
+        if responding: state["command_remaining"][squad["id"]] = command_delay(squad["id"]) - 1
         var waiting := int(state["version"]) >= 8 and int(state["pause_remaining"][squad["id"]]) > 0
         if waiting:
             state["pause_remaining"][squad["id"]] = int(state["pause_remaining"][squad["id"]]) - 1
@@ -473,7 +487,7 @@ func step() -> void:
         var mode := movement_mode(squad["id"])
         var speed: float = float(base_speed) * (1.0 - 0.8 * float(squad["suppression"])) * (1.0 - 0.5 * fatigue(squad["id"])) * (0.75 if morale_state(squad["id"]) == "shaken" else 1.0)
         speed *= posture_speed(squad["id"])
-        if waiting or is_pinned(squad) or hunt_paused(squad) or opponent_engaging(squad):
+        if responding or waiting or is_pinned(squad) or hunt_paused(squad) or opponent_engaging(squad):
             speed = 0.0
         var travelled := 0.0
         while speed > 0 and not path.is_empty():
@@ -501,6 +515,7 @@ func step() -> void:
                 state["movement_modes"].erase(squad["id"])
             if int(state["version"]) >= 8:
                 state["pause_remaining"][squad["id"]] = 0
+            if int(state["version"]) >= 17: state["command_remaining"][squad["id"]] = 0
     _update_acquisition(true)
     _update_contacts()
     # Collect attacks before applying damage: both sides fire from the same tick state.
@@ -537,6 +552,9 @@ func step() -> void:
         target["alive"] = int(target["alive"]) - losses
         target["suppression"] = minf(1, float(target["suppression"]) + float(attack["pressure"]))
         target["morale"] = maxi(0, int(target["morale"]) - losses * 3)
+    if int(state["version"]) >= 17:
+        for squad in state["squads"]:
+            if int(squad["alive"]) <= 0: state["command_remaining"][squad["id"]] = 0
     _update_contacts()
     var on_objective := {"UKR": false, "RU": false}
     for squad in state["squads"]:
@@ -604,10 +622,10 @@ func result() -> Dictionary:
         "elapsed": state["elapsed"], "objective": state["objective"].duplicate(true), "forces": forces}
 
 static func validate(saved: Variant, payload: Dictionary) -> bool:
-    if not saved is Dictionary or not _integer(saved.get("version"), 1, 16):
+    if not saved is Dictionary or not _integer(saved.get("version"), 1, 17):
         return false
     var version := int(saved["version"])
-    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12) + 2 * int(version >= 13) + int(version >= 14) + int(version >= 15) + int(version >= 16)
+    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12) + 2 * int(version >= 13) + int(version >= 14) + int(version >= 15) + int(version >= 16) + int(version >= 17)
     if saved.size() != field_count:
         return false
     for key in ["version", "battle_id", "phase", "elapsed", "remaining", "objective", "squads", "orders", "winner"]:
@@ -758,6 +776,12 @@ static func _validate_fields(saved: Dictionary, payload: Dictionary) -> bool:
             if not records is Dictionary: return false
             for target_id in records:
                 if not known.has(target_id) or known[target_id]["faction"] == known[id]["faction"] or not _integer(records[target_id], 1, mini(3, int(saved["elapsed"]))): return false
+    if int(saved["version"]) >= 17:
+        var commands = saved.get("command_remaining")
+        if not commands is Dictionary or commands.size() != known.size(): return false
+        for id in known:
+            if not _integer(commands.get(id), 0, 5): return false
+            if int(commands[id]) > 0 and (not saved["orders"].has(id) or int(known[id]["alive"]) <= 0 or saved["morale_states"][id] == "broken"): return false
     var survivors := {"UKR": 0, "RU": 0}
     for squad in saved["squads"]:
         survivors[squad["faction"]] += int(squad["alive"])

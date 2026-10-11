@@ -253,3 +253,14 @@ Geometry is still checked at query time, so saved progress cannot bypass LOS/ran
 Progress advances only once per executed second; dead/lost-sight observers reset.
 Partial timers and full combat outcomes restore exactly from disk. V1–V15 keep
 their fields and immediate acquisition; campaign v2/result v1 are unchanged.
+
+
+## Tactical response v17
+
+New battles add `command_remaining`, exactly one integer 0–5 per known squad.
+Positive entries require a saved route, living squad and non-broken morale.
+Missing/extra IDs, malformed timers, no-route/dead/broken positive timers reject.
+Replacement starts five seconds; append retains the old timer; hold/route finish/
+death clear it. Automatic withdrawal bypasses it. Mid-response disk saves retain
+exact remaining time and full combat outcomes. V1–V16 retain original fields and
+immediate route response. Campaign v2/result v1 and rollback contracts unchanged.
