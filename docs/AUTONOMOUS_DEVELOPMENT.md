@@ -34,6 +34,16 @@ Read docs/LOOP_FEEDBACK_MILESTONE.md first. The current user-requested milestone
 
 Campaign save/load, pending battle locks, and native once-only result application already exist on the stacked branches. The old manual CMBS result form is no longer the primary development priority.
 
+## Suppression pinning task — 2026-10-10
+- Status: ready for review; `codex/suppression-pinning`, draft PR #13, based on PR #12.
+- Heavy suppression halts movement, retains orders and permits suppressed return
+  fire; morale changes the threshold and recovery resumes the queued route.
+- New tactical rules v2; existing v1 engagements keep their behavior on load.
+- Seven Godot checks and 26 terrain tests passed; CI 38112927417 succeeded and
+  execution/report captures were inspected. Full evidence is in the milestone ledger.
+- Limits: abstract squad behavior, full enemy visibility, no Windows validation.
+- Next: limited enemy visibility and spotting, then richer movement/fire commands.
+
 ## User-dependent validation
 Compare real terrain output against the Windows CMBS editor with the user's installed CMAutoEditor version.
 Record this as blocked on Windows editor evidence; do not let it block independent campaign persistence work.

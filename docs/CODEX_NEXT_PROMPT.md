@@ -1,7 +1,9 @@
-# Next Codex Task: Complete the Loop and Combat Feedback Milestone
+# Next Codex Task: Limited Enemy Visibility
 
 The user authorized unattended progress on 2026-10-10 and requested a check-in
 when the repeatable campaign loop and visible firing/feedback are both ready.
+That check-in was prepared for the preserved `codex/completed-battle-report`
+branch. The user now wants battles as close to Combat Mission as possible.
 
 Inspect branches and PRs, then read AGENTS.md, docs/AUTONOMOUS_DEVELOPMENT.md,
 docs/LOOP_FEEDBACK_MILESTONE.md, docs/NATIVE_TACTICAL.md and docs/CAMPAIGN_SAVES.md.
@@ -9,11 +11,19 @@ Start from codex/loop-feedback-workflow and follow the latest validated descenda
 in the ledger. This includes the native battle and save/load work; main remains
 a starter until the PR chain is merged. Recheck actual GitHub state.
 
-Complete one focused implementation task from the ledger. First add a meaningful
-regression for two consecutive campaign battles with restart and fix discovered
-defects. Then implement actual-shot visual cues, suppression/casualty feedback
-and a readable result report. Supporting camera/order usability is in scope.
-GIS, vehicles and deeper tactical models wait until this milestone is ready.
+The latest tested descendant is `codex/suppression-pinning` (PR #13), containing
+camera/path previews and morale-sensitive pinning. Recheck its ledger, PR and CI
+before using it. Existing tactical v1 saves retain original rules; new battles
+use v2. Unknown versions must be rejected.
+
+Complete one focused visibility/spotting implementation with meaningful tests.
+Start with limited enemy visibility rather than exposing every enemy position.
+Design player and opponent knowledge consistently; hidden contacts must not leak
+through labels, paths or shot endpoints. Persist any authoritative contact data
+with a versioned contract and deterministic restart. Preserve old engagements'
+rules or explicitly document/test a migration. Richer movement/fire orders,
+opponent reactions, weapons, leadership and individual representation follow in
+separate tasks; do not claim parity or measured real-world fidelity.
 Preserve exports, deterministic saves, locks, bounded losses, duplicate rejection
 and save-failure rollback.
 
@@ -30,8 +40,6 @@ conclusion and inspect artifacts. Exercise firing visuals during execution,
 not only in a planning screenshot. State absent Windows validation accurately.
 
 Update the ledger with actual outcomes, code commit, CI run and preview evidence.
-When every gate passes on one playable branch, prepare the user's check-in with
-the download, exact launch/test instructions, evidence and limits. Record the
-code commit for which the check-in was prepared; avoid repeat announcements on
-every run. Until then, persist concise task status in GitHub and report concrete
-blockers without claiming completion.
+Keep the frozen milestone download and its check-in record available. Report the
+new descendant download separately. Preserve concise task status in GitHub and
+report concrete blockers without claiming completion.
