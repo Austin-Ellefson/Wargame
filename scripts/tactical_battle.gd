@@ -8,6 +8,8 @@ const MAX_SECONDS := 360
 const DETACHMENT := 36
 const SQUAD_SIZE := 9
 const ROUNDS_PER_PERSON := 40
+const SPOT_RANGE := 280.0
+const WOODS_SPOT_RANGE := 120.0
 const BUILDINGS := [Rect2(222, 152, 30, 30), Rect2(304, 326, 30, 30), Rect2(166, 346, 24, 24)]
 const WOODS := [Vector3(212, 290, 29), Vector3(298, 210, 30), Vector3(108, 130, 32)]
 
@@ -48,7 +50,7 @@ static func visible(a: Vector2, b: Vector2) -> bool:
     return true
 
 func setup(payload: Dictionary) -> void:
-    state = {"version": 2, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
+    state = {"version": 3, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
     last_events = []
@@ -93,6 +95,32 @@ func combat_status(squad: Dictionary) -> String:
     if int(squad["alive"]) <= 0:
         return "ELIMINATED"
     return "PINNED" if is_pinned(squad) else "READY"
+
+func limited_visibility() -> bool:
+    return int(state["version"]) >= 3
+
+func can_spot(observer: Dictionary, target: Dictionary) -> bool:
+    if observer.is_empty() or target.is_empty() or int(observer["alive"]) <= 0 or int(target["alive"]) <= 0 or observer["faction"] == target["faction"]:
+        return false
+    var limit := WOODS_SPOT_RANGE if cover(position(target)) > 0.2 else SPOT_RANGE
+    return position(observer).distance_to(position(target)) <= limit and visible(position(observer), position(target))
+
+func is_observed(faction: String, target: Dictionary) -> bool:
+    if target.is_empty():
+        return false
+    if target["faction"] == faction or not limited_visibility():
+        return true
+    for observer in state["squads"]:
+        if observer["faction"] == faction and can_spot(observer, target):
+            return true
+    return false
+
+func observed_contacts(faction: String) -> int:
+    var count := 0
+    for target in state["squads"]:
+        if target["faction"] != faction and int(target["alive"]) > 0 and is_observed(faction, target):
+            count += 1
+    return count
 
 func order_move(id: String, target: Vector2, player: bool = true) -> bool:
     var squad := squad_by_id(id)
@@ -187,6 +215,9 @@ func step() -> void:
             var event := {"type": "shot", "tick": state["elapsed"], "shooter": shooter["id"],
                 "target": target["id"], "from": shooter["position"].duplicate(),
                 "to": target["position"].duplicate(), "rounds": rounds, "losses": losses}
+            # Snapshot visibility at firing time, before simultaneous losses.
+            # Hidden enemy endpoints must not be revealed by presentation cues.
+            event["player_visible"] = is_observed("UKR", shooter) and is_observed("UKR", target)
             last_events.append(event)
             attacks.append({"target": target["id"], "losses": losses, "pressure": 0.07 + rounds * 0.012})
     for attack in attacks:
@@ -223,7 +254,7 @@ func _nearest_target(shooter: Dictionary) -> Dictionary:
         if candidate["faction"] == shooter["faction"] or int(candidate["alive"]) <= 0:
             continue
         var separation := position(shooter).distance_to(position(candidate))
-        if separation < distance and visible(position(shooter), position(candidate)):
+        if separation < distance and visible(position(shooter), position(candidate)) and (not limited_visibility() or can_spot(shooter, candidate)):
             distance = separation
             best = candidate
     return best
@@ -271,7 +302,7 @@ static func _point(value: Variant) -> bool:
     return value is Array and value.size() == 2 and (typeof(value[0]) == TYPE_INT or typeof(value[0]) == TYPE_FLOAT) and (typeof(value[1]) == TYPE_INT or typeof(value[1]) == TYPE_FLOAT) and is_finite(float(value[0])) and is_finite(float(value[1])) and value[0] >= 4 and value[0] <= SIZE - 4 and value[1] >= 4 and value[1] <= SIZE - 4
 
 static func _validate_fields(saved: Dictionary, payload: Dictionary) -> bool:
-    if not _integer(saved["version"], 1, 2) or saved["battle_id"] != payload.get("battle_id") or saved["phase"] not in ["planning", "execution", "finished"]:
+    if not _integer(saved["version"], 1, 3) or saved["battle_id"] != payload.get("battle_id") or saved["phase"] not in ["planning", "execution", "finished"]:
         return false
     if not _integer(saved["elapsed"], 0, MAX_SECONDS) or not _integer(saved["remaining"], 0, INTERVAL):
         return false

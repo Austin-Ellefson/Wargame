@@ -6,6 +6,10 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
+The newer `codex/limited-enemy-visibility` descendant includes route previews,
+camera navigation, pinning and current enemy spotting. The milestone branch
+above remains frozen. New battles on this descendant use tactical rules v3.
+
 ## Complete game loop
 
 1. Click **PLAY INTEGRATED DEMO** in a fresh campaign, or use the documented
@@ -26,7 +30,8 @@ Python, CMAutoEditor and Combat Mission are not required for native play.
    automatic attack flashes briefly at the firing squad and draws an orange shot
    cue toward its target. A cue means rounds were fired, not that they hit. Unit
    labels and the blue roster continuously show personnel, rounds and suppression.
-   The translucent **LATEST VOLLEY** panel spells out recent changes for both sides:
+   The translucent **LATEST VOLLEY** panel spells out recent changes for both sides
+   in legacy rules; v3 reveals exact changes only for your blue squads:
    `P` is personnel, `R` is rounds and `SUP` is suppression percentage points.
 5. Capture the gold objective. It scores one point per uncontested second within
    52 m of the flag. A surviving side wins if its opposing detachment is eliminated;
@@ -64,7 +69,7 @@ Squads route on an 8 m grid with building clearance. They move at an abstract
 2.4 m/s before suppression modifiers. Automatic fire uses a 230 m range limit,
 terrain/building line-of-sight checks and a distance/cover/suppression probability.
 Attacks are collected before casualties apply, allowing simultaneous fire.
-Woods provide cover; they do not yet conceal units. Each deployed person starts
+Woods provide cover (and conceal targets at distance under v3). Each deployed person starts
 with an abstract pool of 40 rounds. Morale decreases with casualties. On the
 `codex/suppression-pinning` descendant, new engagements use tactical rules v2:
 a living squad is **PINNED** when suppression reaches `0.50 + morale * 0.0035`
@@ -88,10 +93,32 @@ losses remain visible even when several squads fire together. Dead squads vanish
 their roster button and hold control disable, and both movement and hold orders
 are rejected by the simulation.
 
-Enemy positions remain visible. This first model has no detailed ballistics,
-weapon classes, armor, animations, multi-contact battles, fog of war or realistic
+Legacy v1/v2 battles retain full enemy visibility. This first model has no detailed ballistics,
+weapon classes, armor, animations, multi-contact battles or realistic
 military-model validation. Those are separate, testable improvements. Existing
 formation snapshots and legacy exports remain available.
+
+## Current spotting in tactical rules v3
+
+A living squad can spot an enemy within 280 m on open ground, or within 120 m
+when the target is in woods, if terrain/building line of sight is clear. Both
+sides use the same observer/target rule, with no random spotting roll. A side's
+view shows contacts observed by any living squad, but each shooter must spot its
+own target before automatic fire. The opponent still follows scripted objective
+routes; it does not use hidden player positions to plan movement.
+
+Unspotted red actors, labels and orders are hidden. Observed enemies show only
+**ENEMY CONTACT**, without exact personnel, rounds, morale or suppression. The
+live sidebar shows blue personnel, current contact count and your own objective
+seconds; exact red strength and objective time are withheld until the completed
+report. Live volley changes describe blue squads only. A shot cue appears only
+when both endpoints were observed at the moment of firing; unobserved incoming
+fire can still damage/suppress blue squads without revealing its source.
+
+Contacts are current sight only: losing LOS/range or the last living observer
+hides the enemy again. No last-known-position marker, spotting delay, relative
+contact sharing delay or area fire exists yet. The ranges are prototype tuning
+values. This is a first visibility layer, not Combat Mission fidelity validation.
 
 ## Saving and resuming
 
@@ -109,7 +136,9 @@ engagement reaches the same outcome with the same orders.
 
 Tactical saves carry their rules version separately from campaign schema v2.
 Existing tactical v1 engagements load and finish with their original slowed
-movement rules, while newly created engagements use v2 pinning. Result/export
+movement rules; v2 keeps pinning and full visibility. New engagements use v3
+pinning and spotting. Current contacts are derived solely from saved squad state,
+so no new save fields or persistent contact memory are introduced. Result/export
 shapes and campaign schema remain unchanged. Unknown tactical versions are
 rejected; there is no automatic rewrite of an in-flight battle.
 

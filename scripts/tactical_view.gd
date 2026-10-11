@@ -332,6 +332,8 @@ func _show_shot_events(events: Array) -> void:
     for event in events:
         if event.get("type") != "shot":
             continue
+        if simulation.limited_visibility() and not event.get("player_visible", false):
+            continue
         observed_shot_events.append(event.duplicate(true))
         if observed_shot_events.size() > 64:
             observed_shot_events.pop_front()
@@ -362,6 +364,8 @@ func _show_combat_changes(before: Dictionary) -> void:
     var casualty_lines: Array[String] = []
     var other_lines: Array[String] = []
     for squad in simulation.state["squads"]:
+        if simulation.limited_visibility() and squad["faction"] != "UKR":
+            continue
         var previous: Dictionary = before.get(squad["id"], {})
         if previous.is_empty():
             continue
@@ -461,6 +465,8 @@ func _refresh() -> void:
     var state: Dictionary = simulation.state
     phase_label.text = "%s  |  %02d:%02d elapsed  |  512 x 512 m generated test terrain" % [str(state["phase"]).to_upper(), int(state["elapsed"]) / 60, int(state["elapsed"]) % 60]
     summary_label.text = "Blue %d / Red %d personnel\nObjective control: %d / %d seconds" % [simulation.alive("UKR"), simulation.alive("RU"), state["objective"]["UKR"], state["objective"]["RU"]]
+    if simulation.limited_visibility() and state["phase"] != "finished":
+        summary_label.text = "Blue %dP / %d enemy contacts\nYour objective: %ds" % [simulation.alive("UKR"), simulation.observed_contacts("UKR"), state["objective"]["UKR"]]
     for id in squad_buttons:
         var squad: Dictionary = simulation.squad_by_id(id)
         squad_buttons[id].disabled = squad.is_empty() or int(squad.get("alive", 0)) == 0
@@ -482,6 +488,8 @@ func _refresh() -> void:
     completed_report_panel.visible = state["phase"] == "finished"
     completed_report_label.visible = state["phase"] == "finished"
     report_label.text = "Capture the gold circle. Fire is automatic when enemies are visible and in range. Six intervals maximum."
+    if simulation.limited_visibility():
+        report_label.text = "Spot enemies before firing. Woods conceal distant squads. Contacts show current sight only. Six intervals maximum."
     if state["phase"] == "finished":
         var result: Dictionary = simulation.result()
         completed_report_label.text = _battle_report(result)
@@ -490,10 +498,13 @@ func _refresh() -> void:
     for squad in state["squads"]:
         var point: Vector2 = Battle.position(squad)
         actors[squad["id"]].position = Vector3(point.x, Battle.terrain_height(point.x, point.y), point.y)
-        actors[squad["id"]].visible = int(squad["alive"]) > 0
+        var observed: bool = state["phase"] == "finished" or simulation.is_observed("UKR", squad)
+        actors[squad["id"]].visible = int(squad["alive"]) > 0 and observed
         labels[squad["id"]].text = "%s %dP %dR SUP%d%s" % [str(squad["id"]).replace("_", " "), squad["alive"], squad["ammo"], int(float(squad["suppression"]) * 100), " *" if squad["id"] == selected else ""]
         if simulation.is_pinned(squad):
             labels[squad["id"]].text += "\nPINNED"
+        if simulation.limited_visibility() and squad["faction"] != "UKR" and state["phase"] != "finished":
+            labels[squad["id"]].text = "ENEMY CONTACT" if observed and int(squad["alive"]) > 0 else ""
         var path: Array = state["orders"].get(squad["id"], [])
         markers[squad["id"]].visible = not path.is_empty() and squad["faction"] == "UKR" and state["phase"] == "planning"
         if not path.is_empty():

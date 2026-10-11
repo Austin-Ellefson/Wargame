@@ -62,6 +62,12 @@ func _run() -> void:
         return
     check(view.actors.size() == 8 and view.viewport.own_world_3d, "3D world must contain both detachments in its own viewport.")
     check(view.execute_button.text == "EXECUTE 60 SECONDS", "Planning controls must be available.")
+    for id in ["RU_S1", "RU_S2", "RU_S3", "RU_S4"]:
+        check(not view.actors[id].visible and view.labels[id].text.is_empty(), "Initial unspotted enemies must have no visible actor or label.")
+    check("0 enemy contacts" in view.summary_label.text and "Red" not in view.summary_label.text, "The live HUD must not reveal total enemy strength or enemy objective score.")
+    var hidden_before: int = view.shot_cues.size()
+    view._show_shot_events([{"type": "shot", "player_visible": false, "shooter": "RU_S1", "target": "UKR_S1"}])
+    check(view.shot_cues.size() == hidden_before and view.observed_shot_events.is_empty(), "Unobserved shot events must not create cues or recorded visible endpoints.")
     var intended := Vector3(210, Battle.terrain_height(210, 245), 245)
     var local: Vector2 = view.camera.unproject_position(intended)
     var hit: Vector2 = view._ground_point(local)
@@ -125,6 +131,7 @@ func _run() -> void:
     # ammunition and suppression feedback together with real shot cues.
     game.tactical_simulation.squad_by_id("UKR_S1")["position"] = [180, 245]
     game.tactical_simulation.squad_by_id("RU_S1")["position"] = [240, 245]
+    game.tactical_simulation.squad_by_id("RU_S4")["position"] = [470, 470]
     # A separate high-pressure survivor exercises the pinned HUD alongside the
     # real-shot/casualty fixture. Incoming-fire pinning is tested in suppression_smoke.
     game.tactical_simulation.squad_by_id("UKR_S2")["suppression"] = 1.0
@@ -140,6 +147,9 @@ func _run() -> void:
         executed_ticks += 1
     view._refresh()
     check("PINNED" in view.selection_label.text and "PINNED" in view.squad_buttons["UKR_S2"].text and "PINNED" in view.labels["UKR_S2"].text, "Pinned status must be visible in selection, roster and world labels.")
+    check(view.actors["RU_S1"].visible and view.labels["RU_S1"].text == "ENEMY CONTACT", "Acquired enemies must show a contact label without exact personnel/ammunition/status.")
+    check(not view.actors["RU_S4"].visible and view.labels["RU_S4"].text.is_empty() and not view.markers["RU_S4"].visible, "Unspotted enemies must remain hidden during actual execution.")
+    check("RU" not in view.combat_label.text, "Live feedback must not reveal exact enemy casualty/ammunition/suppression changes.")
     check(game.tactical_simulation.alive("UKR") + game.tactical_simulation.alive("RU") < starting_personnel, "Rendered feedback fixture must reach an actual simulated casualty.")
     check(not view.shot_cues.is_empty(), "Actual firing events must create visible transient cues for eligible shooters.")
     check("P" in view.combat_label.text and "R" in view.combat_label.text and "SUP" in view.combat_label.text, "Live combat feedback must identify personnel, ammunition and suppression changes.")

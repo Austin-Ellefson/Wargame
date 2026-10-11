@@ -7,6 +7,13 @@ v2 battles derive pinning from saved morale/suppression, preserving status and
 outcomes on restart. No additional squad fields are required. Unknown tactical
 rule versions are rejected.
 
+The limited-enemy-visibility descendant creates tactical rules v3 engagements.
+Current spotting is derived from saved positions, living observers, terrain and
+target cover with no random samples or persistent contact fields. Reload restores
+the same sight picture. Existing v1/v2 engagements retain their original rules
+and full enemy visibility; campaign schema and completed-result shape remain v2
+and v1 respectively. Unknown tactical versions are rejected.
+
 Use **SAVE** and **LOAD** beside Resolve Turn. There is one slot. Save replaces the previous slot; Load replaces unsaved progress. Native contact, execution start, completed intervals and result application autosave. Normal game-window close requests a save. Forcing the process to stop can lose work since the last checkpoint. On startup the initial fictional scenario opens; click Load to resume a saved campaign.
 
 The save is `user://saves/campaign.json`, normally `%APPDATA%\Godot\app_userdata\Ukraine Wargame\saves\campaign.json` on Windows. Battle exports remain separate files in `battle_exports`.
