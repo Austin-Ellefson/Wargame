@@ -39,6 +39,7 @@ jobs:
             ${{ runner.temp }}/tactical-preview.png
             ${{ runner.temp }}/battle-report-preview.png
             ${{ runner.temp }}/order-path-preview.png
+            ${{ runner.temp }}/timed-pause-preview.png
             ${{ runner.temp }}/queued-waypoints-preview.png
             ${{ runner.temp }}/movement-orders-preview.png
             ${{ runner.temp }}/contact-memory-preview.png
