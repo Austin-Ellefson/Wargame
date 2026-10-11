@@ -6,6 +6,7 @@ var uniform: StandardMaterial3D
 var equipment: StandardMaterial3D
 var skin: StandardMaterial3D
 var casualty: StandardMaterial3D
+var insignia: StandardMaterial3D
 var support := false
 var current_pose := ""
 
@@ -16,12 +17,13 @@ func material(color: Color) -> StandardMaterial3D:
     return result
 
 func setup(color: Color, support_weapon: bool = false) -> void:
-    uniform = material(color)
+    uniform = material(Color("647354") if color.b > color.r else Color("8b7860"))
+    insignia = material(color)
     equipment = material(Color("303d38"))
     skin = material(Color("bfa080"))
     casualty = material(Color("646965"))
     support = support_weapon
-    for key in ["torso", "head", "helmet", "pack", "left_arm", "right_arm", "left_thigh", "right_thigh", "left_shin", "right_shin", "left_boot", "right_boot", "rifle"]:
+    for key in ["torso", "head", "helmet", "pack", "left_arm", "right_arm", "left_thigh", "right_thigh", "left_shin", "right_shin", "left_boot", "right_boot", "rifle", "insignia"]:
         var piece := MeshInstance3D.new()
         piece.name = key
         var mesh := BoxMesh.new()
@@ -29,6 +31,8 @@ func setup(color: Color, support_weapon: bool = false) -> void:
         piece.material_override = uniform
         if key in ["rifle", "pack", "left_boot", "right_boot"]:
             piece.material_override = equipment
+        if key == "insignia":
+            piece.material_override = insignia
         if key == "head":
             piece.material_override = skin
         add_child(piece)
@@ -54,7 +58,7 @@ func pose(value: String, lost: bool) -> void:
     current_pose = next_pose
     for part in parts.values():
         var key: String = part.name
-        part.material_override = casualty if lost else (skin if key == "head" else (equipment if key in ["rifle", "pack", "left_boot", "right_boot"] else uniform))
+        part.material_override = casualty if lost else (insignia if key == "insignia" else (skin if key == "head" else (equipment if key in ["torso", "rifle", "pack", "left_boot", "right_boot"] else uniform)))
     var low := value == "prone" or lost
     var hip := Vector3(0, 0.32 if low else (0.66 if value == "crouch" else 0.94), 0.22 if low else 0)
     var shoulder := Vector3(0, 0.38 if low else (1.08 if value == "crouch" else 1.43), -0.38 if low else -0.08)
@@ -74,6 +78,7 @@ func pose(value: String, lost: bool) -> void:
         var arm := shoulder + Vector3(side * 0.27, -0.06, 0)
         var hand := shoulder + Vector3(side * 0.11, -0.16 if low else -0.25, -0.43)
         limb(prefix + "_arm", arm, hand, 0.13)
+    block("insignia", shoulder + Vector3(-0.28, -0.08, 0), Vector3(0.15, 0.12, 0.15))
     block("rifle", shoulder + Vector3(0.10, -0.15 if low else -0.25, -0.57), Vector3(0.10 if support else 0.07, 0.10, 1.05 if support else 0.82))
     if lost:
         parts["rifle"].visible = false

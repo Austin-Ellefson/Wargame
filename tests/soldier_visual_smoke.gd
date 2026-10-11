@@ -38,7 +38,7 @@ func _run() -> void:
         battle.order_posture("UKR_S1", value)
         view._refresh()
         var soldier = view.bodies["UKR_S1"][0]
-        check(soldier.current_pose == value and soldier.parts.size() == 13, "Each posture must articulate helmet, rifle, torso, arms and separate legs.")
+        check(soldier.current_pose == value and soldier.parts.size() == 14, "Each posture must articulate helmet, rifle, torso, arms, separate legs and side insignia.")
         var head_height: float = soldier.parts["head"].position.y
         check(head_height > 1.5 if value == "stand" else (head_height < 1.4 and head_height > 1.0 if value == "crouch" else head_height < 0.5), "Pose head height must distinguish standing, crouched and horizontal prone geometry.")
         before = battle.state.duplicate(true)
@@ -50,9 +50,11 @@ func _run() -> void:
     battle.execute()
     twin.execute()
     for tick in range(3):
+        var shot_status: Dictionary = view._status_snapshot()
         battle.step()
         twin.step()
         view._show_shot_events(battle.consume_events())
+        view._show_combat_changes(shot_status)
         view._refresh()
     check(not view.shot_cues.is_empty(), "Actual acquired prone fire must create a shot cue beside soldier geometry.")
     await save_capture("soldiers-shot-preview")
