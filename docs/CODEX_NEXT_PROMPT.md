@@ -11,22 +11,18 @@ Start from codex/loop-feedback-workflow and follow the latest validated descenda
 in the ledger. This includes the native battle and save/load work; main remains
 a starter until the PR chain is merged. Recheck actual GitHub state.
 
-The latest tested descendant is `codex/limited-enemy-visibility` (PR #14), with
-camera/path previews, pinning and deterministic current spotting. Recheck its
-ledger, PR and CI before using it. Tactical v1/v2 saves retain original behavior;
-new battles use v3. Unknown versions must be rejected.
+The latest descendant is `codex/last-known-contacts` (PR #15), with camera/path
+previews, pinning, current spotting and persistent last-known contact markers.
+Recheck its ledger, PR and actual CI before using it. Tactical v1/v2/v3 saves
+retain original behavior; new battles use v4. Unknown versions are rejected.
 
-Complete one focused last-known-contact implementation with meaningful tests.
-Current sight already controls live models, automatic targeting and shot cues.
-Record only observed positions and timestamps. After sight is lost, uncertain
-markers must remain at the last observed location rather than track hidden motion.
-Do not reveal an unobserved death or exact enemy headcount/status. Design both
-sides' knowledge consistently; keep local shooter LOS required for direct fire.
-Persist added authoritative contact data with a versioned contract and
-deterministic restart. Preserve old engagements' rules or explicitly document
-and test a migration. Richer movement/fire orders,
-opponent reactions, weapons, leadership and individual representation follow in
-separate tasks; do not claim parity or measured real-world fidelity.
+Next focused task: richer infantry movement orders (for example MOVE, QUICK and
+HUNT), with distinct documented speed/response tradeoffs and readable queued
+order feedback. Keep this small; preserve local LOS for direct fire and stop or
+pause behavior deterministically. Version changed authoritative rules, preserve
+old engagements, and test restart equality and suppression interactions.
+Do not bundle weapons, vehicles, area fire, leadership or individual soldier
+representation. Do not claim parity or measured real-world fidelity.
 Preserve exports, deterministic saves, locks, bounded losses, duplicate rejection
 and save-failure rollback.
 

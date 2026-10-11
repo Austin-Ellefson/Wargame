@@ -45,6 +45,7 @@ func _run() -> void:
     var legacy = Battle.new()
     legacy.setup(payload)
     legacy.state["version"] = 1
+    legacy.state.erase("contacts")
     legacy.squad_by_id("UKR_S1")["suppression"] = 1.0
     for squad in legacy.state["squads"]:
         squad["ammo"] = 0
@@ -59,7 +60,7 @@ func _run() -> void:
     check(Battle.position(legacy.squad_by_id("UKR_S1")) != Vector2(80, 208), "V1 suppression must keep its original slowed movement behavior.")
     check(same(legacy.state, legacy_restart.state) and legacy_restart.state["version"] == 1, "Loading a V1 engagement must not silently switch its combat rules.")
     var invalid: Dictionary = battle.state.duplicate(true)
-    invalid["version"] = 4
+    invalid["version"] = 5
     check(not Battle.validate(invalid, payload), "Unknown tactical rule versions must be rejected.")
     # Actual incoming simulated volleys pin a living squad, not just a UI fixture.
     var firefight = Battle.new()

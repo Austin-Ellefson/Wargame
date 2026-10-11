@@ -29,7 +29,7 @@ func _run() -> void:
     battle.setup(payload)
     var blue: Dictionary = battle.squad_by_id("UKR_S1")
     var red: Dictionary = battle.squad_by_id("RU_S1")
-    check(battle.state["version"] == 3 and battle.observed_contacts("UKR") == 0, "Fresh v3 contacts must not start with omniscient enemy positions.")
+    check(battle.state["version"] == 4 and battle.observed_contacts("UKR") == 0, "Fresh contacts must not start with omniscient enemy positions.")
     var snapshot: Dictionary = battle.state.duplicate(true)
     for repeat in range(10):
         battle.observed_contacts("UKR")
@@ -90,6 +90,7 @@ func _run() -> void:
         var legacy = Battle.new()
         legacy.setup(payload)
         legacy.state["version"] = version
+        legacy.state.erase("contacts")
         for squad in legacy.state["squads"]:
             if squad["id"] not in ["UKR_S1", "RU_S1"]:
                 squad["alive"] = 0

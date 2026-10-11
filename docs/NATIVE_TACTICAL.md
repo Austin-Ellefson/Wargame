@@ -158,3 +158,21 @@ The existing GIS suite remains `python -m pytest -q tests/test_terrain_bridge.py
 GitHub Actions runs the same tests and a software-rendered OpenGL input check under
 Xvfb, producing `tactical-validation` with a PNG preview and individual test logs.
 Linux validation and a rendered screenshot do not replace a Windows playtest.
+
+## Last-known contacts (tactical v4)
+
+Fresh battles persist `contacts` for UKR and RU, keyed by opposing squad ID. Each
+record contains only `position` and integer `seen_at` (elapsed simulation seconds).
+Living observers update memory only with current range/LOS observation. Hidden
+movement and unobserved death leave it unchanged; reacquisition updates it and
+a living observer with range/LOS can confirm an eliminated contact.
+
+During an unresolved battle, amber `? LAST SEEN Ns` markers show lost contacts
+at their recorded position. They do not expire, reveal strength, track hidden
+units or permit automatic fire without the shooter's own current LOS. Finished
+reports hide uncertain markers. Instant side-wide information sharing remains.
+
+Validation rejects friendly/unknown IDs, extra fields, blocked/out-of-map positions,
+fractional/future timestamps and missing faction maps. V1/V2/V3 saves retain their
+original fields and rules; no silent migration. Campaign schema v2 and battle
+result schema v1 remain unchanged. Presentation consumes no simulation RNG.

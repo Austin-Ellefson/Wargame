@@ -110,3 +110,12 @@ This setup change contains instructions only; these missing tools must be addres
 - Preserve the completed-battle-report milestone download.
 - Next: preserve the tested camera descendant and frozen milestone build; a
   small morale behavior with deterministic restart tests is a subsequent task.
+
+## Last-known contacts — 2026-10-11
+- Status: ready for review; draft PR #15, codex/last-known-contacts, explicitly
+  based on tested PR #14. See LOOP_FEEDBACK_MILESTONE.md for code/CI/artifact evidence.
+- Bilateral saved observation memory and amber timestamped markers; hidden
+  movement/death do not leak through memory. New tactical v4; old rules retained.
+- Nine Godot checks, 26 terrain tests and diff check pass locally. Rendered CI
+  captures last-known markers, actual firing and completed reports. Windows unverified.
+- Frozen milestone build preserved. Next: focused infantry movement modes.
