@@ -22,7 +22,7 @@ def main():
     logs.mkdir(parents=True, exist_ok=True)
     checks = [("editor", ["--headless", "--editor", "--quit"])]
     for name in ["campaign_smoke", "campaign_save_smoke", "tactical_smoke",
-                 "repeatable_loop_smoke", "suppression_smoke", "tactical_view_smoke"]:
+                 "repeatable_loop_smoke", "suppression_smoke", "visibility_smoke", "tactical_view_smoke"]:
         checks.append((name, ["--headless", "--script", f"res://tests/{name}.gd"]))
     if args.render_check:
         if args.capture:

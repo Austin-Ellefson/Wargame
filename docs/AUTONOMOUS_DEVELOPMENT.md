@@ -44,6 +44,18 @@ Campaign save/load, pending battle locks, and native once-only result applicatio
 - Limits: abstract squad behavior, full enemy visibility, no Windows validation.
 - Next: limited enemy visibility and spotting, then richer movement/fire commands.
 
+## Current spotting task — 2026-10-11
+- Status: ready for review; `codex/limited-enemy-visibility`, draft PR #14,
+  based on PR #13. New tactical rules v3; existing v1/v2 saves keep their rules.
+- Living squads spot current enemies using LOS/range and target concealment;
+  both sides' shooters require local sight. The player view shares current
+  contacts but hides unseen models/labels/cues and exact enemy live state.
+- Eight Godot checks and 26 terrain tests passed on code b0d3043; CI 38143726275
+  succeeded. Planning, actual-shot execution and report captures were inspected.
+- Limits: no remembered contacts, spotting delay or C2 delay; no Windows check.
+- Next: versioned last-known-position memory without hidden tracking, then richer
+  movement/fire commands. The frozen milestone download remains preserved.
+
 ## User-dependent validation
 Compare real terrain output against the Windows CMBS editor with the user's installed CMAutoEditor version.
 Record this as blocked on Windows editor evidence; do not let it block independent campaign persistence work.
