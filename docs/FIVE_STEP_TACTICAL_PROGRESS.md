@@ -32,3 +32,13 @@ validation claims, vehicles/GIS changes or Combat Mission fidelity claims.
 - Inspected artifact 11704408615: Execution shows Focus ready with actual preferred-target shot cues, safe generic contact labels, hidden-contact marker and readable completed report. UI Shift-click and clear-target regression passed.
 - Frozen milestone preserved; no Windows or Combat Mission fidelity validation.
 - Next: queued movement waypoints.
+
+## Five-step batch: codex/queued-movement-waypoints — 2026-10-11
+
+- Ready for review; draft PR #19, base codex/observed-target-orders.
+- Tested code: 6e2715b1e46de4bf9b4b7d34a50f89e2c236ac32.
+- Full local Godot suite, 26 terrain tests and diff check passed.
+- CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38147099989 succeeded.
+- Inspected artifact 11704608641: Full two-leg dotted queue visible during planning; preferred-shot/HUNT feedback and completed report remain readable. Actual Shift-right input and multi-leg disk restart passed.
+- Frozen milestone preserved; no Windows or Combat Mission fidelity validation.
+- Next: timed movement pauses.
