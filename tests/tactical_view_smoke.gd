@@ -202,6 +202,7 @@ func _run() -> void:
         executed_ticks += 1
     view._refresh()
     check("PINNED" in view.selection_label.text and "PINNED" in view.squad_buttons["UKR_S2"].text and "PINNED" in view.labels["UKR_S2"].text, "Pinned status must be visible in selection, roster and world labels.")
+    check(game.tactical_simulation.opponent_engaging(game.tactical_simulation.squad_by_id("RU_S1")) and Battle.position(game.tactical_simulation.squad_by_id("RU_S1")).is_equal_approx(Vector2(240, 245)), "Observed red squad must halt its advance on its own real firing contact.")
     check(view.actors["RU_S1"].visible and view.labels["RU_S1"].text == "ENEMY CONTACT", "Acquired enemies must show a contact label without exact personnel/ammunition/status.")
     check(not view.actors["RU_S4"].visible and view.labels["RU_S4"].text.is_empty() and not view.markers["RU_S4"].visible, "Unspotted enemies must remain hidden during actual execution.")
     check("RU" not in view.combat_label.text, "Live feedback must not reveal exact enemy casualty/ammunition/suppression changes.")

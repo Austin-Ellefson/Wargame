@@ -118,3 +118,19 @@ V8 persists `pause_remaining` for every squad ID as integer 0–60; a positive
 value requires a nonempty queued route. Missing/extra IDs, fractional/negative/
 excessive values and orphan waits reject the save. V1-v7 retain original
 fields/rules. No RNG, campaign/result/export or GIS contract changes.
+
+## Opponent contact reaction (tactical v9)
+
+Red squads still receive fixed objective routes, but now stop advancing while
+a living enemy is locally visible within their firing range and they have rounds
+and AUTO fire enabled. They retain the route and fire with existing combat rules.
+When local contact clears, ammunition is exhausted or fire is withheld, advance
+resumes subject to suppression and other wait rules. This is derived each tick
+from the squad's own current sight; shared/last-known contacts and hidden player
+positions do not influence it. No tactical intent/status is revealed through
+the enemy's generic contact label. Blue commands retain their explicit modes.
+
+Rules version is v9 with the same fields as v8; versioning preserves the prior
+blind objective advance for existing v1-v8 engagements. No RNG or campaign/
+result/export fields change. This is a small stop-and-engage reaction, not a
+flanking planner, formation AI, cover-selection model or validated combat fidelity.

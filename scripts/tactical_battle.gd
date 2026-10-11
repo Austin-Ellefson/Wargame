@@ -50,7 +50,7 @@ static func visible(a: Vector2, b: Vector2) -> bool:
     return true
 
 func setup(payload: Dictionary) -> void:
-    state = {"version": 8, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
+    state = {"version": 9, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
     state["contacts"] = {"UKR": {}, "RU": {}}
@@ -273,6 +273,16 @@ func execute() -> bool:
     state["remaining"] = INTERVAL
     return true
 
+func opponent_engaging(squad: Dictionary) -> bool:
+    # React only to this squad's currently engageable contact, never shared
+    # memory or hidden positions. The objective route remains queued.
+    if int(state["version"]) < 9 or squad["faction"] != "RU" or int(squad["alive"]) <= 0 or int(squad["ammo"]) <= 0 or fire_mode(squad["id"]) != "auto":
+        return false
+    for enemy in state["squads"]:
+        if can_engage(squad, enemy):
+            return true
+    return false
+
 func step() -> void:
     last_events = []
     if state["phase"] != "execution":
@@ -294,7 +304,7 @@ func step() -> void:
         var path: Array = state["orders"].get(squad["id"], [])
         var base_speed: float = {"move": 2.4, "quick": 4.0, "hunt": 1.2}[movement_mode(squad["id"])] if not path.is_empty() else 0.0
         var speed: float = float(base_speed) * (1.0 - 0.8 * float(squad["suppression"]))
-        if waiting or is_pinned(squad) or hunt_paused(squad):
+        if waiting or is_pinned(squad) or hunt_paused(squad) or opponent_engaging(squad):
             speed = 0.0
         while speed > 0 and not path.is_empty():
             var current := position(squad)
@@ -415,7 +425,7 @@ func result() -> Dictionary:
         "elapsed": state["elapsed"], "objective": state["objective"].duplicate(true), "forces": forces}
 
 static func validate(saved: Variant, payload: Dictionary) -> bool:
-    if not saved is Dictionary or not _integer(saved.get("version"), 1, 8):
+    if not saved is Dictionary or not _integer(saved.get("version"), 1, 9):
         return false
     var version := int(saved["version"])
     var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8)
