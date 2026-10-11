@@ -449,7 +449,7 @@ func _show_combat_changes(before: Dictionary) -> void:
             changes.append(status)
         var line := "%s  %s" % [str(squad["id"]).replace("_", " "), "  ".join(changes)]
         if int(simulation.state["version"]) >= 15:
-            line = "%s %s  %s" % [str(squad["id"]).replace("_", " "), "SUP" if simulation.weapon_role(squad["id"]) == "support" else "RIF", "  ".join(changes)]
+            line = "%s %s  %s" % [str(squad["id"]).replace("_", " "), "SUPPORT" if simulation.weapon_role(squad["id"]) == "support" else "RIFLE", "  ".join(changes)]
         if personnel_change > 0:
             casualty_lines.append(line)
         else:
@@ -572,8 +572,8 @@ func _refresh() -> void:
             selection_label.tooltip_text = "FAT: movement fatigue. QUICK tires fastest; fatigue reduces speed. Stationary execution seconds restore it. Planning time does not."
     if int(state["version"]) >= 15 and not selected_squad.is_empty() and int(selected_squad["alive"]) > 0:
         var role: String = simulation.weapon_role(selected)
-        selection_label.text = selection_label.text.replace("S" + selected.right(1) + "  |", "S" + selected.right(1) + (" SUP" if role == "support" else " RIF") + " |")
-        selection_label.tooltip_text += "\nRIF: 1 round per survivor every 3s. SUP: 2 per survivor every 2s, lower per-round hit chance; uses rounds faster. Both require local sight."
+        selection_label.text = selection_label.text.replace("S" + selected.right(1) + "  |", "S" + selected.right(1) + (" SUPPORT" if role == "support" else " RIFLE") + " |")
+        selection_label.tooltip_text += "\nRIFLE: 1 round per survivor every 3s. SUPPORT: 2 per survivor every 2s, lower per-round hit chance; uses rounds faster. Both require local sight."
     if int(state["version"]) >= 5 and not selected_squad.is_empty():
         selection_label.text += "\nOrder: " + simulation.movement_status(selected_squad)
     if int(state["version"]) >= 14 and not selected_squad.is_empty():

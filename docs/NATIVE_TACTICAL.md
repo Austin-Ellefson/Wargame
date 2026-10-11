@@ -427,16 +427,16 @@ seeking, individual soldiers, leaders or Windows validation is claimed.
 
 ## Rifle and support-fire profiles (tactical v15)
 
-Fresh battles assign S1/S3 on each side to RIF and S2/S4 to SUP. These are
+Fresh battles assign S1/S3 on each side to RIFLE and S2/S4 to SUPPORT. These are
 fictional squad-level fire profiles, not individual rifle/machine-gun inventories.
-Selection text and live friendly volley lines identify RIF/SUP; hover the selected
+Selection text and live friendly volley lines identify RIFLE/SUPPORT; hover the selected
 status for cadence/ammunition details. A support shot uses a warmer muzzle cue
 only when the actual shot is visible. Unseen enemy roles and rounds stay hidden.
 
 | Profile | Cadence | Maximum rounds per volley | Per-round hit multiplier |
 | --- | --- | --- | --- |
-| RIF | Every 3 simulated seconds | 1 per living squad member | 1.0 |
-| SUP | Every 2 simulated seconds | 2 per living squad member | 0.65 |
+| RIFLE | Every 3 simulated seconds | 1 per living squad member | 1.0 |
+| SUPPORT | Every 2 simulated seconds | 2 per living squad member | 0.65 |
 
 Volleys clamp to available rounds; both profiles start with the existing 40 rounds
 per deployed person. More support rounds apply more pressure through the existing
@@ -453,10 +453,10 @@ retain their original three-second single-round-per-survivor behavior and event
 shape. New V15 saves add strict fixed role assignments; campaign/result/export/
 GIS contracts and Windows launchers are unchanged.
 
-Playtest: fresh PLAY INTEGRATED DEMO, select S2 and confirm SUP, then maneuver it
+Playtest: fresh PLAY INTEGRATED DEMO, select S2 and confirm SUPPORT, then maneuver it
 to a locally visible contact. Execute and watch larger frequent round reductions
-and live SUP lines; use HOLD FIRE in a later planning interval to conserve ammo.
-Compare S1 RIF and save/reopen between intervals. Partial-ammo and one-second
+and live SUPPORT lines; use HOLD FIRE in a later planning interval to conserve ammo.
+Compare S1 RIFLE and save/reopen between intervals. Partial-ammo and one-second
 pre-volley disk restart are also covered by regression.
 
 This is abstract profile tuning: no individual weapon/ammo pools, gunner losses,

@@ -551,3 +551,9 @@ is delivered as the scheduled task result in ChatGPT.
   simultaneous attacks, strict maps, V14 preservation and pre-volley campaign
   disk restart with complete outcome equality. Actual support render CI pending.
 - No Windows/fidelity/individual-weapon validation; frozen ready branches preserved.
+
+- Initial code b180217e526aa95ecbb79c1e44284875263f41e1 passed CI 38164900239.
+  Artifact 11711069701 inspected: actual support -18R shots at 00:04 and bounded
+  two-sided completed report. Review found ambiguous SUP role/suppression labels.
+  Roles now spell out RIFLE/SUPPORT; regression checks the exact selected role,
+  rather than matching the suppression abbreviation. Corrected CI pending.

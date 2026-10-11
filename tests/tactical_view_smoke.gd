@@ -86,10 +86,10 @@ func _run() -> void:
     check(game.tactical_simulation.posture("UKR_S1") == "stand", "Actual STAND input must restore posture.")
     click(Vector2(1100, 258), MOUSE_BUTTON_LEFT)
     await process_frame
-    check(view.selected == "UKR_S2" and "SUP" in view.selection_label.text and "every 2s" in view.selection_label.tooltip_text, "Support squad selection must explain its actual cadence and ammo cost.")
+    check(view.selected == "UKR_S2" and "S2 SUPPORT |" in view.selection_label.text and "every 2s" in view.selection_label.tooltip_text, "Support squad selection must explain its actual cadence and ammo cost.")
     click(Vector2(1100, 224), MOUSE_BUTTON_LEFT)
     await process_frame
-    check(view.selected == "UKR_S1" and "RIF" in view.selection_label.text, "Rifle squad selection must show its profile.")
+    check(view.selected == "UKR_S1" and "S1 RIFLE |" in view.selection_label.text, "Rifle squad selection must show its profile.")
     var intended := Vector3(210, Battle.terrain_height(210, 245), 245)
     var local: Vector2 = view.camera.unproject_position(intended)
     var hit: Vector2 = view._ground_point(local)
@@ -274,7 +274,7 @@ func _run() -> void:
         view._show_shot_events(events)
         view._show_combat_changes(before)
     view._refresh()
-    check(support_shot and "SUP" in view.selection_label.text and not view.shot_cues.is_empty(), "Execution must show a real observed support volley and its selected profile.")
+    check(support_shot and "S2 SUPPORT |" in view.selection_label.text and not view.shot_cues.is_empty(), "Execution must show a real observed support volley and its selected profile.")
     if not capture.is_empty() and DisplayServer.get_name() != "headless":
         await RenderingServer.frame_post_draw
         check(root.get_texture().get_image().save_png(capture.get_base_dir().path_join("support-fire-preview.png")) == OK, "Actual support-fire capture must save.")
