@@ -15,6 +15,7 @@ const WOODS := [Vector3(212, 290, 29), Vector3(298, 210, 30), Vector3(108, 130, 
 
 var state: Dictionary = {}
 var navigation := AStarGrid2D.new()
+var cover_navigation := AStarGrid2D.new()
 ## Presentation-only events from the most recent simulated second. They are
 ## deliberately excluded from state/save validation and never affect RNG.
 var last_events: Array = []
@@ -50,7 +51,7 @@ static func visible(a: Vector2, b: Vector2) -> bool:
     return true
 
 func setup(payload: Dictionary) -> void:
-    state = {"version": 9, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
+    state = {"version": 10, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
     state["contacts"] = {"UKR": {}, "RU": {}}
@@ -77,15 +78,23 @@ func consume_events() -> Array:
     return events
 
 func _build_navigation() -> void:
-    navigation.region = Rect2i(0, 0, 64, 64)
-    navigation.cell_size = Vector2(CELL, CELL)
-    navigation.offset = Vector2(CELL / 2, CELL / 2)
-    navigation.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
-    navigation.update()
+    # Separate fixed terrain graphs keep player/legacy routing unchanged.
+    # Woods cost 1, open ground 1.6: prefer cover, without arbitrary long detours.
+    # No enemy positions, contacts or random samples enter the route cost.
+    for graph in [navigation, cover_navigation]:
+        graph.region = Rect2i(0, 0, 64, 64)
+        graph.cell_size = Vector2(CELL, CELL)
+        graph.offset = Vector2(CELL / 2, CELL / 2)
+        graph.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
+        graph.update()
     for y in range(64):
         for x in range(64):
             var point := Vector2((x + 0.5) * CELL, (y + 0.5) * CELL)
-            navigation.set_point_solid(Vector2i(x, y), inside_building(point, 5.0))
+            var cell := Vector2i(x, y)
+            var blocked := inside_building(point, 5.0)
+            navigation.set_point_solid(cell, blocked)
+            cover_navigation.set_point_solid(cell, blocked)
+            cover_navigation.set_point_weight_scale(cell, 1.0 if cover(point) > 0.2 else 1.6)
 
 func squad_by_id(id: String) -> Dictionary:
     for squad in state["squads"]:
@@ -234,7 +243,8 @@ func order_move(id: String, target: Vector2, player: bool = true, mode: String =
     var finish := Vector2i(int(target.x / CELL), int(target.y / CELL))
     if navigation.is_point_solid(finish):
         return false
-    var points := navigation.get_point_path(start, finish)
+    var graph := cover_navigation if int(state["version"]) >= 10 and squad["faction"] == "RU" else navigation
+    var points := graph.get_point_path(start, finish)
     if points.is_empty():
         return false
     var path: Array = previous
@@ -425,7 +435,7 @@ func result() -> Dictionary:
         "elapsed": state["elapsed"], "objective": state["objective"].duplicate(true), "forces": forces}
 
 static func validate(saved: Variant, payload: Dictionary) -> bool:
-    if not saved is Dictionary or not _integer(saved.get("version"), 1, 9):
+    if not saved is Dictionary or not _integer(saved.get("version"), 1, 10):
         return false
     var version := int(saved["version"])
     var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8)

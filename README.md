@@ -22,7 +22,7 @@ The prototype uses a 4x4 grid over a fictional test area in central Ukraine. For
 
 Clone this repository and import its root `project.godot` in Godot. Press **F5** to run.
 
-Download **[`codex/opponent-contact-reaction`](https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/opponent-contact-reaction)** for the latest tested build, including repeat battles, firing/report feedback, current and last-known enemy contacts, MOVE/QUICK/HUNT, fire control, queued routes, timed pauses and local-contact opponent reactions. The preserved milestone is also available on `codex/completed-battle-report`. The stacked PRs remain unmerged. Import `project.godot`, then press **F5**.
+Download **[`codex/opponent-cover-routing`](https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/opponent-cover-routing)** for the latest tested build, including repeat battles, firing/report feedback, current and last-known enemy contacts, MOVE/QUICK/HUNT, fire control, queued routes, timed pauses, local-contact opponent reactions and terrain-aware red routes. The preserved milestone is also available on `codex/completed-battle-report`. The stacked PRs remain unmerged. Import `project.godot`, then press **F5**.
 
 ### Try the integrated battle
 

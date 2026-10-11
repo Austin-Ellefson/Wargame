@@ -134,3 +134,22 @@ Rules version is v9 with the same fields as v8; versioning preserves the prior
 blind objective advance for existing v1-v8 engagements. No RNG or campaign/
 result/export fields change. This is a small stop-and-engage reaction, not a
 flanking planner, formation AI, cover-selection model or validated combat fidelity.
+
+## Cover-aware opponent routes (tactical v10)
+
+Fresh red objective advances use a separate deterministic terrain graph: wooded
+cells cost 1, open cells 1.6. This favors nearby woods over short open routes
+without ordering arbitrary distant cover detours. The fixed lane destinations,
+8 m grid, building clearance and local stop-and-engage rules remain in force.
+Routing never reads enemy positions, shared contacts or remembered contacts;
+local sight still governs firing and halting. Blue routes keep their original
+shortest-path graph. A squad can still halt in open ground when contact appears,
+and an objective destination need not itself be covered. This is terrain-aware
+routing, not tactical flanking, coordinated maneuver or a fidelity claim.
+
+V10 has exactly the same saved fields as V9. Queued routes persist verbatim,
+and the terrain graph rebuilds on restart. Existing V1–V9 engagements keep their
+original routing rules with no migration. No simulation RNG calls or campaign,
+result, terrain/export or launcher contract changes. Regression covers actual
+wood traversal, modest detour, hidden-information independence, player/V9
+isolation, blocked destinations and complete actual campaign disk outcomes.

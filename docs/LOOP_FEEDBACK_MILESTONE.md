@@ -447,3 +447,9 @@ is delivered as the scheduled task result in ChatGPT.
 - Inspected artifact 11705009344: Combined fourteen Godot checks and 26 terrain tests passed. Inspected queued routes, preferred-target shot/HUNT execution, WAIT 12s with real firing, and readable completed report. UI regression proves the observed red squad stayed at its firing position; logic covers local/shared/hidden isolation, ammo/resume, blocked LOS, V8 preservation and real disk restart.
 - Frozen milestone preserved; no Windows or Combat Mission fidelity validation.
 - Next: cover-aware opponent movement using deterministic terrain and local knowledge.
+
+## Cover-aware opponent routing — 2026-10-11
+
+- In validation on codex/opponent-cover-routing, base codex/opponent-contact-reaction (PR #21, head 5a3605294c3ca2e257f2c9a6e4fadf2e59fd0f82).
+- Tactical v10 separates red terrain costs from player/legacy paths. No hidden enemy position input or new RNG. Actual wood traversal, bounded reference detour and disk restart regression added.
+- Frozen milestone and completed five-step branch preserved. Pending full candidate CI/evidence before marking ready.
