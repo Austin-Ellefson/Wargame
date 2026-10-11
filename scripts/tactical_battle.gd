@@ -51,12 +51,13 @@ static func visible(a: Vector2, b: Vector2, observer_height: float = 1.6, target
     return true
 
 func setup(payload: Dictionary) -> void:
-    state = {"version": 18, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
+    state = {"version": 19, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
     state["contacts"] = {"UKR": {}, "RU": {}}
     state["shared_contacts"] = {"UKR": {}, "RU": {}}
     state["pending_reports"] = {"UKR": {}, "RU": {}}
+    state["observer_contacts"] = {}
     state["movement_modes"] = {}
     state["fire_modes"] = {}
     state["fire_targets"] = {}
@@ -70,6 +71,7 @@ func setup(payload: Dictionary) -> void:
     state["command_remaining"] = {}
     for squad in state["squads"]:
         state["acquisition"][squad["id"]] = {}
+        state["observer_contacts"][squad["id"]] = {}
         state["command_remaining"][squad["id"]] = 0
         state["fire_modes"][squad["id"]] = "auto"
         state["fire_targets"][squad["id"]] = ""
@@ -234,6 +236,7 @@ func _update_acquisition(advance: bool = false) -> void:
             if not has_sight(observer, target):
                 if int(observer["alive"]) > 0 and int(target["alive"]) == 0 and observer["faction"] != target["faction"] and int(records.get(target["id"], 0)) >= 3 and position(observer).distance_to(position(target)) <= spot_limit(observer, target) and squad_visible(observer, target):
                     state["contacts"][observer["faction"]].erase(target["id"])
+                    _remember_elimination(observer, target)
                 records.erase(target["id"])
             elif advance:
                 records[target["id"]] = mini(3, int(records.get(target["id"], 0)) + 1)
@@ -325,6 +328,41 @@ func shared_reports(faction: String, observer_id: String) -> Array:
             var record: Dictionary = state["shared_contacts"][faction][id]
             reports.append({"id": id, "position": record["position"].duplicate(), "seen_at": int(record["seen_at"])})
     return reports
+
+# Local knowledge is independent of faction reports. A confirmed elimination
+# tombstone prevents an older in-flight report from resurrecting this contact.
+func _remember_elimination(observer: Dictionary, target: Dictionary) -> void:
+    if int(state["version"]) >= 19:
+        state["observer_contacts"][observer["id"]][target["id"]] = {"position": target["position"].duplicate(), "seen_at": int(state["elapsed"]), "kind": "lost"}
+
+func _update_observer_contacts() -> void:
+    if int(state["version"]) < 19: return
+    for observer in state["squads"]:
+        if int(observer["alive"]) <= 0: continue
+        for target in state["squads"]:
+            if can_spot(observer, target):
+                state["observer_contacts"][observer["id"]][target["id"]] = {"position": target["position"].duplicate(), "seen_at": int(state["elapsed"]), "kind": "contact"}
+            elif observer["faction"] != target["faction"] and int(target["alive"]) == 0 and int(state["acquisition"][observer["id"]].get(target["id"], 0)) >= 3 and position(observer).distance_to(position(target)) <= spot_limit(observer, target) and squad_visible(observer, target):
+                _remember_elimination(observer, target)
+
+# Pure query: choose newest known observation; own sight wins equal timestamps.
+# Never read hidden coordinates/alive status to update or remove remembered data.
+func remembered_contacts(observer_id: String) -> Array:
+    var contacts: Array = []
+    if int(state["version"]) < 19 or state["phase"] == "finished": return contacts
+    var observer := squad_by_id(observer_id)
+    if observer.is_empty() or int(observer["alive"]) <= 0: return contacts
+    var local: Dictionary = state["observer_contacts"][observer_id]
+    var combined: Dictionary = state["shared_contacts"][observer["faction"]].duplicate(true)
+    for id in local:
+        if not combined.has(id) or int(local[id]["seen_at"]) >= int(combined[id]["seen_at"]):
+            combined[id] = local[id].duplicate(true)
+    for id in combined:
+        var record: Dictionary = combined[id]
+        if record.get("kind", "contact") == "lost" or can_spot(observer, squad_by_id(id)): continue
+        var own: bool = local.has(id) and int(local[id]["seen_at"]) >= int(record["seen_at"])
+        contacts.append({"id": id, "position": record["position"].duplicate(), "seen_at": int(record["seen_at"]), "source": "local" if own else "report"})
+    return contacts
 
 func can_engage(shooter: Dictionary, target: Dictionary) -> bool:
     return not shooter.is_empty() and not target.is_empty() and int(shooter["alive"]) > 0 and int(target["alive"]) > 0 and shooter["faction"] != target["faction"] and position(shooter).distance_to(position(target)) < 230.0 and squad_visible(shooter, target) and (not limited_visibility() or can_spot(shooter, target))
@@ -557,6 +595,7 @@ func step() -> void:
                 state["pause_remaining"][squad["id"]] = 0
             if int(state["version"]) >= 17: state["command_remaining"][squad["id"]] = 0
     _update_acquisition(true)
+    _update_observer_contacts()
     _update_contacts()
     # Collect attacks before applying damage: both sides fire from the same tick state.
     var attacks: Array = []
@@ -600,6 +639,7 @@ func step() -> void:
     if int(state["version"]) >= 17:
         for squad in state["squads"]:
             if int(squad["alive"]) <= 0: state["command_remaining"][squad["id"]] = 0
+    _update_observer_contacts()
     _update_contacts()
     _update_shared_reports()
     var on_objective := {"UKR": false, "RU": false}
@@ -668,10 +708,10 @@ func result() -> Dictionary:
         "elapsed": state["elapsed"], "objective": state["objective"].duplicate(true), "forces": forces}
 
 static func validate(saved: Variant, payload: Dictionary) -> bool:
-    if not saved is Dictionary or not _integer(saved.get("version"), 1, 18):
+    if not saved is Dictionary or not _integer(saved.get("version"), 1, 19):
         return false
     var version := int(saved["version"])
-    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12) + 2 * int(version >= 13) + int(version >= 14) + int(version >= 15) + int(version >= 16) + int(version >= 17) + 2 * int(version >= 18)
+    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12) + 2 * int(version >= 13) + int(version >= 14) + int(version >= 15) + int(version >= 16) + int(version >= 17) + 2 * int(version >= 18) + int(version >= 19)
     if saved.size() != field_count:
         return false
     for key in ["version", "battle_id", "phase", "elapsed", "remaining", "objective", "squads", "orders", "winner"]:
@@ -842,6 +882,17 @@ static func _validate_fields(saved: Dictionary, payload: Dictionary) -> bool:
                     if not record is Dictionary or record.size() != (5 if pending else 2) or not _point(record.get("position")) or not _integer(record.get("seen_at"), 1, int(saved["elapsed"]) if pending else int(saved["elapsed"]) - 5): return false
                     if inside_building(Vector2(record["position"][0], record["position"][1]), 0.5): return false
                     if pending and (record.get("kind") not in ["contact", "lost"] or not _integer(record.get("deliver_at"), int(saved["elapsed"]) + 1, int(saved["elapsed"]) + 5) or not _integer(record.get("sent_at"), int(record["seen_at"]), int(saved["elapsed"])) or int(record["deliver_at"]) != int(record["sent_at"]) + 5): return false
+    if int(saved["version"]) >= 19:
+        var memories = saved.get("observer_contacts")
+        if not memories is Dictionary or memories.size() != known.size(): return false
+        for id in known:
+            var records = memories.get(id)
+            if not records is Dictionary: return false
+            for target_id in records:
+                if not known.has(target_id) or known[target_id]["faction"] == known[id]["faction"]: return false
+                var record = records[target_id]
+                if not record is Dictionary or record.size() != 3 or record.get("kind") not in ["contact", "lost"] or not _point(record.get("position")) or not _integer(record.get("seen_at"), 3, int(saved["elapsed"])): return false
+                if inside_building(Vector2(record["position"][0], record["position"][1]), 0.5) or (record["kind"] == "lost" and int(known[target_id]["alive"]) > 0): return false
     var survivors := {"UKR": 0, "RU": 0}
     for squad in saved["squads"]:
         survivors[squad["faction"]] += int(squad["alive"])

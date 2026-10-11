@@ -22,6 +22,7 @@ func fixture(mode: String) -> RefCounted:
     battle.state.erase("command_remaining")
     battle.state.erase("shared_contacts")
     battle.state.erase("pending_reports")
+    battle.state.erase("observer_contacts")
     for squad in battle.state["squads"]:
         squad["ammo"] = 0
         if squad["id"] not in ["UKR_S1", "RU_S1"]:
@@ -100,6 +101,7 @@ func _run() -> void:
     queue.state.erase("command_remaining")
     queue.state.erase("shared_contacts")
     queue.state.erase("pending_reports")
+    queue.state.erase("observer_contacts")
     check(queue.order_move("UKR_S1", Vector2(180, 250), true, "quick"), "Queue fixture must accept its first leg.")
     var prefix: Array = queue.state["orders"]["UKR_S1"].duplicate(true)
     check(queue.order_move("UKR_S1", Vector2(320, 300), true, "quick", true), "Append must route the next leg from the previous endpoint.")
@@ -129,6 +131,7 @@ func _run() -> void:
     planning.state.erase("command_remaining")
     planning.state.erase("shared_contacts")
     planning.state.erase("pending_reports")
+    planning.state.erase("observer_contacts")
     var unchanged: Dictionary = planning.state.duplicate(true)
     check(not planning.order_move("UKR_S1", Vector2(120, 250), true, "warp") and same(unchanged, planning.state), "Unknown commands must be rejected without mutation.")
     check(not planning.order_move("RU_S1", Vector2(120, 250), true, "quick"), "Player movement modes must not command the opponent.")
@@ -172,6 +175,7 @@ func _run() -> void:
     game.tactical_simulation.state.erase("command_remaining")
     game.tactical_simulation.state.erase("shared_contacts")
     game.tactical_simulation.state.erase("pending_reports")
+    game.tactical_simulation.state.erase("observer_contacts")
     game.tactical_simulation.order_move("UKR_S1", Vector2(180, 250), true, "hunt")
     check(game.tactical_simulation.order_move("UKR_S1", Vector2(320, 300), true, "hunt", true), "Actual campaign must append a second leg before disk checkpoint.")
     game.tactical_simulation.order_move("UKR_S2", Vector2(180, 272), true, "quick")

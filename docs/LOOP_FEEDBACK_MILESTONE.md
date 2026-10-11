@@ -859,3 +859,64 @@ is delivered as the scheduled task result in ChatGPT.
   authoritative shooters. Nominal enemy figures preserve hidden survivor counts.
   Not Windows/performance/realistic-fidelity validation. Frozen milestone preserved.
 - Next focused task: observer-level contact memory with distinct local/shared times.
+
+
+## Observer contact memory — in validation 2026-10-11
+
+- Branch `codex/observer-contact-memory`, explicit tested PR #32 base
+  a5bfcc33c57e46e571ad9c6ed2f6559fd5add062; final baseline CI38172926001 success.
+- Tactical v19 adds bilateral per-observer sight memory and observed elimination
+  tombstones. Selected marker chooses freshest local/report observation and labels
+  source/age. Hidden movement/death never updates knowledge; no new fire permission.
+- Focused regression covers separate observers, report recency/ties, query-copy
+  purity, real lethal shots, strict saves, complete v18 authoritative comparison
+  and exact every-tick actual campaign disk continuation. GUI input compares local
+  and report markers. Old fixtures explicitly erase the new v19 field.
+- Initial UI report-only fixture accidentally had prior local sight; corrected by
+  placing that observer out of sight before acquisition. Combined final checks,
+  draft PR/CI and rendered artifact evidence pending; do not promote yet.
+- Limits: squad-level deterministic knowledge, no uncertain area/error/radio network
+  or individual perception; no Windows/fidelity claim. Frozen downloads preserved.
+- Next focused task: explicit squad facing and bounded fire arcs with versioned
+  orders, local-visibility-only targeting and exact disk continuation.
+
+
+## Observer contact memory — validated 2026-10-11
+
+- Ready for review: draft PR #33, `codex/observer-contact-memory`, explicit tested
+  PR #32 base a5bfcc33c57e46e571ad9c6ed2f6559fd5add062. No merges or force pushes.
+- Tested code commit: 9755dd7376832a546d352a22f7cfde182635fcd7.
+- Combined CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38173613294
+  succeeded; verify.yml tactical-validation artifact 11714428819 inspected.
+- All 26 local Godot checks, 26 terrain tests and diff check passed together.
+  CI also passed original UI, soldier and animation render checks on that code.
+- Tactical v19 persists bilateral observer sightings and elimination tombstones.
+  Pure query chooses the newest delivered report or local observation (local wins
+  ties), copies data and grants no local acquisition/fire permission. Hidden
+  movement/death leaves knowledge untouched. Witnessed elimination suppresses
+  older in-flight reports; nonwitnesses wait for ordered delayed confirmation.
+- Inspected actual execution00:09 `? LOCAL 1s` at captured x270 for selected S1,
+  versus execution00:08 `? REPORT 5s` at original x240 for remote S2. Current live
+  actors remain hidden when not locally acquired; selected Memory count is readable.
+  Captured execution00:03 actual rifle -9R acquisition shot and execution00:06
+  1x soldier muzzle/recoil/ammo342. Completed06:00 report remains readable:
+  blue36/6/30, red36/5/31, objective89/159s and campaign consequences.
+- Regression proves bilateral/separate observers, newer report/tie preference,
+  copy/query purity, hidden-death isolation, local elimination through actual lethal
+  simulated fire, older-report suppression, 13 malformed save cases and unchanged
+  complete v18 authoritative combat state/results excluding only new knowledge.
+  Actual campaign disk restart compares every resumed tick/state/event and result.
+  Existing two-battle/restart/lock/once-only loss/result/rollback regressions pass.
+- Fixed initial report-only GUI fixture to place observer out of sight before its
+  acquisition and updated HUD assertion for Memory count. Successful checks have
+  no script errors; existing nonfatal driver/anchor/test-input warnings remain.
+- V1–V18 keep original fields/rules; no silent migration. Campaign v2/result v1,
+  export/GIS and optional Windows launchers unchanged. Animation stays transient
+  outside saved state/RNG; frozen ready milestone/figure/animation downloads preserved.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/observer-contact-memory
+  Godot4.5.1: import project.godot/F5/integrated demo; acquire and lose contact,
+  switch squads to compare LOCAL/REPORT source/age and use checkpoint Save/Load.
+- Limits: synthetic squad-level knowledge, no uncertainty radius, report error,
+  radio network or individual perception; no Windows/Combat Mission fidelity claim.
+- Next focused task: explicit squad facing and bounded fire arcs; version orders,
+  require local visibility for targets, preserve restart and existing animations.

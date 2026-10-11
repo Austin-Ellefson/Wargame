@@ -582,6 +582,7 @@ func _refresh_contact_markers() -> void:
     for marker in contact_markers.values():
         marker.visible = false
     var contacts: Array = simulation.shared_reports("UKR", selected) if int(simulation.state["version"]) >= 18 else simulation.last_known_contacts("UKR")
+    if int(simulation.state["version"]) >= 19: contacts = simulation.remembered_contacts(selected)
     for contact in contacts:
         var id: String = contact["id"]
         if not contact_markers.has(id):
@@ -606,6 +607,8 @@ func _refresh_contact_markers() -> void:
         contact_markers[id].position = Vector3(point.x, Battle.terrain_height(point.x, point.y) + 0.6, point.y)
         contact_markers[id].visible = true
         contact_labels[id].text = ("? REPORT %ds" if int(simulation.state["version"]) >= 18 else "? LAST SEEN %ds") % (int(simulation.state["elapsed"]) - int(contact["seen_at"]))
+        if int(simulation.state["version"]) >= 19:
+            contact_labels[id].text = "? %s %ds" % ["LOCAL" if contact["source"] == "local" else "REPORT", int(simulation.state["elapsed"]) - int(contact["seen_at"])]
 
 func _back() -> void:
     if simulation.state["phase"] == "finished":
@@ -637,6 +640,8 @@ func _refresh() -> void:
         summary_label.text = "Blue %dP / %d enemy contacts\nYour objective: %ds" % [simulation.alive("UKR"), _player_contact_count(), state["objective"]["UKR"]]
     if int(state["version"]) >= 18 and state["phase"] != "finished":
         summary_label.text = "Blue %dP / S%s local %d\nReports %d / Your objective %ds" % [simulation.alive("UKR"), selected.right(1), _player_contact_count(), simulation.shared_reports("UKR", selected).size(), state["objective"]["UKR"]]
+    if int(state["version"]) >= 19 and state["phase"] != "finished":
+        summary_label.text = "Blue %dP / S%s local %d\nMemory %d / Your objective %ds" % [simulation.alive("UKR"), selected.right(1), _player_contact_count(), simulation.remembered_contacts(selected).size(), state["objective"]["UKR"]]
     summary_label.size = Vector2(245, 0)
     for id in squad_buttons:
         var squad: Dictionary = simulation.squad_by_id(id)

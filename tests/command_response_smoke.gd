@@ -14,6 +14,7 @@ func fixture() -> RefCounted:
     sim.state["version"] = 17
     sim.state.erase("shared_contacts")
     sim.state.erase("pending_reports")
+    sim.state.erase("observer_contacts")
     for squad in sim.state["squads"]:
         squad["ammo"] = 0
     sim.squad_by_id("UKR_S1")["position"] = [180,245]
@@ -87,6 +88,7 @@ func _run() -> void:
     legacy.state.erase("command_remaining")
     legacy.state.erase("shared_contacts")
     legacy.state.erase("pending_reports")
+    legacy.state.erase("observer_contacts")
     legacy.execute()
     legacy.step()
     check(Battle.validate(legacy.state,PAYLOAD) and not same(start,legacy.squad_by_id("UKR_S1")["position"]), "V16 retains immediate movement and old fields.")
@@ -114,6 +116,7 @@ func _run() -> void:
     game.tactical_simulation.state["version"] = 17
     game.tactical_simulation.state.erase("shared_contacts")
     game.tactical_simulation.state.erase("pending_reports")
+    game.tactical_simulation.state.erase("observer_contacts")
     var battle = game.tactical_simulation
     battle.order_move("UKR_S1",Vector2(210,245),true,"quick")
     battle.execute()
