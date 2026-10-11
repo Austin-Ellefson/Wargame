@@ -21,8 +21,8 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest post-milestone descendant: codex/suppression-pinning / PR #13
-- Post-milestone next task: limited enemy visibility and deterministic spotting
+- Latest post-milestone descendant: codex/limited-enemy-visibility / PR #14
+- Post-milestone next task: versioned last-known enemy contacts without hidden tracking
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -217,7 +217,7 @@ events from saved authoritative state: rendering, playback and animation must
 not consume simulation RNG or change results. Version any save contract change.
 
 Synthetic terrain and infantry remain the baseline. Vehicles, real GIS maps,
-fog of war, campaign AI and deeper behavior are later milestones. No merge,
+campaign AI and deeper behavior are later milestones. No merge,
 force push, branch deletion, settings changes or external messaging. The check-in
 is delivered as the scheduled task result in ChatGPT.
 
@@ -275,3 +275,46 @@ is delivered as the scheduled task result in ChatGPT.
   does not establish Windows validation or Combat Mission fidelity.
 - Next focused task: limited enemy visibility/spotting with deterministic saved
   contacts and no hidden-enemy leakage through labels, shot cues or opponent logic.
+
+## Post-milestone run record — current enemy spotting, 2026-10-11
+
+- Status: ready for review; draft PR #14, `codex/limited-enemy-visibility`, based
+  on tested `codex/suppression-pinning` (PR #13). Tested code commit:
+  `b0d304316e78e341660d394eaa3e0ad5ffdeb824`.
+- New battles use tactical rules v3: living observers spot LOS-valid enemies
+  within 280 m on open ground or 120 m when the target is wooded. Each shooter
+  must spot its own target; the side's view shares current contacts instantly.
+  The opponent follows existing objective routes without hidden-position input.
+- Hidden actors, labels, orders and shot endpoints are withheld. Observed red
+  labels show ENEMY CONTACT without exact state. Live enemy totals, objective
+  seconds and volley deltas are withheld until the completed report. Unobserved
+  incoming fire still affects blue squads without exposing its source.
+- Spotting is a pure query of saved squad/terrain state: no extra RNG, persistent
+  contact fields or campaign/result/export schema changes. V1/V2 saves keep their
+  original rules and full visibility; new v3 saves restore the same sight picture.
+- Local validation on the tested code: eight Godot checks and 26 terrain tests
+  passed; `git diff --check` passed. Coverage includes acquisition/loss, dead
+  observers, target concealment, building LOS, actual unobserved fire, no hidden
+  auto-targeting, observed return fire and full-result restart equality.
+- CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38143726275 succeeded.
+  Inspected `tactical-validation` artifact 11704290060: planning has zero enemy
+  contacts and no red markers; execution 00:03 shows three generic contacts,
+  observed shots, PINNED and blue casualty/ammunition/pressure feedback while
+  the distant fourth red squad stays hidden. Completed report remains readable
+  and reveals both sides' final totals and campaign effects.
+- The first local UI run caught a test-variable type declaration error, fixed
+  before publication. Fresh pytest/dependencies were installed after transient
+  download timeouts. First CI 38143591088 passed, but its artifact exposed a
+  sidebar-caption overflow; corrected and rerendered on the tested code above.
+- Download:
+  https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/limited-enemy-visibility
+  Godot 4.5.1, open project.godot, F5, fresh PLAY INTEGRATED DEMO. Loading an old
+  v1/v2 engagement intentionally retains its old visibility rules. The preserved
+  milestone branch, ZIP and check-in commit are unchanged.
+- Limits: current sight only, instant side-wide sharing, no spotting delay,
+  last-known markers, area fire or weapon-specific sensors. Windows validation
+  and Combat Mission fidelity remain unverified.
+- Next: persist timestamped last-known contacts and show uncertain stationary
+  markers after sight is lost. Never update them from hidden enemy motion or
+  reveal an unobserved death; version/test the added save fields and preserve
+  existing engagements' rules. Richer movement/fire commands follow separately.

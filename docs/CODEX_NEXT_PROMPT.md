@@ -1,4 +1,4 @@
-# Next Codex Task: Limited Enemy Visibility
+# Next Codex Task: Last-known Enemy Contacts
 
 The user authorized unattended progress on 2026-10-10 and requested a check-in
 when the repeatable campaign loop and visible firing/feedback are both ready.
@@ -11,17 +11,20 @@ Start from codex/loop-feedback-workflow and follow the latest validated descenda
 in the ledger. This includes the native battle and save/load work; main remains
 a starter until the PR chain is merged. Recheck actual GitHub state.
 
-The latest tested descendant is `codex/suppression-pinning` (PR #13), containing
-camera/path previews and morale-sensitive pinning. Recheck its ledger, PR and CI
-before using it. Existing tactical v1 saves retain original rules; new battles
-use v2. Unknown versions must be rejected.
+The latest tested descendant is `codex/limited-enemy-visibility` (PR #14), with
+camera/path previews, pinning and deterministic current spotting. Recheck its
+ledger, PR and CI before using it. Tactical v1/v2 saves retain original behavior;
+new battles use v3. Unknown versions must be rejected.
 
-Complete one focused visibility/spotting implementation with meaningful tests.
-Start with limited enemy visibility rather than exposing every enemy position.
-Design player and opponent knowledge consistently; hidden contacts must not leak
-through labels, paths or shot endpoints. Persist any authoritative contact data
-with a versioned contract and deterministic restart. Preserve old engagements'
-rules or explicitly document/test a migration. Richer movement/fire orders,
+Complete one focused last-known-contact implementation with meaningful tests.
+Current sight already controls live models, automatic targeting and shot cues.
+Record only observed positions and timestamps. After sight is lost, uncertain
+markers must remain at the last observed location rather than track hidden motion.
+Do not reveal an unobserved death or exact enemy headcount/status. Design both
+sides' knowledge consistently; keep local shooter LOS required for direct fire.
+Persist added authoritative contact data with a versioned contract and
+deterministic restart. Preserve old engagements' rules or explicitly document
+and test a migration. Richer movement/fire orders,
 opponent reactions, weapons, leadership and individual representation follow in
 separate tasks; do not claim parity or measured real-world fidelity.
 Preserve exports, deterministic saves, locks, bounded losses, duplicate rejection
