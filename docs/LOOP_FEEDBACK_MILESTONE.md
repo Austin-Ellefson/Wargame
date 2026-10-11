@@ -318,3 +318,41 @@ is delivered as the scheduled task result in ChatGPT.
   markers after sight is lost. Never update them from hidden enemy motion or
   reveal an unobserved death; version/test the added save fields and preserve
   existing engagements' rules. Richer movement/fire commands follow separately.
+
+## Post-milestone run record — last-known contacts, 2026-10-11
+
+- Status: ready for review; draft PR #15, `codex/last-known-contacts`, based on
+  tested `codex/limited-enemy-visibility` (PR #14). Tested gameplay commit:
+  `bb8e0ac071155238b3db53951babeb1fbf552d1a`. No milestone reannouncement.
+- Tactical v4 persists both sides' observed positions and elapsed timestamps.
+  Lost contacts show stationary amber `? LAST SEEN Ns` markers. Hidden motion
+  and unobserved deaths do not update or remove memory. Reacquisition refreshes
+  it; sight of an eliminated contact confirms its loss. Direct fire still requires
+  each shooter's current sight. Presentation queries return detached records.
+- V1/V2/V3 engagements keep their original fields/rules. Strict v4 validation
+  rejects unknown/friendly IDs, invalid positions, future/fractional timestamps,
+  extra fields and missing maps. Campaign v2, result v1 and exports unchanged.
+- Local checks on the gameplay candidate: all nine Godot checks, 26 terrain
+  tests and git diff --check passed. Regression covers actual campaign disk
+  save/restart, bilateral memory, hidden death/movement, reacquisition, confirmed
+  death, malformed records, legacy compatibility, complete restarted outcomes
+  and UI state isolation. Existing two-battle regression passes.
+- CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38144714762 succeeded.
+  Inspected artifact `tactical-validation` 11704555666: execution at 00:04 shows
+  a readable amber `? LAST SEEN 1s` at the prior location with the actual enemy
+  hidden; the 00:03 capture shows observed simulated shot cues and blue casualty,
+  ammunition and pinning feedback. Completed two-sided report remains readable.
+- First CI 38144589444 passed, but artifact inspection found the contact age
+  label too small at the default camera. Enlarged/raised it and rerendered on
+  the tested gameplay commit above. The rendered fixture loses a contact by
+  relocating it outside sight; the logic regression proves saved memory behavior.
+- Download:
+  https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/last-known-contacts
+  Godot 4.5.1, open project.godot, F5, fresh PLAY INTEGRATED DEMO. Loading older
+  engagements intentionally retains their original rules. Frozen milestone
+  branch/ZIP/check-in commit remain unchanged.
+- Limits: instant side-wide sharing, no contact expiry/spotting delay/area fire,
+  abstract squad markers and combat. No Windows or Combat Mission fidelity validation.
+- Next: distinct infantry movement orders with deterministic response/speed
+  tradeoffs, readable queued orders and regression coverage. Keep weapons,
+  vehicles and broader opponent modeling in separate tasks.
