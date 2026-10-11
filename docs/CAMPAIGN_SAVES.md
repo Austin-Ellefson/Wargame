@@ -264,3 +264,19 @@ Replacement starts five seconds; append retains the old timer; hold/route finish
 death clear it. Automatic withdrawal bypasses it. Mid-response disk saves retain
 exact remaining time and full combat outcomes. V1–V16 retain original fields and
 immediate route response. Campaign v2/result v1 and rollback contracts unchanged.
+
+
+## Tactical shared reports v18
+
+New battles add `shared_contacts` and `pending_reports`, each exactly UKR/RU maps
+keyed only by opposing known squad IDs. Delivered records contain position and
+integer `seen_at` at least five seconds old. Pending records contain position,
+`seen_at`, `sent_at`, `deliver_at` and kind `contact`/`lost`. Observation must be
+no later than transmission; delivery is exactly sent_at + 5 and remains in the
+future, at most five seconds ahead. Coordinates/time/field counts/factions/IDs
+are validated; malformed/future/friendly/extra entries reject. Query results copy
+records. One in-flight packet per target stays immutable; later observed memory
+waits until it is free. Actual hidden positions/deaths never replace report data.
+Packets, delivered memories and full combat outcomes restore exactly from disk.
+V1–V17 retain their fields/rules; campaign v2/result v1/rollback remain unchanged.
+Shot local-observer lists remain transient outside saved authoritative state.

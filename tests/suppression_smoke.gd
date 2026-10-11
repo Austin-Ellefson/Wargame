@@ -22,6 +22,8 @@ func _run() -> void:
     battle.state["version"] = 15
     battle.state.erase("acquisition")
     battle.state.erase("command_remaining")
+    battle.state.erase("shared_contacts")
+    battle.state.erase("pending_reports")
     for squad in battle.state["squads"]:
         squad["ammo"] = 0
     var blue: Dictionary = battle.squad_by_id("UKR_S1")
@@ -50,6 +52,8 @@ func _run() -> void:
     legacy.state["version"] = 15
     legacy.state.erase("acquisition")
     legacy.state.erase("command_remaining")
+    legacy.state.erase("shared_contacts")
+    legacy.state.erase("pending_reports")
     legacy.state["version"] = 1
     if int(legacy.state["version"]) < 15: legacy.state.erase("weapon_roles")
     if int(legacy.state["version"]) < 14: legacy.state.erase("postures")
@@ -75,7 +79,7 @@ func _run() -> void:
     check(Battle.position(legacy.squad_by_id("UKR_S1")) != Vector2(80, 208), "V1 suppression must keep its original slowed movement behavior.")
     check(same(legacy.state, legacy_restart.state) and legacy_restart.state["version"] == 1, "Loading a V1 engagement must not silently switch its combat rules.")
     var invalid: Dictionary = battle.state.duplicate(true)
-    invalid["version"] = 18
+    invalid["version"] = 19
     check(not Battle.validate(invalid, payload), "Unknown tactical rule versions must be rejected.")
     # Actual incoming simulated volleys pin a living squad, not just a UI fixture.
     var firefight = Battle.new()
@@ -83,6 +87,8 @@ func _run() -> void:
     firefight.state["version"] = 15
     firefight.state.erase("acquisition")
     firefight.state.erase("command_remaining")
+    firefight.state.erase("shared_contacts")
+    firefight.state.erase("pending_reports")
     for squad in firefight.state["squads"]:
         if squad["faction"] == "UKR":
             squad["ammo"] = 0

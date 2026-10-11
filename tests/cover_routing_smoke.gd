@@ -14,6 +14,8 @@ func fixture(version: int = 10) -> RefCounted:
     battle.state["version"] = 15
     battle.state.erase("acquisition")
     battle.state.erase("command_remaining")
+    battle.state.erase("shared_contacts")
+    battle.state.erase("pending_reports")
     battle.state["version"] = version
     if int(battle.state["version"]) < 15: battle.state.erase("weapon_roles")
     if int(battle.state["version"]) < 14: battle.state.erase("postures")
@@ -91,6 +93,8 @@ func _run() -> void:
     game.tactical_simulation.state["version"] = 15
     game.tactical_simulation.state.erase("acquisition")
     game.tactical_simulation.state.erase("command_remaining")
+    game.tactical_simulation.state.erase("shared_contacts")
+    game.tactical_simulation.state.erase("pending_reports")
     for squad in game.tactical_simulation.state["squads"]: squad["ammo"] = 0
     game.tactical_simulation.execute()
     for tick in range(40): game.tactical_simulation.step()

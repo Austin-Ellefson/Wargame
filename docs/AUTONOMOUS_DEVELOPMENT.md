@@ -382,3 +382,56 @@ This setup change contains instructions only; these missing tools must be addres
   Open project.godot in Godot 4.5.1/F5/fresh integrated demo for V17. Existing
   pending battles retain their rules. Next: delayed shared-contact reports with
   local firing restrictions and exact disk restart preserved.
+
+
+## Delayed shared-contact reports — 2026-10-11
+
+- In validation: codex/delayed-contact-reports, explicit tested PR #29 base
+  b7dfb3f9a616059deb0919a76689ce840d0d12ce (CI 38168470311 success).
+  No overlapping task/newer branch or merges found.
+- V18 immutable five-second reports and delayed observed-death confirmations;
+  selected-squad live sight/cue permissions, amber timestamped markers. Shared
+  reports never grant local firing. Strict maps, disk restart and old rules covered.
+- Initial inferred-type parse error and immediate-memory UI fixture assumptions
+  corrected. Latest observed memory queues after an earlier packet rather than
+  dropping sightings made while the packet was in flight. New UI uses real
+  selection/delivery, reports captured old position instead of hidden live actor.
+- Full final suite/CI/render evidence pending. Frozen downloads/contracts preserved.
+- Limits: fixed transport, no leaders/radios/failed channels, per-observer memory
+  UI or Windows/fidelity validation. Red acts only on local sight.
+- Next: observer-level contact memory, with clear local/shared timestamps.
+
+## codex/delayed-contact-reports — validated 2026-10-11
+
+- Ready for review: draft PR #30, explicit tested base codex/movement-command-response
+  PR #29 at b7dfb3f9a616059deb0919a76689ce840d0d12ce. No merges or force pushes.
+- Tested code commit: 755017c39f8ee429f80f5809fd808d9d3d2a0cac.
+- Combined successful CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38169442252
+  (verify.yml, artifact tactical-validation 11713641616).
+- All 23 local Godot checks passed with Godot 4.5.1; all 26 terrain tests passed;
+  git diff --check passed. CI includes the same combined suite and actual render checks.
+- V18 saves immutable five-executed-second contact/death packets, delivered captured
+  positions/timestamps, strict validation and exact disk continuation. Selecting a
+  squad restricts live enemy actors and shot cues to its own real observations.
+  Shared markers neither track hidden movement/death nor grant fire permission.
+- Regression proves delivery timing, packet ordering, hidden movement/death, observed
+  death confirmation, rejected malformed records, living reported target rejection
+  during actual planning, in-flight disk restart and exact full battle continuation.
+  A full V17/V18 comparison proves report transport leaves other authoritative state,
+  RNG and battle results unchanged. Repeat-loop/rollback/once-only checks remain passing.
+- Inspected actual CI renders: shared-report-preview.png at execution 00:08 shows
+  S2 local 0, four REPORT 5s markers and the captured x240 position after real target
+  movement to x270; no live enemy actor or unwitnessed firing cue. At 00:03,
+  acquisition-shot-preview.png shows S1 local 4, a real rifle volley/shot cue and
+  MOVE IN 2s. battle-report-preview.png at 06:00 reads blue 36/6/30 and red 36/5/31
+  deployed/surviving/lost, objective 89/159s, bounded campaign costs and withdrawal.
+- Corrected initial inferred-bool parse and immediate shared-marker/HUD assumptions.
+  Refined target rejection to test a living reported enemy in planning, rather than
+  a vacuous dead-target or execution-phase rejection. Corrected checks all passed.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/delayed-contact-reports
+  Import project.godot in Godot 4.5.1, F5, fresh PLAY INTEGRATED DEMO for v18.
+  Existing pending battles keep older rules; campaign v2 and result v1 unchanged.
+- Limits: abstract fixed transport, no leaders/radio range/failure/cancellation,
+  no observer-specific remembered marker yet; Linux checks do not prove Windows
+  compatibility or realistic combat fidelity. Frozen milestone downloads preserved.
+- Next focused task: observer-level contact memory with separate local/shared timestamps.

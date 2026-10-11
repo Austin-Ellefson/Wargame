@@ -317,7 +317,7 @@ func _map_input(event: InputEvent) -> void:
         var best := 30.0
         var target_id := ""
         for squad in simulation.state["squads"]:
-            if squad["faction"] == "UKR" or not simulation.is_observed("UKR", squad) or int(squad["alive"]) <= 0:
+            if squad["faction"] == "UKR" or not _player_observes(squad) or int(squad["alive"]) <= 0:
                 continue
             var distance := camera.unproject_position(actors[squad["id"]].position).distance_to(event.position)
             if distance < best:
@@ -395,6 +395,7 @@ func _show_shot_events(events: Array) -> void:
             continue
         if simulation.limited_visibility() and not event.get("player_visible", false):
             continue
+        if int(simulation.state["version"]) >= 18 and selected not in event.get("local_observers", []): continue
         observed_shot_events.append(event.duplicate(true))
         if observed_shot_events.size() > 64:
             observed_shot_events.pop_front()
@@ -413,7 +414,7 @@ func _show_shot_events(events: Array) -> void:
         trail.size = Vector3(0.9, 0.9, start_3d.distance_to(finish_3d))
         var tracer := _mesh(trail, (start_3d + finish_3d) * 0.5, _shot_material(Color("ffb43b")), cue)
         tracer.look_at(finish_3d, Vector3.UP)
-        shot_cues.append({"node": cue, "ttl": 0.42})
+        shot_cues.append({"node": cue, "ttl": 0.42, "local_observers": event.get("local_observers", []).duplicate()})
 
 func _status_snapshot() -> Dictionary:
     var snapshot := {}
@@ -469,7 +470,7 @@ func _shot_material(color: Color) -> StandardMaterial3D:
 func _age_shot_cues(delta: float) -> void:
     for index in range(shot_cues.size() - 1, -1, -1):
         shot_cues[index]["ttl"] = float(shot_cues[index]["ttl"]) - delta
-        if shot_cues[index]["ttl"] <= 0:
+        if shot_cues[index]["ttl"] <= 0 or (int(simulation.state["version"]) >= 18 and selected not in shot_cues[index]["local_observers"]):
             var node: Node = shot_cues[index]["node"]
             if is_instance_valid(node):
                 node.queue_free()
@@ -504,10 +505,22 @@ func _refresh_order_preview() -> void:
             _mesh(dot, Vector3(point.x, Battle.terrain_height(point.x, point.y) + 0.8, point.y), material, order_preview)
         previous = finish
 
+func _player_observes(squad: Dictionary) -> bool:
+    if squad.is_empty(): return false
+    if int(simulation.state["version"]) < 18: return simulation.is_observed("UKR", squad)
+    return squad["faction"] == "UKR" or simulation.can_spot(simulation.squad_by_id(selected), squad)
+
+func _player_contact_count() -> int:
+    var count := 0
+    for squad in simulation.state["squads"]:
+        if squad["faction"] != "UKR" and _player_observes(squad): count += 1
+    return count
+
 func _refresh_contact_markers() -> void:
     for marker in contact_markers.values():
         marker.visible = false
-    for contact in simulation.last_known_contacts("UKR"):
+    var contacts: Array = simulation.shared_reports("UKR", selected) if int(simulation.state["version"]) >= 18 else simulation.last_known_contacts("UKR")
+    for contact in contacts:
         var id: String = contact["id"]
         if not contact_markers.has(id):
             var marker := Node3D.new()
@@ -530,7 +543,7 @@ func _refresh_contact_markers() -> void:
         var point := Vector2(float(contact["position"][0]), float(contact["position"][1]))
         contact_markers[id].position = Vector3(point.x, Battle.terrain_height(point.x, point.y) + 0.6, point.y)
         contact_markers[id].visible = true
-        contact_labels[id].text = "? LAST SEEN %ds" % (int(simulation.state["elapsed"]) - int(contact["seen_at"]))
+        contact_labels[id].text = ("? REPORT %ds" if int(simulation.state["version"]) >= 18 else "? LAST SEEN %ds") % (int(simulation.state["elapsed"]) - int(contact["seen_at"]))
 
 func _back() -> void:
     if simulation.state["phase"] == "finished":
@@ -554,11 +567,14 @@ func _battle_report(result: Dictionary) -> String:
     return "BATTLE COMPLETE  •  %s\n%s  •  %02d:%02d elapsed\n\nFORCE             DEPLOYED     SURVIVING     LOST\nBLUE %-10s     %2d             %2d            %2d\nRED  %-10s     %2d             %2d            %2d\n\nOBJECTIVE CONTROL\nBlue %d seconds  •  Red %d seconds\n\nCAMPAIGN CONSEQUENCES ON APPLY\n%s: -%d personnel  •  morale cap %d  •  supply -%d\n%s: -%d personnel  •  morale cap %d  •  supply -%d\n%s\nResult commits once, autosaves, and unlocks campaign turns." % [str(result["winner"]).to_upper(), result["battle_id"], int(result["elapsed"]) / 60, int(result["elapsed"]) % 60, blue["id"], blue["deployed"], blue_survivors, blue["losses"], red["id"], red["deployed"], red_survivors, red["losses"], result["objective"]["UKR"], result["objective"]["RU"], blue["id"], blue["losses"], blue["morale"], _supply_cost(blue), red["id"], red["losses"], red["morale"], _supply_cost(red), retreat_text]
 
 func _refresh() -> void:
+    _age_shot_cues(0.0)
     var state: Dictionary = simulation.state
     phase_label.text = "%s  |  %02d:%02d elapsed  |  512 x 512 m generated test terrain" % [str(state["phase"]).to_upper(), int(state["elapsed"]) / 60, int(state["elapsed"]) % 60]
     summary_label.text = "Blue %dP / Red %dP\nObjective: %ds / %ds" % [simulation.alive("UKR"), simulation.alive("RU"), state["objective"]["UKR"], state["objective"]["RU"]]
     if simulation.limited_visibility() and state["phase"] != "finished":
-        summary_label.text = "Blue %dP / %d enemy contacts\nYour objective: %ds" % [simulation.alive("UKR"), simulation.observed_contacts("UKR"), state["objective"]["UKR"]]
+        summary_label.text = "Blue %dP / %d enemy contacts\nYour objective: %ds" % [simulation.alive("UKR"), _player_contact_count(), state["objective"]["UKR"]]
+    if int(state["version"]) >= 18 and state["phase"] != "finished":
+        summary_label.text = "Blue %dP / S%s local %d\nReports %d / Your objective %ds" % [simulation.alive("UKR"), selected.right(1), _player_contact_count(), simulation.shared_reports("UKR", selected).size(), state["objective"]["UKR"]]
     summary_label.size = Vector2(245, 0)
     for id in squad_buttons:
         var squad: Dictionary = simulation.squad_by_id(id)
@@ -582,6 +598,8 @@ func _refresh() -> void:
         selection_label.text += " | " + ("NO FIRE" if simulation.morale_state(selected) == "broken" else "HOLD FIRE" if simulation.fire_mode(selected) == "hold" else "AUTO")
     if int(state["version"]) >= 17:
         selection_label.tooltip_text += "\nNew movement orders wait 5 executed seconds; pauses count concurrently. Fire/spotting continue. Appending keeps the existing response timer; HOLD cancels it."
+    if int(state["version"]) >= 18:
+        selection_label.tooltip_text += "\nSelected squad local contacts are live. Amber REPORT markers arrive 5s after observation and never grant fire permission."
     clear_target_button.visible = int(state["version"]) >= 7
     clear_target_button.disabled = state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0 or simulation.morale_state(selected) == "broken"
     for mode in fire_buttons:
@@ -642,7 +660,7 @@ func _refresh() -> void:
             var height_scale: float = {"stand": 1.0, "crouch": 0.6, "prone": 0.25}[value]
             body.scale = Vector3(1, height_scale, 2.0 if value == "prone" else 1.0)
             body.position.y = 3.0 * height_scale
-        var observed: bool = state["phase"] == "finished" or simulation.is_observed("UKR", squad)
+        var observed: bool = state["phase"] == "finished" or _player_observes(squad)
         actors[squad["id"]].visible = int(squad["alive"]) > 0 and observed
         labels[squad["id"]].text = "%s %dP %dR SUP%d%s" % [str(squad["id"]).replace("_", " "), squad["alive"], squad["ammo"], int(float(squad["suppression"]) * 100), " *" if squad["id"] == selected else ""]
         if simulation.morale_state(squad["id"]) == "broken":
