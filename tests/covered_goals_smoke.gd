@@ -11,6 +11,8 @@ func same(a: Variant, b: Variant) -> bool: return JSON.parse_string(JSON.stringi
 func fixture(version: int = 11) -> RefCounted:
     var battle = Battle.new()
     battle.setup(PAYLOAD)
+    battle.state["version"] = 15
+    battle.state.erase("acquisition")
     battle.state["version"] = version
     if int(battle.state["version"]) < 15: battle.state.erase("weapon_roles")
     if int(battle.state["version"]) < 14: battle.state.erase("postures")
@@ -68,6 +70,8 @@ func _run() -> void:
     game.save_path = directory.path_join("campaign.json")
     game.battle_export_directory = directory
     game._play_demo()
+    game.tactical_simulation.state["version"] = 15
+    game.tactical_simulation.state.erase("acquisition")
     for squad in game.tactical_simulation.state["squads"]: squad["ammo"] = 0
     game.tactical_simulation.execute()
     for tick in range(40): game.tactical_simulation.step()

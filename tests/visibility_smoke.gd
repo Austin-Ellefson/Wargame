@@ -27,6 +27,8 @@ func _run() -> void:
         "russia": {"id": "RED", "personnel": 36, "morale": 80}}
     var battle = Battle.new()
     battle.setup(payload)
+    battle.state["version"] = 15
+    battle.state.erase("acquisition")
     var blue: Dictionary = battle.squad_by_id("UKR_S1")
     var red: Dictionary = battle.squad_by_id("RU_S1")
     check(battle.state["version"] == 15 and battle.observed_contacts("UKR") == 0, "Fresh contacts must not start with omniscient enemy positions.")
@@ -90,6 +92,8 @@ func _run() -> void:
     for version in [1, 2]:
         var legacy = Battle.new()
         legacy.setup(payload)
+        legacy.state["version"] = 15
+        legacy.state.erase("acquisition")
         legacy.state["version"] = version
         if int(legacy.state["version"]) < 15: legacy.state.erase("weapon_roles")
         if int(legacy.state["version"]) < 14: legacy.state.erase("postures")

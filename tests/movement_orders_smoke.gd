@@ -17,6 +17,8 @@ func same(a: Variant, b: Variant) -> bool:
 func fixture(mode: String) -> RefCounted:
     var battle = Battle.new()
     battle.setup(PAYLOAD)
+    battle.state["version"] = 15
+    battle.state.erase("acquisition")
     for squad in battle.state["squads"]:
         squad["ammo"] = 0
         if squad["id"] not in ["UKR_S1", "RU_S1"]:
@@ -90,6 +92,8 @@ func _run() -> void:
         check(Battle.position(pinned.squad_by_id("UKR_S1")) == start and pinned.movement_mode("UKR_S1") == mode, "Pinning must halt every mode while retaining it.")
     var queue = Battle.new()
     queue.setup(PAYLOAD)
+    queue.state["version"] = 15
+    queue.state.erase("acquisition")
     check(queue.order_move("UKR_S1", Vector2(180, 250), true, "quick"), "Queue fixture must accept its first leg.")
     var prefix: Array = queue.state["orders"]["UKR_S1"].duplicate(true)
     check(queue.order_move("UKR_S1", Vector2(320, 300), true, "quick", true), "Append must route the next leg from the previous endpoint.")
@@ -114,6 +118,8 @@ func _run() -> void:
     check(not frozen.order_move("UKR_S1", Vector2(120, 250), true, "hunt") and same(frozen_state, frozen.state), "Modes and routes cannot be changed during execution.")
     var planning = Battle.new()
     planning.setup(PAYLOAD)
+    planning.state["version"] = 15
+    planning.state.erase("acquisition")
     var unchanged: Dictionary = planning.state.duplicate(true)
     check(not planning.order_move("UKR_S1", Vector2(120, 250), true, "warp") and same(unchanged, planning.state), "Unknown commands must be rejected without mutation.")
     check(not planning.order_move("RU_S1", Vector2(120, 250), true, "quick"), "Player movement modes must not command the opponent.")
@@ -152,6 +158,8 @@ func _run() -> void:
     game.save_path = directory.path_join("campaign.json")
     game.battle_export_directory = directory
     game._play_demo()
+    game.tactical_simulation.state["version"] = 15
+    game.tactical_simulation.state.erase("acquisition")
     game.tactical_simulation.order_move("UKR_S1", Vector2(180, 250), true, "hunt")
     check(game.tactical_simulation.order_move("UKR_S1", Vector2(320, 300), true, "hunt", true), "Actual campaign must append a second leg before disk checkpoint.")
     game.tactical_simulation.order_move("UKR_S2", Vector2(180, 272), true, "quick")

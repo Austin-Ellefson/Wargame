@@ -32,6 +32,8 @@ func _run() -> void:
     game.save_path = directory.path_join("campaign.json")
     game.battle_export_directory = directory
     game._play_demo()
+    game.tactical_simulation.state["version"] = 15
+    game.tactical_simulation.state.erase("acquisition")
     var battle = game.tactical_simulation
     var payload: Dictionary = game.battle_payload.duplicate(true)
     for squad in battle.state["squads"]:
@@ -102,6 +104,8 @@ func _run() -> void:
     check(battle.last_known_contacts("UKR").is_empty(), "Finished reports must clear uncertain markers.")
     var legacy = Battle.new()
     legacy.setup(payload)
+    legacy.state["version"] = 15
+    legacy.state.erase("acquisition")
     legacy.state["version"] = 3
     if int(legacy.state["version"]) < 15: legacy.state.erase("weapon_roles")
     if int(legacy.state["version"]) < 14: legacy.state.erase("postures")

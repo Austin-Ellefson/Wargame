@@ -51,7 +51,7 @@ static func visible(a: Vector2, b: Vector2, observer_height: float = 1.6, target
     return true
 
 func setup(payload: Dictionary) -> void:
-    state = {"version": 15, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
+    state = {"version": 16, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
     state["contacts"] = {"UKR": {}, "RU": {}}
@@ -64,7 +64,9 @@ func setup(payload: Dictionary) -> void:
     state["rally_remaining"] = {}
     state["postures"] = {}
     state["weapon_roles"] = {}
+    state["acquisition"] = {}
     for squad in state["squads"]:
+        state["acquisition"][squad["id"]] = {}
         state["fire_modes"][squad["id"]] = "auto"
         state["fire_targets"][squad["id"]] = ""
         state["pause_remaining"][squad["id"]] = 0
@@ -156,6 +158,7 @@ func order_posture(id: String, value: String, player: bool = true) -> bool:
     if int(state["version"]) < 14 or state["phase"] != "planning" or value not in ["stand", "crouch", "prone"] or squad.is_empty() or int(squad["alive"]) <= 0 or morale_state(id) == "broken" or (player and squad["faction"] != "UKR"):
         return false
     state["postures"][id] = value
+    _update_acquisition()
     _update_contacts()
     return true
 
@@ -211,10 +214,28 @@ func combat_status(squad: Dictionary) -> String:
 func limited_visibility() -> bool:
     return int(state["version"]) >= 3
 
-func can_spot(observer: Dictionary, target: Dictionary) -> bool:
+func has_sight(observer: Dictionary, target: Dictionary) -> bool:
     if observer.is_empty() or target.is_empty() or int(observer["alive"]) <= 0 or int(target["alive"]) <= 0 or observer["faction"] == target["faction"]:
         return false
     return position(observer).distance_to(position(target)) <= spot_limit(observer, target) and squad_visible(observer, target)
+
+# Acquisition advances once per simulated second, never from a UI query or
+# planning order. Shared contacts do not fill another observer's local timer.
+func _update_acquisition(advance: bool = false) -> void:
+    if int(state["version"]) < 16: return
+    for observer in state["squads"]:
+        var records: Dictionary = state["acquisition"][observer["id"]]
+        for target in state["squads"]:
+            if not has_sight(observer, target):
+                if int(observer["alive"]) > 0 and int(target["alive"]) == 0 and observer["faction"] != target["faction"] and int(records.get(target["id"], 0)) >= 3 and position(observer).distance_to(position(target)) <= spot_limit(observer, target) and squad_visible(observer, target):
+                    state["contacts"][observer["faction"]].erase(target["id"])
+                records.erase(target["id"])
+            elif advance:
+                records[target["id"]] = mini(3, int(records.get(target["id"], 0)) + 1)
+
+func can_spot(observer: Dictionary, target: Dictionary) -> bool:
+    if not has_sight(observer, target): return false
+    return int(state["version"]) < 16 or int(state["acquisition"][observer["id"]].get(target["id"], 0)) >= 3
 
 func is_observed(faction: String, target: Dictionary) -> bool:
     if target.is_empty():
@@ -248,7 +269,7 @@ func _update_contacts() -> void:
                 for observer in state["squads"]:
                     if observer["faction"] == faction and int(observer["alive"]) > 0:
                         var limit := spot_limit(observer, target)
-                        if position(observer).distance_to(position(target)) <= limit and squad_visible(observer, target):
+                        if position(observer).distance_to(position(target)) <= limit and squad_visible(observer, target) and (int(state["version"]) < 16 or int(state["acquisition"][observer["id"]].get(target["id"], 0)) >= 3):
                             state["contacts"][faction].erase(target["id"])
                             break
 
@@ -480,6 +501,7 @@ func step() -> void:
                 state["movement_modes"].erase(squad["id"])
             if int(state["version"]) >= 8:
                 state["pause_remaining"][squad["id"]] = 0
+    _update_acquisition(true)
     _update_contacts()
     # Collect attacks before applying damage: both sides fire from the same tick state.
     var attacks: Array = []
@@ -548,7 +570,7 @@ func _nearest_target(shooter: Dictionary) -> Dictionary:
         if candidate["faction"] == shooter["faction"] or int(candidate["alive"]) <= 0:
             continue
         var separation := position(shooter).distance_to(position(candidate))
-        if separation < distance and squad_visible(shooter, candidate) and (not limited_visibility() or can_spot(shooter, candidate)):
+        if separation < distance and can_engage(shooter, candidate):
             distance = separation
             best = candidate
     return best
@@ -582,10 +604,10 @@ func result() -> Dictionary:
         "elapsed": state["elapsed"], "objective": state["objective"].duplicate(true), "forces": forces}
 
 static func validate(saved: Variant, payload: Dictionary) -> bool:
-    if not saved is Dictionary or not _integer(saved.get("version"), 1, 15):
+    if not saved is Dictionary or not _integer(saved.get("version"), 1, 16):
         return false
     var version := int(saved["version"])
-    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12) + 2 * int(version >= 13) + int(version >= 14) + int(version >= 15)
+    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12) + 2 * int(version >= 13) + int(version >= 14) + int(version >= 15) + int(version >= 16)
     if saved.size() != field_count:
         return false
     for key in ["version", "battle_id", "phase", "elapsed", "remaining", "objective", "squads", "orders", "winner"]:
@@ -640,7 +662,7 @@ static func _validate_fields(saved: Dictionary, payload: Dictionary) -> bool:
             return false
         if inside_building(position(squad), 0.5):
             return false
-        known[squad["id"]] = true
+        known[squad["id"]] = squad
     for id in saved["orders"]:
         if not known.has(id) or not saved["orders"][id] is Array or saved["orders"][id].size() > 128:
             return false
@@ -728,6 +750,14 @@ static func _validate_fields(saved: Dictionary, payload: Dictionary) -> bool:
         if not roles is Dictionary or roles.size() != known.size(): return false
         for id in known:
             if not roles.get(id) is String or roles[id] != initial_weapon_role(id): return false
+    if int(saved["version"]) >= 16:
+        var acquisition = saved.get("acquisition")
+        if not acquisition is Dictionary or acquisition.size() != known.size(): return false
+        for id in known:
+            var records = acquisition.get(id)
+            if not records is Dictionary: return false
+            for target_id in records:
+                if not known.has(target_id) or known[target_id]["faction"] == known[id]["faction"] or not _integer(records[target_id], 1, mini(3, int(saved["elapsed"]))): return false
     var survivors := {"UKR": 0, "RU": 0}
     for squad in saved["squads"]:
         survivors[squad["faction"]] += int(squad["alive"])

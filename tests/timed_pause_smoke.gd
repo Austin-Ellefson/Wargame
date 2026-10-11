@@ -17,6 +17,8 @@ func finish(battle: RefCounted) -> void:
 func _run() -> void:
     var battle = Battle.new()
     battle.setup(PAYLOAD)
+    battle.state["version"] = 15
+    battle.state.erase("acquisition")
     for squad in battle.state["squads"]: squad["ammo"] = 0
     check(not battle.order_pause("UKR_S1", 15), "Wait requires a queued route.")
     battle.order_move("UKR_S1", Vector2(180, 250), true, "quick")
@@ -37,6 +39,8 @@ func _run() -> void:
     check(Battle.position(blue) != origin, "Movement must resume on the tick after the requested wait.")
     var firing = Battle.new()
     firing.setup(PAYLOAD)
+    firing.state["version"] = 15
+    firing.state.erase("acquisition")
     firing.squad_by_id("UKR_S1")["position"] = [180, 245]
     firing.squad_by_id("RU_S1")["position"] = [240, 245]
     firing.order_move("UKR_S1", Vector2(200, 245))
@@ -46,6 +50,8 @@ func _run() -> void:
     check(int(firing.squad_by_id("UKR_S1")["ammo"]) < 360 and Battle.position(firing.squad_by_id("UKR_S1")) == Vector2(180, 245), "Waiting must preserve real automatic firing without moving.")
     var replacement = Battle.new()
     replacement.setup(PAYLOAD)
+    replacement.state["version"] = 15
+    replacement.state.erase("acquisition")
     replacement.order_move("UKR_S1", Vector2(180, 250))
     replacement.order_pause("UKR_S1", 30)
     replacement.order_move("UKR_S1", Vector2(160, 250))
@@ -55,6 +61,8 @@ func _run() -> void:
     check(replacement.state["pause_remaining"]["UKR_S1"] == 0, "Hold clears route and timer together.")
     var old = Battle.new()
     old.setup(PAYLOAD)
+    old.state["version"] = 15
+    old.state.erase("acquisition")
     old.state["version"] = 7
     if int(old.state["version"]) < 15: old.state.erase("weapon_roles")
     if int(old.state["version"]) < 14: old.state.erase("postures")
@@ -71,6 +79,8 @@ func _run() -> void:
     game.save_path = directory.path_join("campaign.json")
     game.battle_export_directory = directory
     game._play_demo()
+    game.tactical_simulation.state["version"] = 15
+    game.tactical_simulation.state.erase("acquisition")
     for squad in game.tactical_simulation.state["squads"]: squad["ammo"] = 0
     game.tactical_simulation.order_move("UKR_S1", Vector2(180, 250), true, "quick")
     game.tactical_simulation.order_pause("UKR_S1", 30)

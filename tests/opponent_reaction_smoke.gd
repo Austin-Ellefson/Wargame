@@ -11,6 +11,8 @@ func same(a: Variant, b: Variant) -> bool: return JSON.parse_string(JSON.stringi
 func fixture(blue_point: Vector2 = Vector2(80, 250)) -> RefCounted:
     var battle = Battle.new()
     battle.setup(PAYLOAD)
+    battle.state["version"] = 15
+    battle.state.erase("acquisition")
     for squad in battle.state["squads"]:
         if squad["id"] not in ["UKR_S1", "RU_S1"]: squad["alive"] = 0
         if squad["faction"] == "UKR": squad["ammo"] = 0
@@ -86,6 +88,8 @@ func _run() -> void:
     game.save_path = directory.path_join("campaign.json")
     game.battle_export_directory = directory
     game._play_demo()
+    game.tactical_simulation.state["version"] = 15
+    game.tactical_simulation.state.erase("acquisition")
     game.tactical_simulation.squad_by_id("UKR_S1")["position"] = [180, 245]
     game.tactical_simulation.squad_by_id("RU_S1")["position"] = [240, 245]
     game.tactical_simulation.order_fire("UKR_S1", "hold")
