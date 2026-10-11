@@ -123,7 +123,8 @@ func _build_interface() -> void:
             _refresh())
         button.add_theme_font_size_override("font_size", 13)
         squad_buttons[id] = button
-    selection_label = _label("", Vector2(986, 374), 14, 244)
+    selection_label = _label("", Vector2(986, 374), 13, 244)
+    selection_label.add_theme_constant_override("line_spacing", -2)
     for index in range(3):
         var mode: String = ["move", "quick", "hunt"][index]
         var button := _button(mode.to_upper(), Rect2(986 + index * 84, 436, 80, 26), func():
