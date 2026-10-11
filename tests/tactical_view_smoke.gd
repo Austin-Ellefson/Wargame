@@ -14,12 +14,13 @@ func check(condition: bool, message: String) -> void:
 func same(a: Variant, b: Variant) -> bool:
     return JSON.parse_string(JSON.stringify(a)) == JSON.parse_string(JSON.stringify(b))
 
-func click(point: Vector2, button: int) -> void:
+func click(point: Vector2, button: int, shift: bool = false) -> void:
     var event := InputEventMouseButton.new()
     event.position = point
     event.global_position = point
     event.button_index = button
     event.pressed = true
+    event.shift_pressed = shift
     Input.parse_input_event(event)
     event = event.duplicate()
     event.pressed = false
@@ -68,7 +69,7 @@ func _run() -> void:
     var hidden_before: int = view.shot_cues.size()
     view._show_shot_events([{"type": "shot", "player_visible": false, "shooter": "RU_S1", "target": "UKR_S1"}])
     check(view.shot_cues.size() == hidden_before and view.observed_shot_events.is_empty(), "Unobserved shot events must not create cues or recorded visible endpoints.")
-    click(Vector2(1170, 483), MOUSE_BUTTON_LEFT)
+    click(Vector2(1110, 483), MOUSE_BUTTON_LEFT)
     await process_frame
     check(game.tactical_simulation.fire_mode("UKR_S1") == "hold" and "HOLD FIRE" in view.selection_label.text, "Actual HOLD FIRE input must set and display the selected squad's fire rule.")
     click(Vector2(1040, 483), MOUSE_BUTTON_LEFT)
@@ -132,6 +133,24 @@ func _run() -> void:
         await RenderingServer.frame_post_draw
         var path_image := root.get_texture().get_image()
         check(path_image.save_png(path_capture) == OK, "Rendered route preview must save.")
+    var planning_checkpoint: Dictionary = game.tactical_simulation.state.duplicate(true)
+    game.tactical_simulation.squad_by_id("UKR_S1")["position"] = [180, 245]
+    game.tactical_simulation.squad_by_id("RU_S1")["position"] = [240, 245]
+    view._refresh()
+    var contact_screen: Vector2 = view.camera.unproject_position(view.actors["RU_S1"].position)
+    click(contact_screen + Vector2(24, 112), MOUSE_BUTTON_LEFT, true)
+    await process_frame
+    check(game.tactical_simulation.state["fire_targets"]["UKR_S1"] == "RU_S1" and "Focus: ready" in view.report_label.text, "Actual Shift-click must set an eligible observed preferred target.")
+    click(Vector2(1190, 483), MOUSE_BUTTON_LEFT)
+    await process_frame
+    check(game.tactical_simulation.state["fire_targets"]["UKR_S1"] == "", "Clear-target button must reset preference.")
+    click(contact_screen + Vector2(24, 112), MOUSE_BUTTON_LEFT, true)
+    await process_frame
+    game.tactical_simulation.restore(planning_checkpoint)
+    game.tactical_simulation.squad_by_id("UKR_S1")["position"] = [180, 245]
+    game.tactical_simulation.squad_by_id("RU_S1")["position"] = [240, 245]
+    game.tactical_simulation.order_target("UKR_S1", "RU_S1")
+    view._refresh()
     # Button and execution must carry the same scene/model instance through a checkpoint.
     view._execute()
     for button in view.movement_buttons.values() + view.fire_buttons.values():

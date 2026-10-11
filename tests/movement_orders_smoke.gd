@@ -115,6 +115,7 @@ func _run() -> void:
         legacy.state["version"] = version
         legacy.state.erase("movement_modes")
         legacy.state.erase("fire_modes")
+        legacy.state.erase("fire_targets")
         if version < 4:
             legacy.state.erase("contacts")
         check(Battle.validate(legacy.state, PAYLOAD), "Existing v1-v4 fields must remain valid without added modes.")

@@ -37,6 +37,7 @@ var report_label: Label
 var execute_button: Button
 var back_button: Button
 var speed_button: Button
+var clear_target_button: Button
 var fire_buttons := {}
 var movement_buttons := {}
 var command_mode := "move"
@@ -135,12 +136,16 @@ func _build_interface() -> void:
         movement_buttons[mode] = button
     for index in range(2):
         var mode: String = ["auto", "hold"][index]
-        var button := _button("", Rect2(986 + index * 126, 470, 122, 26), func():
+        var button := _button("", Rect2(986 + index * 84, 470, 80, 26), func():
             simulation.order_fire(selected, mode)
             _refresh())
         button.add_theme_font_size_override("font_size", 12)
         button.tooltip_text = "HOLD FIRE also withholds return fire; movement and spotting continue." if mode == "hold" else "Automatic fire at locally visible targets."
         fire_buttons[mode] = button
+    clear_target_button = _button("CLEAR TARGET", Rect2(1154, 470, 80, 26), func():
+        simulation.order_target(selected, "")
+        _refresh())
+    clear_target_button.add_theme_font_size_override("font_size", 10)
     hold_button = _button("HOLD POSITION", Rect2(986, 502, 248, 26), func():
         simulation.order_hold(selected)
         _refresh())
@@ -288,6 +293,20 @@ func _map_input(event: InputEvent) -> void:
         return
     if event.button_index == MOUSE_BUTTON_WHEEL_UP or event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
         camera.fov = clampf(camera.fov + (-3 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 3), 30, 70)
+        return
+    if event.button_index == MOUSE_BUTTON_LEFT and event.shift_pressed and simulation.state["phase"] == "planning" and int(simulation.state["version"]) >= 7:
+        var best := 30.0
+        var target_id := ""
+        for squad in simulation.state["squads"]:
+            if squad["faction"] == "UKR" or not simulation.is_observed("UKR", squad) or int(squad["alive"]) <= 0:
+                continue
+            var distance := camera.unproject_position(actors[squad["id"]].position).distance_to(event.position)
+            if distance < best:
+                best = distance
+                target_id = squad["id"]
+        if not target_id.is_empty():
+            simulation.order_target(selected, target_id)
+        _refresh()
         return
     if event.button_index == MOUSE_BUTTON_LEFT:
         var best := 30.0
@@ -528,6 +547,8 @@ func _refresh() -> void:
         selection_label.text += "\nOrder: " + simulation.movement_status(selected_squad)
     if int(state["version"]) >= 6 and not selected_squad.is_empty():
         selection_label.text += " | " + ("HOLD FIRE" if simulation.fire_mode(selected) == "hold" else "AUTO")
+    clear_target_button.visible = int(state["version"]) >= 7
+    clear_target_button.disabled = state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0
     for mode in fire_buttons:
         fire_buttons[mode].visible = int(state["version"]) >= 6
         fire_buttons[mode].disabled = state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0
@@ -556,6 +577,8 @@ func _refresh() -> void:
         report_label.text = "Amber ? = last seen, not current. Woods conceal distant squads."
     if int(state["version"]) >= 5:
         report_label.text = "Mode + right-click. Amber = last seen."
+    if int(state["version"]) >= 7:
+        report_label.text = simulation.target_status(selected) + "\nShift-click contact to prefer target."
     if state["phase"] == "finished":
         var result: Dictionary = simulation.result()
         completed_report_label.text = _battle_report(result)

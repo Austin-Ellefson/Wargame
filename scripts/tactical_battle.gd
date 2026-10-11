@@ -50,14 +50,16 @@ static func visible(a: Vector2, b: Vector2) -> bool:
     return true
 
 func setup(payload: Dictionary) -> void:
-    state = {"version": 6, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
+    state = {"version": 7, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
     state["contacts"] = {"UKR": {}, "RU": {}}
     state["movement_modes"] = {}
     state["fire_modes"] = {}
+    state["fire_targets"] = {}
     for squad in state["squads"]:
         state["fire_modes"][squad["id"]] = "auto"
+        state["fire_targets"][squad["id"]] = ""
     last_events = []
     _build_navigation()
     _update_contacts()
@@ -156,6 +158,23 @@ func last_known_contacts(faction: String) -> Array:
             var record: Dictionary = state["contacts"][faction][id]
             contacts.append({"id": id, "position": record["position"].duplicate(), "seen_at": record["seen_at"]})
     return contacts
+
+func can_engage(shooter: Dictionary, target: Dictionary) -> bool:
+    return not shooter.is_empty() and not target.is_empty() and int(shooter["alive"]) > 0 and int(target["alive"]) > 0 and shooter["faction"] != target["faction"] and position(shooter).distance_to(position(target)) < 230.0 and visible(position(shooter), position(target)) and (not limited_visibility() or can_spot(shooter, target))
+
+func order_target(id: String, target_id: String, player: bool = true) -> bool:
+    var squad := squad_by_id(id)
+    if int(state["version"]) < 7 or state["phase"] != "planning" or squad.is_empty() or int(squad["alive"]) <= 0 or (player and squad["faction"] != "UKR"):
+        return false
+    if not target_id.is_empty() and not can_engage(squad, squad_by_id(target_id)):
+        return false
+    state["fire_targets"][id] = target_id
+    return true
+
+func target_status(id: String) -> String:
+    if int(state["version"]) < 7 or str(state["fire_targets"][id]).is_empty():
+        return "Focus: none"
+    return "Focus: ready" if can_engage(squad_by_id(id), squad_by_id(state["fire_targets"][id])) else "Focus: waiting for sight"
 
 func fire_mode(id: String) -> String:
     return str(state["fire_modes"][id]) if int(state["version"]) >= 6 else "auto"
@@ -325,6 +344,10 @@ func step() -> void:
         state["phase"] = "planning"
 
 func _nearest_target(shooter: Dictionary) -> Dictionary:
+    if int(state["version"]) >= 7:
+        var preferred := squad_by_id(state["fire_targets"][shooter["id"]])
+        if can_engage(shooter, preferred):
+            return preferred
     var best: Dictionary = {}
     var distance := 230.0
     for candidate in state["squads"]:
@@ -365,10 +388,10 @@ func result() -> Dictionary:
         "elapsed": state["elapsed"], "objective": state["objective"].duplicate(true), "forces": forces}
 
 static func validate(saved: Variant, payload: Dictionary) -> bool:
-    if not saved is Dictionary or not _integer(saved.get("version"), 1, 6):
+    if not saved is Dictionary or not _integer(saved.get("version"), 1, 7):
         return false
     var version := int(saved["version"])
-    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6)
+    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7)
     if saved.size() != field_count:
         return false
     for key in ["version", "battle_id", "phase", "elapsed", "remaining", "objective", "squads", "orders", "winner"]:
@@ -461,6 +484,21 @@ static func _validate_fields(saved: Dictionary, payload: Dictionary) -> bool:
         for id in known:
             if modes.get(id) not in ["auto", "hold"]:
                 return false
+    if int(saved["version"]) >= 7:
+        var targets = saved.get("fire_targets")
+        if not targets is Dictionary or targets.size() != known.size():
+            return false
+        for squad in saved["squads"]:
+            var target_id = targets.get(squad["id"])
+            if not target_id is String:
+                return false
+            if not target_id.is_empty():
+                var opposing := false
+                for target in saved["squads"]:
+                    if target["id"] == target_id and target["faction"] != squad["faction"]:
+                        opposing = true
+                if not opposing:
+                    return false
     var survivors := {"UKR": 0, "RU": 0}
     for squad in saved["squads"]:
         survivors[squad["faction"]] += int(squad["alive"])

@@ -21,8 +21,8 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/infantry-fire-control / PR #17
-- Post-milestone next task: observed preferred-target orders
+- Latest validated post-milestone descendant: codex/observed-target-orders / PR #18
+- Post-milestone next task: queued movement waypoints
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -407,3 +407,13 @@ is delivered as the scheduled task result in ChatGPT.
 - Inspected artifact 11705446305: Readable AUTO/HOLD FIRE controls and separated order status during actual shot execution; completed report retained. First capture exposed tight spacing, corrected and rerendered.
 - Frozen milestone preserved; no Windows or Combat Mission fidelity validation.
 - Next: observed preferred-target orders.
+
+## Five-step batch: codex/observed-target-orders — 2026-10-11
+
+- Ready for review; draft PR #18, base codex/infantry-fire-control.
+- Tested code: 34da4ce3278bbc8825da70ca5bbf1d2e693a375b.
+- Full local Godot suite, 26 terrain tests and diff check passed.
+- CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38146863358 succeeded.
+- Inspected artifact 11704408615: Execution shows Focus ready with actual preferred-target shot cues, safe generic contact labels, hidden-contact marker and readable completed report. UI Shift-click and clear-target regression passed.
+- Frozen milestone preserved; no Windows or Combat Mission fidelity validation.
+- Next: queued movement waypoints.

@@ -212,3 +212,18 @@ New v6 saves add `fire_modes` for every squad ID, with `auto` or `hold` values;
 missing/extra IDs and unknown values reject the save. V1-v5 retain their automatic
 fire and original fields/rules. Campaign v2 and result v1 are unchanged. Holding
 fire does not introduce concealment benefits, weapon classes or ammo resupply.
+
+## Preferred targets (tactical v7)
+
+During planning, Shift-left-click a visible contact to prefer it for the selected
+squad, or CLEAR TARGET to return to nearest eligible targeting. Assignment requires
+the shooter's current local sight and fire range. A preference is not forced fire:
+if unavailable, AUTO chooses another eligible target. HOLD FIRE always overrides.
+Focus ready/waiting/none never shows enemy counts or hidden status; an unobserved
+death retains the preference like any unavailable target. No hidden location is
+rendered. Preferences persist until explicitly cleared/replaced.
+
+V7 adds `fire_targets` for all squad IDs: empty string or known opposing squad ID.
+Strict validation rejects missing/extra IDs, friendly/unknown targets and nonstrings.
+A saved preference may be out of sight; every shot still rechecks current local
+range/LOS. V1-v6 retain original fields/rules; no silent migration or extra RNG.
