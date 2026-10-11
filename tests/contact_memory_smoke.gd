@@ -42,6 +42,7 @@ func _run() -> void:
     red["position"] = [200, 250]
     battle.execute()
     battle.state["orders"].clear()
+    battle.state["movement_modes"].clear()
     battle.step()
     check(battle.state["contacts"]["UKR"].has("RU_S1") and battle.state["contacts"]["RU"].has("UKR_S1"), "Actual simulation ticks must remember observed enemies for both sides.")
     check(battle.last_known_contacts("UKR").is_empty(), "Live contacts must not also show stale markers.")
@@ -103,6 +104,7 @@ func _run() -> void:
     legacy.setup(payload)
     legacy.state["version"] = 3
     legacy.state.erase("contacts")
+    legacy.state.erase("movement_modes")
     check(Battle.validate(legacy.state, payload), "V3 saves without contact memory must remain valid.")
     var legacy_restart = Battle.new()
     legacy_restart.restore(JSON.parse_string(JSON.stringify(legacy.state)))

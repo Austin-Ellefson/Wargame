@@ -21,8 +21,8 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest post-milestone descendant: codex/limited-enemy-visibility / PR #14
-- Post-milestone next task: versioned last-known enemy contacts without hidden tracking
+- Latest validated post-milestone descendant: codex/last-known-contacts / PR #15
+- Post-milestone task in progress: codex/infantry-movement-orders; rendered CI pending
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and

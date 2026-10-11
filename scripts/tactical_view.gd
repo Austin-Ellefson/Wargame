@@ -37,6 +37,8 @@ var report_label: Label
 var execute_button: Button
 var back_button: Button
 var speed_button: Button
+var movement_buttons := {}
+var command_mode := "move"
 var hold_button: Button
 var squad_buttons := {}
 
@@ -121,15 +123,23 @@ func _build_interface() -> void:
         button.add_theme_font_size_override("font_size", 13)
         squad_buttons[id] = button
     selection_label = _label("", Vector2(986, 374), 14, 244)
-    hold_button = _button("HOLD POSITION", Rect2(986, 426, 248, 32), func():
+    for index in range(3):
+        var mode: String = ["move", "quick", "hunt"][index]
+        var button := _button(mode.to_upper(), Rect2(986 + index * 84, 436, 80, 26), func():
+            command_mode = mode
+            _refresh())
+        button.add_theme_font_size_override("font_size", 12)
+        button.tooltip_text = {"move": "2.4 m/s normal movement", "quick": "4 m/s fast movement; no fatigue model yet", "hunt": "1.2 m/s; pauses on local contact or SUP >= 25%"}[mode]
+        movement_buttons[mode] = button
+    hold_button = _button("HOLD POSITION", Rect2(986, 470, 248, 28), func():
         simulation.order_hold(selected)
         _refresh())
-    execute_button = _button("EXECUTE 60 SECONDS", Rect2(986, 470, 248, 44), _execute)
-    speed_button = _button("PLAYBACK 4x", Rect2(986, 524, 248, 32), func():
+    execute_button = _button("EXECUTE 60 SECONDS", Rect2(986, 506, 248, 32), _execute)
+    speed_button = _button("PLAYBACK 4x", Rect2(986, 546, 248, 32), func():
         speed = 8.0 if speed == 4.0 else 4.0
         speed_button.text = "PLAYBACK %dx" % int(speed))
-    back_button = _button("SAVE & CAMPAIGN", Rect2(986, 566, 248, 38), _back)
-    report_label = _label("", Vector2(986, 615), 13, 244)
+    back_button = _button("SAVE & CAMPAIGN", Rect2(986, 586, 248, 32), _back)
+    report_label = _label("", Vector2(986, 627), 13, 244)
     _label("Left: select  /  Right: move  /  Wheel: zoom  /  Middle-drag: pan  /  Shift + middle-drag: rotate", Vector2(24, 691), 13)
 
 func _material(color: Color, unshaded: bool = false) -> StandardMaterial3D:
@@ -282,7 +292,7 @@ func _map_input(event: InputEvent) -> void:
         _refresh()
     elif event.button_index == MOUSE_BUTTON_RIGHT and simulation.state["phase"] == "planning":
         var target := _ground_point(event.position)
-        if target.x >= 0 and simulation.order_move(selected, target):
+        if target.x >= 0 and simulation.order_move(selected, target, true, command_mode):
             _refresh()
 
 func _update_camera() -> void:
@@ -504,6 +514,12 @@ func _refresh() -> void:
     var selected_squad: Dictionary = simulation.squad_by_id(selected)
     if not selected_squad.is_empty():
         selection_label.text = "Squad %s  |  %s\n%d rounds  /  Morale %d  /  SUP%d%%" % [selected.right(1), simulation.combat_status(selected_squad), selected_squad["ammo"], selected_squad["morale"], int(float(selected_squad["suppression"]) * 100)]
+    if int(state["version"]) >= 5 and not selected_squad.is_empty():
+        selection_label.text += "\nOrder: " + simulation.movement_status(selected_squad)
+    for mode in movement_buttons:
+        movement_buttons[mode].visible = int(state["version"]) >= 5
+        movement_buttons[mode].disabled = state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0
+        movement_buttons[mode].text = mode.to_upper() + (" *" if command_mode == mode else "")
     for id in squad_buttons:
         var squad: Dictionary = simulation.squad_by_id(id)
         if simulation.is_pinned(squad):
@@ -522,10 +538,12 @@ func _refresh() -> void:
         report_label.text = "Spot before firing. Woods conceal distant squads. Contacts show current sight."
     if int(state["version"]) >= 4:
         report_label.text = "Amber ? = last seen, not current. Woods conceal distant squads."
+    if int(state["version"]) >= 5:
+        report_label.text = "Choose mode, then right-click. Amber ? = last seen."
     if state["phase"] == "finished":
         var result: Dictionary = simulation.result()
         completed_report_label.text = _battle_report(result)
-        report_label.text = "Review the completed report. APPLY commits it once and returns to the campaign."
+        report_label.text = "APPLY commits once and unlocks the campaign."
     _refresh_order_preview()
     _refresh_contact_markers()
     for squad in state["squads"]:

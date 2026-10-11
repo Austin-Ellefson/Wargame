@@ -50,10 +50,11 @@ static func visible(a: Vector2, b: Vector2) -> bool:
     return true
 
 func setup(payload: Dictionary) -> void:
-    state = {"version": 4, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
+    state = {"version": 5, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
     state["contacts"] = {"UKR": {}, "RU": {}}
+    state["movement_modes"] = {}
     last_events = []
     _build_navigation()
     _update_contacts()
@@ -153,7 +154,28 @@ func last_known_contacts(faction: String) -> Array:
             contacts.append({"id": id, "position": record["position"].duplicate(), "seen_at": record["seen_at"]})
     return contacts
 
-func order_move(id: String, target: Vector2, player: bool = true) -> bool:
+func movement_mode(id: String) -> String:
+    if not state["orders"].has(id):
+        return "hold"
+    return str(state["movement_modes"].get(id, "move")) if int(state["version"]) >= 5 else "move"
+
+func hunt_paused(squad: Dictionary) -> bool:
+    if movement_mode(squad["id"]) != "hunt" or int(squad["alive"]) <= 0:
+        return false
+    if float(squad["suppression"]) >= 0.25:
+        return true
+    for enemy in state["squads"]:
+        if can_spot(squad, enemy):
+            return true
+    return false
+
+func movement_status(squad: Dictionary) -> String:
+    var mode := movement_mode(squad["id"])
+    return "HUNT PAUSED" if hunt_paused(squad) else mode.to_upper()
+
+func order_move(id: String, target: Vector2, player: bool = true, mode: String = "move") -> bool:
+    if mode not in ["move", "quick", "hunt"] or (int(state["version"]) < 5 and mode != "move"):
+        return false
     var squad := squad_by_id(id)
     if state["phase"] != "planning" or squad.is_empty() or int(squad["alive"]) <= 0:
         return false
@@ -175,6 +197,8 @@ func order_move(id: String, target: Vector2, player: bool = true) -> bool:
         path.append([points[index].x, points[index].y])
     path.append([target.x, target.y])
     state["orders"][id] = path
+    if int(state["version"]) >= 5:
+        state["movement_modes"][id] = mode
     return true
 
 func order_hold(id: String) -> bool:
@@ -182,6 +206,8 @@ func order_hold(id: String) -> bool:
     if state["phase"] != "planning" or squad.is_empty() or squad["faction"] != "UKR" or int(squad["alive"]) <= 0:
         return false
     state["orders"].erase(id)
+    if int(state["version"]) >= 5:
+        state["movement_modes"].erase(id)
     return true
 
 func execute() -> bool:
@@ -205,10 +231,13 @@ func step() -> void:
         squad["suppression"] = maxf(0, float(squad["suppression"]) - 0.035)
         if int(squad["alive"]) <= 0:
             state["orders"].erase(squad["id"])
+            if int(state["version"]) >= 5:
+                state["movement_modes"].erase(squad["id"])
             continue
         var path: Array = state["orders"].get(squad["id"], [])
-        var speed := 2.4 * (1.0 - 0.8 * float(squad["suppression"]))
-        if is_pinned(squad):
+        var base_speed: float = {"move": 2.4, "quick": 4.0, "hunt": 1.2}[movement_mode(squad["id"])] if not path.is_empty() else 0.0
+        var speed: float = float(base_speed) * (1.0 - 0.8 * float(squad["suppression"]))
+        if is_pinned(squad) or hunt_paused(squad):
             speed = 0.0
         while speed > 0 and not path.is_empty():
             var current := position(squad)
@@ -224,6 +253,8 @@ func step() -> void:
                 speed = 0
         if path.is_empty():
             state["orders"].erase(squad["id"])
+            if int(state["version"]) >= 5:
+                state["movement_modes"].erase(squad["id"])
     _update_contacts()
     # Collect attacks before applying damage: both sides fire from the same tick state.
     var attacks: Array = []
@@ -321,9 +352,9 @@ func result() -> Dictionary:
         "elapsed": state["elapsed"], "objective": state["objective"].duplicate(true), "forces": forces}
 
 static func validate(saved: Variant, payload: Dictionary) -> bool:
-    if not saved is Dictionary or not _integer(saved.get("version"), 1, 4):
+    if not saved is Dictionary or not _integer(saved.get("version"), 1, 5):
         return false
-    if saved.size() != (10 if int(saved["version"]) == 4 else 9):
+    if saved.size() != (11 if int(saved["version"]) == 5 else (10 if int(saved["version"]) == 4 else 9)):
         return false
     for key in ["version", "battle_id", "phase", "elapsed", "remaining", "objective", "squads", "orders", "winner"]:
         if not saved.has(key):
@@ -384,7 +415,7 @@ static func _validate_fields(saved: Dictionary, payload: Dictionary) -> bool:
         for point in saved["orders"][id]:
             if not _point(point) or inside_building(Vector2(point[0], point[1]), 0.5):
                 return false
-    if int(saved["version"]) == 4:
+    if int(saved["version"]) >= 4:
         if not saved.get("contacts") is Dictionary or saved["contacts"].size() != 2:
             return false
         for faction in ["UKR", "RU"]:
@@ -401,6 +432,13 @@ static func _validate_fields(saved: Dictionary, payload: Dictionary) -> bool:
                     return false
                 if inside_building(Vector2(record["position"][0], record["position"][1]), 0.5):
                     return false
+    if int(saved["version"]) >= 5:
+        var modes = saved.get("movement_modes")
+        if not modes is Dictionary or modes.size() != saved["orders"].size():
+            return false
+        for id in modes:
+            if not saved["orders"].has(id) or modes[id] not in ["move", "quick", "hunt"] or saved["orders"][id].is_empty():
+                return false
     var survivors := {"UKR": 0, "RU": 0}
     for squad in saved["squads"]:
         survivors[squad["faction"]] += int(squad["alive"])

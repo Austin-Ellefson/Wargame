@@ -119,3 +119,12 @@ This setup change contains instructions only; these missing tools must be addres
 - Nine Godot checks, 26 terrain tests and diff check pass locally. Rendered CI
   captures last-known markers, actual firing and completed reports. Windows unverified.
 - Frozen milestone build preserved. Next: focused infantry movement modes.
+
+## Infantry movement modes — 2026-10-11
+- Status: in progress, local checks passed; CI/render review pending.
+- Branch: codex/infantry-movement-orders, based on tested PR #15.
+- MOVE/QUICK/HUNT choose distinct pace; HUNT pauses on local contact/pressure
+  and retains its route. Versioned v5 modes persist; older engagements keep rules.
+- Ten local Godot checks and 26 terrain tests passed. UI input regression uses
+  actual mode-button clicks and map commands; execution capture added to CI.
+- Frozen milestone preserved. No fatigue, Windows or Combat Mission fidelity claim.

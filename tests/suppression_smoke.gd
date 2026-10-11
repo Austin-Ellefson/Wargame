@@ -46,6 +46,7 @@ func _run() -> void:
     legacy.setup(payload)
     legacy.state["version"] = 1
     legacy.state.erase("contacts")
+    legacy.state.erase("movement_modes")
     legacy.squad_by_id("UKR_S1")["suppression"] = 1.0
     for squad in legacy.state["squads"]:
         squad["ammo"] = 0
@@ -60,7 +61,7 @@ func _run() -> void:
     check(Battle.position(legacy.squad_by_id("UKR_S1")) != Vector2(80, 208), "V1 suppression must keep its original slowed movement behavior.")
     check(same(legacy.state, legacy_restart.state) and legacy_restart.state["version"] == 1, "Loading a V1 engagement must not silently switch its combat rules.")
     var invalid: Dictionary = battle.state.duplicate(true)
-    invalid["version"] = 5
+    invalid["version"] = 6
     check(not Battle.validate(invalid, payload), "Unknown tactical rule versions must be rejected.")
     # Actual incoming simulated volleys pin a living squad, not just a UI fixture.
     var firefight = Battle.new()
@@ -75,6 +76,7 @@ func _run() -> void:
     firefight.order_move("UKR_S1", Vector2(140, 208))
     firefight.execute()
     firefight.state["orders"] = {"UKR_S1": firefight.state["orders"]["UKR_S1"]}
+    firefight.state["movement_modes"] = {"UKR_S1": "move"}
     var victim: Dictionary = firefight.squad_by_id("UKR_S1")
     for tick in range(18):
         firefight.step()
