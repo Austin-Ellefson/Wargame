@@ -17,6 +17,8 @@ func finish(battle: RefCounted) -> void:
 func _run() -> void:
     var battle = Battle.new()
     battle.setup(PAYLOAD)
+    battle.state["version"] = 15
+    battle.state.erase("acquisition")
     for squad in battle.state["squads"]:
         if squad["id"] not in ["UKR_S1", "RU_S1", "RU_S2"]: squad["alive"] = 0
         if squad["faction"] == "RU": squad["ammo"] = 0
@@ -50,6 +52,8 @@ func _run() -> void:
     check(battle.target_status("UKR_S1") == "Focus: waiting for sight", "Unobserved death must not reveal a new target status.")
     var old = Battle.new()
     old.setup(PAYLOAD)
+    old.state["version"] = 15
+    old.state.erase("acquisition")
     old.state["version"] = 6
     if int(old.state["version"]) < 15: old.state.erase("weapon_roles")
     if int(old.state["version"]) < 14: old.state.erase("postures")
@@ -67,6 +71,8 @@ func _run() -> void:
     game.save_path = directory.path_join("campaign.json")
     game.battle_export_directory = directory
     game._play_demo()
+    game.tactical_simulation.state["version"] = 15
+    game.tactical_simulation.state.erase("acquisition")
     game.tactical_simulation.squad_by_id("UKR_S1")["position"] = [180, 245]
     game.tactical_simulation.squad_by_id("RU_S1")["position"] = [240, 245]
     check(game.tactical_simulation.order_target("UKR_S1", "RU_S1"), "Campaign fixture must accept its actually observed contact.")

@@ -241,3 +241,15 @@ so a checkpoint at 00:01 fires the same support volley at 00:02 after restart.
 Complete campaign disk continuation with mixed profiles produces identical state
 and result. V1–V14 retain original fields and rifle cadence; no upgrade on load.
 Campaign v2/result v1, GIS/export fields and Windows launchers remain unchanged.
+
+
+## Tactical acquisition v16
+
+New battles add `acquisition`: exactly one dictionary per squad ID. Each sparse
+map contains opposing known squad IDs and integer consecutive-sight progress 1–3,
+no greater than executed elapsed time. Zero/negative/fractional/nonstrings, extra
+or missing observer maps, friendly/unknown targets and unknown fields reject.
+Geometry is still checked at query time, so saved progress cannot bypass LOS/range.
+Progress advances only once per executed second; dead/lost-sight observers reset.
+Partial timers and full combat outcomes restore exactly from disk. V1–V15 keep
+their fields and immediate acquisition; campaign v2/result v1 are unchanged.

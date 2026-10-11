@@ -11,6 +11,8 @@ func same(a: Variant, b: Variant) -> bool: return JSON.parse_string(JSON.stringi
 func fixture() -> RefCounted:
     var battle = Battle.new()
     battle.setup(PAYLOAD)
+    battle.state["version"] = 15
+    battle.state.erase("acquisition")
     for squad in battle.state["squads"]:
         squad["ammo"] = 0
         if squad["id"] not in ["UKR_S1", "RU_S1"]: squad["alive"] = 0
@@ -122,6 +124,8 @@ func _run() -> void:
     game.save_path = directory.path_join("campaign.json")
     game.battle_export_directory = directory
     game._play_demo()
+    game.tactical_simulation.state["version"] = 15
+    game.tactical_simulation.state.erase("acquisition")
     var sim = game.tactical_simulation
     sim.squad_by_id("UKR_S1")["position"] = [180,245]
     sim.squad_by_id("RU_S1")["position"] = [240,245]

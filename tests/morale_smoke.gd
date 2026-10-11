@@ -11,6 +11,8 @@ func same(a: Variant, b: Variant) -> bool: return JSON.parse_string(JSON.stringi
 func fixture() -> RefCounted:
     var battle = Battle.new()
     battle.setup(PAYLOAD)
+    battle.state["version"] = 15
+    battle.state.erase("acquisition")
     for squad in battle.state["squads"]:
         squad["ammo"] = 0
         if squad["id"] not in ["UKR_S1", "RU_S1"]: squad["alive"] = 0
@@ -84,6 +86,8 @@ func _run() -> void:
     check(not Battle.validate(invalid, PAYLOAD), "Unknown morale IDs reject.")
     var firefight = Battle.new()
     firefight.setup(PAYLOAD)
+    firefight.state["version"] = 15
+    firefight.state.erase("acquisition")
     for squad in firefight.state["squads"]:
         squad["position"] = [100,208] if squad["faction"] == "UKR" else [250,208]
         if squad["faction"] == "UKR":
@@ -103,6 +107,8 @@ func _run() -> void:
     game.save_path = directory.path_join("campaign.json")
     game.battle_export_directory = directory
     game._play_demo()
+    game.tactical_simulation.state["version"] = 15
+    game.tactical_simulation.state.erase("acquisition")
     for squad in game.tactical_simulation.state["squads"]: squad["ammo"] = 0
     game.tactical_simulation.squad_by_id("UKR_S1")["position"] = [180,245]
     game.tactical_simulation.squad_by_id("UKR_S1")["alive"] = 4

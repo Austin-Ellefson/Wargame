@@ -6,10 +6,10 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/morale-retreat-rally` descendant includes route previews,
+The newer `codex/spotting-acquisition` descendant includes route previews,
 camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
 queued waypoints, timed pauses, local-contact reactions and cover-weighted red routes. The milestone
-branch above remains frozen. Fresh battles use tactical rules v13. See the five-step
+branch above remains frozen. Fresh battles use tactical rules v16. See the five-step
 batch test guide in [FIVE_STEP_TACTICAL_PROGRESS.md](FIVE_STEP_TACTICAL_PROGRESS.md).
 
 ## Complete game loop
@@ -463,3 +463,28 @@ This is abstract profile tuning: no individual weapon/ammo pools, gunner losses,
 reloads, overheating, ammunition transfer, penetration, realistic cyclic rates or
 platform-specific performance validation. Real support-fire tactics/fidelity and
 Windows playtesting remain unverified.
+
+
+## Local acquisition delay (v16)
+
+New contacts require three consecutive executed simulated seconds of geometric
+sight for each living observer/target pair. No UI query, planning pause, order
+or playback speed earns observation time. The third second permits identification
+and an eligible cadence shot. Shared faction contacts and remembered markers do
+not give another squad local firing permission. HUNT and red engagement reaction
+use identified local contacts. Loss of LOS/range or observer death resets progress;
+reacquisition requires three fresh seconds. Already observed hidden movement/death
+does not update remembered positions. Planning posture changes invalidate lost sight.
+
+Sparse per-observer timers persist exactly across saves and restart. V1–V15 retain
+immediate spotting and their original save fields/rules. Campaign/result, GIS,
+exports and Windows launchers remain unchanged. This is a fixed abstract delay,
+not a measured detection model: no probabilistic signatures, search arcs, leaders,
+communication delay or firing-signature bonuses. It identifies living contacts;
+unidentified corpses are not a new contact type. Windows remains unvalidated.
+
+Playtest: start a fresh integrated demo, approach an enemy with HUNT and execute.
+Sight must be maintained for three simulated seconds before an enemy contact or
+eligible shot appears; actual rifle/support cadence still applies. Lose LOS and
+reacquire; saved last-seen markers alone permit no fire. SAVE & CAMPAIGN/LOAD must
+resume the same remaining delay. Existing pending battles retain their old rules.

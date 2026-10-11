@@ -47,6 +47,13 @@ func drag_camera(point: Vector2, relative: Vector2, rotate: bool = false) -> voi
 
 func _run() -> void:
     root.size = Vector2i(1280, 720)
+    var capture := ""
+    var report_capture := ""
+    for argument in OS.get_cmdline_user_args():
+        if argument.begins_with("--capture="):
+            capture = argument.trim_prefix("--capture=")
+        elif argument.begins_with("--report-capture="):
+            report_capture = argument.trim_prefix("--report-capture=")
     var game = load("res://scenes/main.tscn").instantiate()
     root.add_child(game)
     await process_frame
@@ -167,6 +174,30 @@ func _run() -> void:
     var planning_checkpoint: Dictionary = game.tactical_simulation.state.duplicate(true)
     game.tactical_simulation.squad_by_id("UKR_S1")["position"] = [180, 245]
     game.tactical_simulation.squad_by_id("RU_S1")["position"] = [240, 245]
+    # Execute real acquisition time on a detached checkpoint before testing
+    # planning target input. UI refresh and Shift-click cannot skip the delay.
+    view.set_process(false)
+    for squad in game.tactical_simulation.state["squads"]: squad["ammo"] = 0
+    game.tactical_simulation.execute()
+    game.tactical_simulation.state["orders"].clear()
+    game.tactical_simulation.state["movement_modes"].clear()
+    game.tactical_simulation.step()
+    game.tactical_simulation.step()
+    view._refresh()
+    check(not view.actors["RU_S1"].visible and view.shot_cues.is_empty(), "Two executed seconds must not expose an unidentified contact or shot cue.")
+    if not capture.is_empty() and DisplayServer.get_name() != "headless":
+        await RenderingServer.frame_post_draw
+        check(root.get_texture().get_image().save_png(capture.get_base_dir().path_join("acquisition-pending-preview.png")) == OK, "Pending-acquisition capture must save.")
+    game.tactical_simulation.squad_by_id("UKR_S1")["ammo"] = 9
+    game.tactical_simulation.step()
+    view._show_shot_events(game.tactical_simulation.consume_events())
+    view._refresh()
+    check(view.actors["RU_S1"].visible and not view.shot_cues.is_empty(), "Third second must reveal the identified contact with an actual delayed shot cue.")
+    if not capture.is_empty() and DisplayServer.get_name() != "headless":
+        await RenderingServer.frame_post_draw
+        check(root.get_texture().get_image().save_png(capture.get_base_dir().path_join("acquisition-shot-preview.png")) == OK, "Actual acquisition-shot capture must save.")
+    for tick in range(57): game.tactical_simulation.step()
+    view._age_shot_cues(1.0)
     view._refresh()
     var contact_screen: Vector2 = view.camera.unproject_position(view.actors["RU_S1"].position)
     click(contact_screen + Vector2(24, 112), MOUSE_BUTTON_LEFT, true)
@@ -217,7 +248,7 @@ func _run() -> void:
         executed_ticks += 1
     view._refresh()
     check("PINNED" in view.selection_label.text and "PINNED" in view.squad_buttons["UKR_S2"].text and "PINNED" in view.labels["UKR_S2"].text, "Pinned status must be visible in selection, roster and world labels.")
-    check(game.tactical_simulation.opponent_engaging(game.tactical_simulation.squad_by_id("RU_S1")) and Battle.position(game.tactical_simulation.squad_by_id("RU_S1")).is_equal_approx(Vector2(240, 245)), "Observed red squad must halt its advance on its own real firing contact.")
+    check(game.tactical_simulation.opponent_engaging(game.tactical_simulation.squad_by_id("RU_S1")), "Observed red squad must engage only after its own real acquisition delay.")
     check(view.actors["RU_S1"].visible and view.labels["RU_S1"].text == "ENEMY CONTACT", "Acquired enemies must show a contact label without exact personnel/ammunition/status.")
     check(not view.actors["RU_S4"].visible and view.labels["RU_S4"].text.is_empty() and not view.markers["RU_S4"].visible, "Unspotted enemies must remain hidden during actual execution.")
     check("RU" not in view.combat_label.text, "Live feedback must not reveal exact enemy casualty/ammunition/suppression changes.")
@@ -225,13 +256,6 @@ func _run() -> void:
     check(not view.shot_cues.is_empty(), "Actual firing events must create visible transient cues for eligible shooters.")
     check("P" in view.combat_label.text and "R" in view.combat_label.text and "SUP" in view.combat_label.text, "Live combat feedback must identify personnel, ammunition and suppression changes.")
     check("P" in view.labels["UKR_S1"].text and "R" in view.labels["UKR_S1"].text and "SUP" in view.labels["UKR_S1"].text, "World labels must expose current personnel, ammunition and suppression.")
-    var capture := ""
-    var report_capture := ""
-    for argument in OS.get_cmdline_user_args():
-        if argument.begins_with("--capture="):
-            capture = argument.trim_prefix("--capture=")
-        elif argument.begins_with("--report-capture="):
-            report_capture = argument.trim_prefix("--report-capture=")
     if not capture.is_empty() and DisplayServer.get_name() != "headless":
         await RenderingServer.frame_post_draw
         var image := root.get_texture().get_image()

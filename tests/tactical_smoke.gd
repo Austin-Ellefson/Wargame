@@ -157,9 +157,13 @@ func _run() -> void:
     depleted["ukraine"]["personnel"] = 5
     var small = Battle.new()
     small.setup(depleted)
+    small.state["version"] = 15
+    small.state.erase("acquisition")
     check(small.alive("UKR") == 5 and small.state["squads"].size() == 5, "Depleted formation must not fabricate a full platoon.")
     var timed = Battle.new()
     timed.setup(payload)
+    timed.state["version"] = 15
+    timed.state.erase("acquisition")
     for squad in timed.state["squads"]:
         squad["ammo"] = 0
     finish(timed, false)
@@ -168,6 +172,8 @@ func _run() -> void:
     # Transient shot events must describe actual attacks without entering saved state.
     var event_battle = Battle.new()
     event_battle.setup(payload)
+    event_battle.state["version"] = 15
+    event_battle.state.erase("acquisition")
     for squad in event_battle.state["squads"]:
         squad["alive"] = 0
     var blue: Dictionary = event_battle.squad_by_id("UKR_S1")
@@ -186,6 +192,8 @@ func _run() -> void:
     check(not event_battle.state.has("events") and event_battle.consume_events().is_empty(), "Presentation events must be transient and excluded from authoritative state.")
     var no_fire = Battle.new()
     no_fire.setup(payload)
+    no_fire.state["version"] = 15
+    no_fire.state.erase("acquisition")
     for squad in no_fire.state["squads"]:
         squad["ammo"] = 0
     no_fire.execute()
@@ -197,6 +205,8 @@ func _run() -> void:
     check(not no_fire.order_move("UKR_S1", Vector2(100, 100)) and not no_fire.order_hold("UKR_S1"), "A dead squad must reject both movement and hold orders.")
     var blocked = Battle.new()
     blocked.setup(payload)
+    blocked.state["version"] = 15
+    blocked.state.erase("acquisition")
     for squad in blocked.state["squads"]:
         squad["alive"] = 0
     blocked.squad_by_id("UKR_S1")["alive"] = 9
@@ -209,6 +219,8 @@ func _run() -> void:
     check(blocked.consume_events().is_empty(), "Building-blocked fire must not emit a cue.")
     var distant = Battle.new()
     distant.setup(payload)
+    distant.state["version"] = 15
+    distant.state.erase("acquisition")
     for squad in distant.state["squads"]:
         squad["alive"] = 0
     distant.squad_by_id("UKR_S1")["alive"] = 9

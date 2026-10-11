@@ -588,3 +588,22 @@ is delivered as the scheduled task result in ChatGPT.
   Open project.godot in Godot 4.5.1, F5, LOAD an existing slot or start a fresh
   integrated demo for V15. Older pending battles retain their original rules.
 - Next: deterministic spotting acquisition delay; C2 limits are a separate task.
+
+
+## Local spotting acquisition — 2026-10-11
+
+- In validation: codex/spotting-acquisition, base tested PR #27 head
+  e5190c169ff78ee7b2cd78b172245c1270824690 (CI 38165341512 success).
+  No overlapping task/newer branch or merges found.
+- V16 strict per-observer three-second continuous local sight. Queries/planning
+  never advance; sight loss resets, shared contacts do not bypass local firing.
+  Partial disk restart/full outcomes and old V15 rules covered. Prior feature
+  fixtures explicitly retain V15 to isolate their original contracts; campaign
+  loop, acquisition and UI run fresh V16. Initial contact-memory fixture timed
+  out on an immediate-contact assumption; corrected compatibility fixture. UI
+  target/reaction assumptions corrected to use actually executed acquisition.
+- Full suite/CI/render evidence pending. Frozen ready downloads preserved.
+- No Windows/fidelity claim, variable signatures, C2 delays or search arcs.
+- Next: command/communication limits as a separate focused increment.
+
+- All 21 local Godot checks, 26 terrain tests and diff check now pass on the candidate. Initial capture variable-scope error fixed. Combined CI/render review pending.
