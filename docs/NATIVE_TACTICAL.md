@@ -6,9 +6,9 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/limited-enemy-visibility` descendant includes route previews,
-camera navigation, pinning and current enemy spotting. The milestone branch
-above remains frozen. New battles on this descendant use tactical rules v3.
+The newer `codex/infantry-movement-orders` descendant includes route previews,
+camera navigation, pinning, spotting, saved contact memory and movement modes.
+The milestone branch above remains frozen. Fresh battles use tactical rules v5.
 
 ## Complete game loop
 
@@ -136,9 +136,8 @@ engagement reaches the same outcome with the same orders.
 
 Tactical saves carry their rules version separately from campaign schema v2.
 Existing tactical v1 engagements load and finish with their original slowed
-movement rules; v2 keeps pinning and full visibility. New engagements use v3
-pinning and spotting. Current contacts are derived solely from saved squad state,
-so no new save fields or persistent contact memory are introduced. Result/export
+movement rules; v2 keeps pinning and full visibility. V3 keeps pinning and current spotting; v4 adds saved contact memory. Fresh
+v5 battles also persist movement modes. Existing engagements retain their version. Result/export
 shapes and campaign schema remain unchanged. Unknown tactical versions are
 rejected; there is no automatic rewrite of an in-flight battle.
 
@@ -176,3 +175,29 @@ Validation rejects friendly/unknown IDs, extra fields, blocked/out-of-map positi
 fractional/future timestamps and missing faction maps. V1/V2/V3 saves retain their
 original fields and rules; no silent migration. Campaign schema v2 and battle
 result schema v1 remain unchanged. Presentation consumes no simulation RNG.
+
+## Infantry movement orders (tactical v5)
+
+Select a blue squad, click MOVE, QUICK or HUNT, then right-click a destination.
+The star marks the mode for the next map command; changing that selector alone
+does not change an existing order. The selected-squad panel shows the actual
+queued order, including **HUNT PAUSED**. Hold clears the route and mode together.
+Commands freeze during execution and dead squads cannot receive them.
+
+| Mode | Base speed | Response |
+| --- | --- | --- |
+| MOVE | 2.4 m/s | Current normal movement, slowed by suppression and halted by pinning. |
+| QUICK | 4.0 m/s | Faster route traversal, with the same suppression/pinning rules. |
+| HUNT | 1.2 m/s | Pauses before movement on a locally spotted living enemy or suppression at least 25% after recovery. |
+
+A paused HUNT retains its route, can fire using existing local sight rules, and
+resumes once local sight clears and suppression falls below the threshold. Shared
+or last-known contacts alone do not pause it. Pinning overrides every mode.
+Movement/observation update on one-second ticks; HUNT reacts on the next tick
+after contact acquisition. The red scripted advance still issues MOVE.
+
+These are abstract tuning values. QUICK has no fatigue, posture or weapon-specific
+accuracy penalty yet; HUNT is a reversible pause, not a permanent halt command
+or a reproduction of proprietary Combat Mission rules. Paths/modes persist
+across intervals and restart. Reaching the destination, Hold or elimination
+clears them. No presentation changes consume simulation RNG.

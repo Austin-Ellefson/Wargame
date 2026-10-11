@@ -52,3 +52,15 @@ Validation rejects friendly/unknown IDs, extra fields, blocked/out-of-map positi
 fractional/future timestamps and missing faction maps. V1/V2/V3 saves retain their
 original fields and rules; no silent migration. Campaign schema v2 and battle
 result schema v1 remain unchanged. Presentation consumes no simulation RNG.
+
+## Movement modes (tactical v5)
+
+New engagements add `movement_modes`, a dictionary keyed by exactly the IDs
+with nonempty queued paths in `orders`. Values are `move`, `quick` or `hunt`.
+Validation rejects missing/extra IDs, missing maps, unknown values and empty
+mode-associated paths. Movement mode and path are replaced/cleared together.
+Pause conditions derive from saved positions, morale/suppression and local LOS;
+no transient pause flag or extra RNG is saved. Disk restart preserves both modes
+and complete deterministic outcomes. Campaign schema remains v2; result v1 and
+legacy export contracts are unchanged. V1/V2/V3/V4 engagements retain original
+fields and speed/response rules and cannot accept QUICK/HUNT; no silent upgrade.
