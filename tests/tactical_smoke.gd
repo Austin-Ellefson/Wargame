@@ -163,6 +163,7 @@ func _run() -> void:
     small.state.erase("shared_contacts")
     small.state.erase("pending_reports")
     small.state.erase("observer_contacts")
+    small.state.erase("facing_orders")
     check(small.alive("UKR") == 5 and small.state["squads"].size() == 5, "Depleted formation must not fabricate a full platoon.")
     var timed = Battle.new()
     timed.setup(payload)
@@ -172,6 +173,7 @@ func _run() -> void:
     timed.state.erase("shared_contacts")
     timed.state.erase("pending_reports")
     timed.state.erase("observer_contacts")
+    timed.state.erase("facing_orders")
     for squad in timed.state["squads"]:
         squad["ammo"] = 0
     finish(timed, false)
@@ -186,6 +188,7 @@ func _run() -> void:
     event_battle.state.erase("shared_contacts")
     event_battle.state.erase("pending_reports")
     event_battle.state.erase("observer_contacts")
+    event_battle.state.erase("facing_orders")
     for squad in event_battle.state["squads"]:
         squad["alive"] = 0
     var blue: Dictionary = event_battle.squad_by_id("UKR_S1")
@@ -210,6 +213,7 @@ func _run() -> void:
     no_fire.state.erase("shared_contacts")
     no_fire.state.erase("pending_reports")
     no_fire.state.erase("observer_contacts")
+    no_fire.state.erase("facing_orders")
     for squad in no_fire.state["squads"]:
         squad["ammo"] = 0
     no_fire.execute()
@@ -227,6 +231,7 @@ func _run() -> void:
     blocked.state.erase("shared_contacts")
     blocked.state.erase("pending_reports")
     blocked.state.erase("observer_contacts")
+    blocked.state.erase("facing_orders")
     for squad in blocked.state["squads"]:
         squad["alive"] = 0
     blocked.squad_by_id("UKR_S1")["alive"] = 9
@@ -245,6 +250,7 @@ func _run() -> void:
     distant.state.erase("shared_contacts")
     distant.state.erase("pending_reports")
     distant.state.erase("observer_contacts")
+    distant.state.erase("facing_orders")
     for squad in distant.state["squads"]:
         squad["alive"] = 0
     distant.squad_by_id("UKR_S1")["alive"] = 9

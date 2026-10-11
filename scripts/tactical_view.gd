@@ -19,6 +19,10 @@ var camera_pitch := atan2(520.0, 394.0)
 var camera_distance := Vector2(520, 394).length()
 var inspect_button: Button
 var reset_camera_button: Button
+var facing_button: Button
+var arc_button: Button
+var facing_armed := false
+var arc_preview: Node3D
 var world: Node3D
 var actors := {}
 var motions := {}
@@ -121,12 +125,22 @@ func _build_interface() -> void:
     completed_report_label = _label("", Vector2(180, 167), 16, 610)
     completed_report_panel.visible = false
     completed_report_label.visible = false
+    facing_button = _button("FACE", Rect2(370, 70, 104, 36), func():
+        facing_armed = not facing_armed
+        _refresh())
+    facing_button.tooltip_text = "Click FACE then left-click ground to face that direction; click FACE again or right-click to cancel. Routes are unchanged."
+    arc_button = _button("ARC OFF", Rect2(480, 70, 104, 36), func():
+        var following: int = {0: 90, 90: 180, 180: 0}[simulation.arc_width(selected)]
+        simulation.order_arc(selected, following)
+        _refresh())
+    arc_button.tooltip_text = "Cycle unrestricted / 90° / 180° fire. Arc follows ordered facing, retains direction while moving, and withholds even return fire outside it. Spotting is unchanged."
     _label("BLUE DETACHMENT", Vector2(986, 130), 13)
     summary_label = _label("", Vector2(986, 155), 16, 245)
     for index in range(4):
         var id := "UKR_S%d" % (index + 1)
         var button := _button("", Rect2(986, 208 + index * 34, 248, 32), func():
             selected = id
+            facing_armed = false
             _refresh())
         button.add_theme_font_size_override("font_size", 13)
         squad_buttons[id] = button
@@ -307,6 +321,8 @@ func _build_world() -> void:
         marker.bottom_radius = 5
         marker.height = 0.4
         markers[squad["id"]] = _mesh(marker, Vector3.ZERO, _material(color, true))
+    arc_preview = Node3D.new()
+    world.add_child(arc_preview)
     order_preview = Node3D.new()
     world.add_child(order_preview)
 
@@ -328,6 +344,15 @@ func _map_input(event: InputEvent) -> void:
     if event.button_index == MOUSE_BUTTON_WHEEL_UP or event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
         camera.fov = clampf(camera.fov + (-3 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 3), 30, 70)
         return
+    if facing_armed:
+        if event.button_index == MOUSE_BUTTON_RIGHT:
+            facing_armed = false
+            _refresh()
+            return
+        if event.button_index == MOUSE_BUTTON_LEFT:
+            if simulation.order_facing(selected, _ground_point(event.position)): facing_armed = false
+            _refresh()
+            return
     if event.button_index == MOUSE_BUTTON_LEFT and event.shift_pressed and simulation.state["phase"] == "planning" and int(simulation.state["version"]) >= 7:
         var best := 30.0
         var target_id := ""
@@ -475,7 +500,9 @@ func _animate_soldiers(delta: float) -> void:
             if int(simulation.state["version"]) >= 18 and body.recoil_remaining > 0 and selected not in body.shot_witnesses:
                 body.clear_shot()
             if not actors[id].visible: body.clear_shot()
-            if moving and body.current_pose != "casualty" and body.recoil_remaining <= 0: body.rotation.y = motion["heading"]
+            if body.current_pose != "casualty" and body.recoil_remaining <= 0:
+                if moving: body.rotation.y = motion["heading"]
+                elif int(simulation.state["version"]) >= 20 and actors[id].visible: body.rotation.y = -deg_to_rad(simulation.facing(id))
             body.animate(delta, moving, float(motion.get("phase", 0.0)) + index * 0.7)
 
 func _status_snapshot() -> Dictionary:
@@ -578,6 +605,37 @@ func _player_contact_count() -> int:
         if squad["faction"] != "UKR" and _player_observes(squad): count += 1
     return count
 
+# Selected friendly order preview only: no target or hidden-contact query.
+func _refresh_arc_preview() -> void:
+    for child in arc_preview.get_children():
+        arc_preview.remove_child(child)
+        child.queue_free()
+    var squad: Dictionary = simulation.squad_by_id(selected)
+    if int(simulation.state["version"]) < 20 or simulation.state["phase"] == "finished" or squad.is_empty() or int(squad["alive"]) <= 0: return
+    var origin := Battle.position(squad)
+    var heading := deg_to_rad(simulation.facing(selected))
+    var width: int = simulation.arc_width(selected)
+    var points: Array[Vector2] = []
+    if width == 0:
+        points = [origin, origin + Vector2(sin(heading), -cos(heading)) * 30.0]
+    else:
+        points.append(origin)
+        for index in range(13):
+            var angle := heading + deg_to_rad(-width * 0.5 + width * index / 12.0)
+            points.append(origin + Vector2(sin(angle), -cos(angle)) * 230.0)
+        points.append(origin)
+    for index in range(points.size() - 1):
+        var a := points[index].clamp(Vector2(4,4), Vector2(508,508))
+        var b := points[index+1].clamp(Vector2(4,4), Vector2(508,508))
+        if a.distance_to(b) < 0.1: continue
+        var start := Vector3(a.x, Battle.terrain_height(a.x,a.y) + 1.0, a.y)
+        var end := Vector3(b.x, Battle.terrain_height(b.x,b.y) + 1.0, b.y)
+        var line := BoxMesh.new()
+        var thickness := 0.035 if camera_distance < 80 else 0.65
+        line.size = Vector3(thickness,thickness,start.distance_to(end))
+        var instance := _mesh(line,(start+end)*0.5,_material(Color("69ead4"),true),arc_preview)
+        instance.look_at(end,Vector3.UP)
+
 func _refresh_contact_markers() -> void:
     for marker in contact_markers.values():
         marker.visible = false
@@ -634,7 +692,19 @@ func _battle_report(result: Dictionary) -> String:
 func _refresh() -> void:
     _age_shot_cues(0.0)
     var state: Dictionary = simulation.state
+    if state["phase"] != "planning": facing_armed = false
+    facing_button.visible = int(state["version"]) >= 20
+    arc_button.visible = facing_button.visible
+    var facing_squad: Dictionary = simulation.squad_by_id(selected)
+    facing_button.disabled = state["phase"] != "planning" or facing_squad.is_empty() or int(facing_squad.get("alive",0)) <= 0 or simulation.morale_state(selected) == "broken"
+    arc_button.disabled = facing_button.disabled
+    facing_button.text = "CLICK GROUND" if facing_armed else "FACE %d°" % simulation.facing(selected)
+    facing_button.add_theme_font_size_override("font_size",12)
+    arc_button.text = "ARC OFF" if simulation.arc_width(selected) == 0 else "ARC %d°" % simulation.arc_width(selected)
+    _refresh_arc_preview()
     phase_label.text = "%s  |  %02d:%02d elapsed  |  512 x 512 m generated test terrain" % [str(state["phase"]).to_upper(), int(state["elapsed"]) / 60, int(state["elapsed"]) % 60]
+    if int(state["version"]) >= 20:
+        phase_label.text = "%s  |  %02d:%02d  |  512 m" % [str(state["phase"]).to_upper(), int(state["elapsed"]) / 60, int(state["elapsed"]) % 60]
     summary_label.text = "Blue %dP / Red %dP\nObjective: %ds / %ds" % [simulation.alive("UKR"), simulation.alive("RU"), state["objective"]["UKR"], state["objective"]["RU"]]
     if simulation.limited_visibility() and state["phase"] != "finished":
         summary_label.text = "Blue %dP / %d enemy contacts\nYour objective: %ds" % [simulation.alive("UKR"), _player_contact_count(), state["objective"]["UKR"]]
@@ -710,6 +780,7 @@ func _refresh() -> void:
         report_label.text = "Mode + right-click. Amber = last seen."
     if int(state["version"]) >= 7:
         report_label.text = simulation.target_status(selected) + " | Shift-click target\nShift-right: append route"
+    if facing_armed: report_label.text = "FACE: left-click ground.\nRight-click or FACE cancels."
     if not selected_squad.is_empty() and simulation.morale_state(selected) == "broken":
         report_label.text = "BROKEN: automatic withdrawal.\n30 quiet rear seconds to rally."
     if state["phase"] == "finished":

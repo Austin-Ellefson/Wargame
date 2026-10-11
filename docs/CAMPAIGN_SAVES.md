@@ -302,3 +302,32 @@ full combat outcomes continue exactly after actual campaign disk restart. V1–V
 retain their original shape/rules; existing saves are not silently upgraded.
 Campaign v2/result v1, battle locks, bounded once-only loss/result application,
 save-write rollback, export/GIS and optional Windows launchers remain unchanged.
+
+
+## Tactical facing and fire arcs v20
+
+New engagements add `facing_orders`, exactly one record per known squad ID, with
+exactly integer `heading` (0–359) and `width` (0, 90 or 180). Heading is clockwise
+from north (-south axis): east90, south180, west270. Width0 means unrestricted fire.
+Unknown/missing IDs, extra fields, nonfinite/fractional/string angles, unsupported
+widths and a nonzero arc on a broken squad reject before restoring live state.
+Living steady/shaken squads receive planning-only facing and arc commands;
+player commands cannot affect red. Dead/broken/executing squads reject commands.
+
+Facing ground points must be finite and within map bounds, at least1m from the
+squad; stored bearing rounds to whole degrees. Routes/response/pauses are unchanged.
+Arc origin follows actual squad position while bearing remains fixed in world
+space. Automatic and preferred fire both require the arc plus existing local
+acquisition, LOS and range. Outside-arc sightings remain visible. Morale break
+clears the width before withdrawal; dead squads retain their last saved record.
+Default unrestricted v20 combat matches all v19 authoritative fields/results
+except new facing metadata. No additional RNG samples. V1–V19 retain original
+fields/rules and reject facing orders rather than migrate silently.
+
+The cyan selected-friendly preview, cursor mode and decorative figure rotation
+are transient presentation. Moving figures follow actual displacement; stationary
+living figures return to ordered bearing after a witnessed shot cue expires.
+Known casualty figures do not rotate. Camera/preview queries cannot alter state.
+Actual campaign disk restart restores angles/arcs, each tick, shots and complete
+results exactly. Campaign v2/result v1, once-only losses, locks, save rollback,
+export/GIS and optional Windows launchers remain unchanged.

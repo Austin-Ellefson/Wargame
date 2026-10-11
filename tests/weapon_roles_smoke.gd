@@ -17,6 +17,7 @@ func fixture(id: String) -> RefCounted:
     battle.state.erase("shared_contacts")
     battle.state.erase("pending_reports")
     battle.state.erase("observer_contacts")
+    battle.state.erase("facing_orders")
     for squad in battle.state["squads"]:
         if squad["id"] not in [id,"RU_S1"]: squad["alive"] = 0
         squad["ammo"] = 360 if squad["id"] == id else 0
@@ -112,6 +113,7 @@ func _run() -> void:
     game.tactical_simulation.state.erase("shared_contacts")
     game.tactical_simulation.state.erase("pending_reports")
     game.tactical_simulation.state.erase("observer_contacts")
+    game.tactical_simulation.state.erase("facing_orders")
     var sim = game.tactical_simulation
     sim.squad_by_id("UKR_S2")["position"] = [180,245]
     sim.squad_by_id("RU_S1")["position"] = [240,245]

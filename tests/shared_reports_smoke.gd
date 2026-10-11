@@ -13,6 +13,7 @@ func fixture() -> RefCounted:
     sim.setup(PAYLOAD)
     sim.state["version"] = 18
     sim.state.erase("observer_contacts")
+    sim.state.erase("facing_orders")
     for squad in sim.state["squads"]:
         squad["ammo"] = 0
         if squad["id"] not in ["UKR_S1","UKR_S2","RU_S1"]: squad["alive"] = 0
@@ -77,6 +78,7 @@ func _run() -> void:
     legacy.state.erase("shared_contacts")
     legacy.state.erase("pending_reports")
     legacy.state.erase("observer_contacts")
+    legacy.state.erase("facing_orders")
     check(Battle.validate(legacy.state,PAYLOAD), "V17 retains original fields.")
     for tick in range(3): legacy.step()
     check(legacy.is_observed("UKR",legacy.squad_by_id("RU_S1")) and not legacy.state.has("shared_contacts"), "Old aggregate visibility rules cannot silently migrate.")
@@ -103,6 +105,7 @@ func _run() -> void:
     baseline.state.erase("shared_contacts")
     baseline.state.erase("pending_reports")
     baseline.state.erase("observer_contacts")
+    baseline.state.erase("facing_orders")
     for battle in [current,baseline]:
         battle.squad_by_id("UKR_S1")["ammo"] = 360
         battle.squad_by_id("RU_S1")["ammo"] = 360
@@ -112,6 +115,7 @@ func _run() -> void:
     authoritative.erase("shared_contacts")
     authoritative.erase("pending_reports")
     authoritative.erase("observer_contacts")
+    authoritative.erase("facing_orders")
     check(same(authoritative,baseline.state) and same(current.result(),baseline.result()), "Report transport/presentation metadata must not change authoritative combat or consume simulation RNG.")
     var game = load("res://scenes/main.tscn").instantiate()
     game.auto_launch_battles = false

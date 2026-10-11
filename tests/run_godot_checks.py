@@ -22,7 +22,7 @@ def main():
     logs.mkdir(parents=True, exist_ok=True)
     checks = [("editor", ["--headless", "--editor", "--quit"])]
     for name in ["campaign_smoke", "campaign_save_smoke", "tactical_smoke",
-                 "repeatable_loop_smoke", "suppression_smoke", "visibility_smoke", "contact_memory_smoke", "movement_orders_smoke", "fire_control_smoke", "target_orders_smoke", "timed_pause_smoke", "opponent_reaction_smoke", "cover_routing_smoke", "covered_goals_smoke", "fatigue_smoke", "morale_smoke", "posture_smoke", "weapon_roles_smoke", "acquisition_smoke", "command_response_smoke", "shared_reports_smoke", "observer_memory_smoke", "soldier_visual_smoke", "soldier_animation_smoke", "tactical_view_smoke"]:
+                 "repeatable_loop_smoke", "suppression_smoke", "visibility_smoke", "contact_memory_smoke", "movement_orders_smoke", "fire_control_smoke", "target_orders_smoke", "timed_pause_smoke", "opponent_reaction_smoke", "cover_routing_smoke", "covered_goals_smoke", "fatigue_smoke", "morale_smoke", "posture_smoke", "weapon_roles_smoke", "acquisition_smoke", "command_response_smoke", "shared_reports_smoke", "observer_memory_smoke", "fire_arcs_smoke", "soldier_visual_smoke", "soldier_animation_smoke", "tactical_view_smoke"]:
         checks.append((name, ["--headless", "--script", f"res://tests/{name}.gd"]))
     if args.render_check:
         if args.capture:
@@ -54,6 +54,9 @@ def main():
         animation_command = soldier_command.copy()
         animation_command[animation_command.index("res://tests/soldier_visual_smoke.gd")] = "res://tests/soldier_animation_smoke.gd"
         checks.append(("animation_render", animation_command))
+        arc_command = soldier_command.copy()
+        arc_command[arc_command.index("res://tests/soldier_visual_smoke.gd")] = "res://tests/fire_arcs_smoke.gd"
+        checks.append(("fire_arc_render", arc_command))
     for name, flags in checks:
         result = subprocess.run([args.godot, "--path", str(root), *flags], cwd=root,
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,

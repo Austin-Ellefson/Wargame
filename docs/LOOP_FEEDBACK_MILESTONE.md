@@ -920,3 +920,84 @@ is delivered as the scheduled task result in ChatGPT.
   radio network or individual perception; no Windows/Combat Mission fidelity claim.
 - Next focused task: explicit squad facing and bounded fire arcs; version orders,
   require local visibility for targets, preserve restart and existing animations.
+
+
+## Squad facing and fire arcs — in validation 2026-10-11
+
+- Branch `codex/squad-facing-fire-arcs`, tested PR #33 base
+  83c9f30361156466fa20cb7288bff2f34959c719; final baseline CI38173815596 success.
+- Versioned v20 heading/width orders, planning FACE + ground click, ARC0/90/180
+  and cyan selected-friendly maximum-range outline. Local acquisition/LOS/range
+  still required; outside-arc enemies remain visible but cannot receive fire.
+- Real shot/edge/wrap/hidden-target/route-origin/withdrawal/strict-save regressions,
+  full default v19 outcome parity, actual bounded-arc every-tick disk continuation
+  and mouse-input/figure-facing/cancellation/presentation-purity tests added.
+- Fixed initial GDScript inference annotations before testing; focus feedback now
+  distinguishes acquired outside-arc targets without leaking hidden bearings.
+  Shortened v20 phase header to leave readable room for FACE/ARC controls.
+  First rendered CI38174507882 passed; inspected artifact11715017733. Close
+  inspection exposed thick cyan preview over figures; adaptive width fix and
+  actual INSPECT/RESET purity regression added, pending final rerender.
+- Final combined Godot/terrain checks, draft PR, rendered CI and artifact review
+  pending. Do not promote before checks finish. V1–V19 fields/rules retained.
+- Limits: direction-only fire restriction, no traverse delay/self-defense exception
+  or individual perception; no Windows/fidelity claim. Frozen downloads preserved.
+- Next focused task: ammunition-consuming area suppression orders at ground points,
+  without converting remembered contacts to live knowledge or targeted entity fire.
+
+- Publication checkpoint: final local 27 Godot checks, 26 terrain tests and diff
+  check passed with adaptive preview before the execution environment disconnected.
+  Same tested edits published directly through GitHub with expected-head lease;
+  final CI/rerender pending. Do not claim final refined-artifact visual inspection
+  until a working inspection environment is available.
+
+
+## Squad facing and fire arcs — validated 2026-10-11
+
+- Ready for review: draft PR #34, codex/squad-facing-fire-arcs, explicit tested
+  PR #33 base 83c9f30361156466fa20cb7288bff2f34959c719. No merges/force pushes.
+- Gameplay commit ef5a2e4ade47f628ae5520e0b112445d79380b70; adaptive preview
+  53daaaba6447a0a6a2837da588f64ba147130195. Tested code/evidence head:
+  83f6790b128e43412eedcc591cff4972d7d89214.
+- All 27 local Godot checks, 26 terrain tests and diff check passed with the
+  adaptive preview before local execution disconnected (environment_offline).
+- Combined initial CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38174507882
+  passed; tactical-validation artifact11715017733 inspected locally: FACE90/ARC90
+  planning wedge, actual execution00:03 rifle -9R into the east sector while an
+  outside-arc southern contact remained visible, close actual00:06 1x muzzle/recoil
+  with342 rounds and readable completed06:00 report blue36/6/30, red36/5/31,
+  objectives89/159s and campaign consequences. Initial thick inspection line fixed.
+- Adaptive build CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38175174701
+  passed. Final combined CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38175330630
+  passed all logic/terrain and four rendered scripts; artifact11715353232 generated.
+  Actual close inspection PNG retrieved and visually inspected through decoded CI
+  job114576405525 logs: thin cyan cone leaves nine east-facing figures readable.
+  The workflow now exposes this actual screenshot alongside regular artifacts,
+  allowing inspection when a local execution/download environment is unavailable.
+- Local publication stalled after environment disconnect. Same locally tested
+  edits recovered from known branch content and published via GitHub APIs with
+  exact expected-head leases; actual remote head rechecked. No Windows/PC tests.
+- Tactical v20 stores whole-degree heading0–359 and width0/90/180 per known squad.
+  FACE + left ground click changes only facing; right-click cancels without move.
+  Arc follows executed position with fixed world bearing. Both automatic/preferred
+  shots require local acquisition/LOS/range AND arc, including return fire. Visible
+  outside-arc enemies stay visible; generic hidden-target feedback never leaks bearing.
+- Regression proves actual nearest/preferred restricted shots, inclusive edges/north
+  wrap, frozen/dead/enemy/invalid commands, moving-origin bounds, morale break cleanup,
+  11 malformed save cases, complete default v19 authoritative field/result parity,
+  every-tick bounded-arc campaign disk restart, mouse commands/cancellation/inspection,
+  preview purity and stationary/casualty geometry. Existing loop/locks/once-only
+  losses/results/save rollback, contact memory and real-shot animations remain passing.
+- Stationary living figures obey facing after shot expiry; moving figures follow
+  actual travel and casualty rigs do not turn. Preview adapts overview/inspection
+  thickness. V1–V19 keep original fields/rules; campaign v2/result v1, export/GIS
+  and optional Windows launchers unchanged. Frozen milestone/older downloads preserved.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/squad-facing-fire-arcs
+  Godot4.5.1/project.godot/F5/fresh integrated demo. Select squad, FACE + ground,
+  ARC90/180, execute; clear arc for unrestricted local fire. Old saves retain rules.
+- Limits: synthetic squad-level direction restriction; no traverse delay, automatic
+  self-defense exception, per-soldier sectors or spotting cone. Linux/render checks
+  do not establish Windows or Combat Mission fidelity. Local runtime remains offline;
+  future work must reacquire/fetch the remote branch before changing files.
+- Next focused task: ammunition-consuming area suppression at explicit ground points,
+  without turning remembered reports into live knowledge or entity-target permissions.
