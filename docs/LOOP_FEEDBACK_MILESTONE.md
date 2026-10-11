@@ -21,8 +21,8 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/delayed-contact-reports / PR #30
-- Post-milestone next task: observer-level contact memory
+- Latest validated post-milestone descendant: codex/individual-soldier-visuals / PR #31
+- Post-milestone next task: actual movement/firing animations; observer memory queued
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -761,3 +761,40 @@ is delivered as the scheduled task result in ChatGPT.
   exposed inconsistent initial/focused terrain height. Initial camera now uses the
   same placement helper as reset. Final suite/CI and actual renders pending.
 - Preserve frozen downloads. No Windows/per-soldier AI/animation/fidelity claim.
+
+## codex/individual-soldier-visuals — validated 2026-10-11
+
+- Ready for review: draft PR #31, based on tested delayed-contact-reports PR #30
+  at 4323c302476987a97b8c21f77ae88981bf5d8d1a. No merges/force pushes.
+- Tested presentation code: 9dc78617d3de5731f95ac6ba425aac9d17e1b040.
+- Combined successful CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38170496126
+  (verify.yml; artifact tactical-validation 11713177798). Initial successful render
+  CI 38170304071 followed by uniform/equipment refinement and corrected shot HUD.
+- All 24 local Godot checks and 26 terrain tests passed; diff check passed. Added
+  actual INSPECT SQUAD/RESET GUI input regression passed separately before final head.
+- Replaced three oversized capsules with one low-poly procedural display rig per
+  initially deployed person (up to nine). Olive/tan uniforms, side-color insignia,
+  helmets, rifles/support silhouette, packs/vests/boots, torso/arm/leg postures.
+  Actual blue losses become grey fallen slots without rifles, including zero
+  survivors. Acquired live enemies retain nominal initial figure counts, hiding
+  exact losses; unacquired actors/cues remain hidden. No downloaded art dependency.
+- Inspected stand/crouch/prone captures, actual 00:03 prone shot with RIFLE -9R,
+  ammo351/SUP17 and 00:09 actual two-person losses (7P,333R,SUP30), with two grey
+  fallen figures and a real volley cue. Completed report remains readable at
+  06:00: blue36/6/30, red36/5/31, objective89/159s and once-only campaign consequences.
+- New regression executes full real combat against an unrendered twin and checks
+  exact authoritative state/results every tick, actual losses/shot, hidden enemy
+  counts, pose geometry and camera isolation/reset. Existing two-battle campaign,
+  restart, battle locks, bounded once-only losses and save rollback remain passing.
+- Initial camera reset discrepancy fixed by consistent initial/reset placement and
+  restored distance. Nonfatal anchor/driver/test-input warnings remain; no script
+  errors in successful checks. Tactical v18/campaign v2/result v1 unchanged.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/individual-soldier-visuals
+  Godot4.5.1: import project.godot/F5, integrated demo, select squad and INSPECT SQUAD.
+  STAND/CROUCH/PRONE change poses in planning; RESET CAMERA restores overview.
+- Limits: simple static procedural figures, fixed display offsets that can overlap
+  obstacles, no independent soldier AI/collision/identity/aim/inventory or animation.
+  Loss slots derive from counts rather than individual injury events. Not Windows
+  or realistic-fidelity validation. Frozen ready milestone download preserved.
+- Next focused task: movement and firing animations tied to actual executed
+  motion/shot events, outside saved state/RNG. Observer contact memory remains queued.

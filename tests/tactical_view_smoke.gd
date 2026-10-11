@@ -76,6 +76,13 @@ func _run() -> void:
     var hidden_before: int = view.shot_cues.size()
     view._show_shot_events([{"type": "shot", "player_visible": false, "shooter": "RU_S1", "target": "UKR_S1"}])
     check(view.shot_cues.size() == hidden_before and view.observed_shot_events.is_empty(), "Unobserved shot events must not create cues or recorded visible endpoints.")
+    var inspection_state: Dictionary = game.tactical_simulation.state.duplicate(true)
+    click(Vector2(679,85), MOUSE_BUTTON_LEFT)
+    await process_frame
+    check(view.camera_distance == 24 and view.bodies["UKR_S1"].size() == 9 and same(inspection_state, game.tactical_simulation.state), "Actual INSPECT SQUAD input must show individual figures without changing the battle.")
+    click(Vector2(860,85), MOUSE_BUTTON_LEFT)
+    await process_frame
+    check(is_equal_approx(view.camera_distance,Vector2(520,394).length()), "Actual RESET CAMERA input must leave inspection and restore overview distance.")
     click(Vector2(1110, 489), MOUSE_BUTTON_LEFT)
     await process_frame
     check(game.tactical_simulation.fire_mode("UKR_S1") == "hold" and "HOLD FIRE" in view.selection_label.text, "Actual HOLD FIRE input must set and display the selected squad's fire rule.")
