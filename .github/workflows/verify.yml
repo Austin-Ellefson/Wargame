@@ -30,6 +30,9 @@ jobs:
       - name: Godot logic and rendered input checks
         run: |
           xvfb-run -a python3 tests/run_godot_checks.py --godot "$RUNNER_TEMP/godot/Godot_v4.5.1-stable_linux.x86_64" --render-check --capture "$RUNNER_TEMP/tactical-preview.png" --report-capture "$RUNNER_TEMP/battle-report-preview.png" --path-capture "$RUNNER_TEMP/order-path-preview.png" --logs-dir "$RUNNER_TEMP/godot-logs"
+      - name: Publish inline fire-arc inspection evidence
+        run: |
+          python3 -c 'import os, base64; from pathlib import Path; p = Path(os.environ["RUNNER_TEMP"]) / "fire-arc-inspection-preview.png"; print("FIRE_ARC_INSPECTION_PNG=" + base64.b64encode(p.read_bytes()).decode())'
       - name: Save render and test logs
         if: always()
         uses: actions/upload-artifact@v4
