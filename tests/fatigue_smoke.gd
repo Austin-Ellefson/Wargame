@@ -14,6 +14,8 @@ func fixture(mode: String = "quick", amount: float = 0.0) -> RefCounted:
     battle.state["version"] = 15
     battle.state.erase("acquisition")
     battle.state.erase("command_remaining")
+    battle.state.erase("shared_contacts")
+    battle.state.erase("pending_reports")
     for squad in battle.state["squads"]:
         squad["ammo"] = 0
         if squad["id"] not in ["UKR_S1", "RU_S1"]: squad["alive"] = 0
@@ -95,6 +97,8 @@ func _run() -> void:
     game.tactical_simulation.state["version"] = 15
     game.tactical_simulation.state.erase("acquisition")
     game.tactical_simulation.state.erase("command_remaining")
+    game.tactical_simulation.state.erase("shared_contacts")
+    game.tactical_simulation.state.erase("pending_reports")
     game.tactical_simulation.squad_by_id("UKR_S1")["position"] = [180, 245]
     game.tactical_simulation.squad_by_id("RU_S1")["position"] = [240, 245]
     game.tactical_simulation.order_fire("UKR_S1", "hold")

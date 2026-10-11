@@ -514,3 +514,36 @@ Execute: the IN Ns countdown must fall while position holds, then motion begins
 on second six unless another halt applies. A contact can be acquired/fired on
 during response. SAVE & CAMPAIGN/LOAD preserves unfinished response and route.
 Windows and Combat Mission fidelity remain unvalidated.
+
+
+## Selected-squad contacts and shared reports (v18)
+
+Before a battle finishes, the selected blue squad supplies live enemy visibility.
+Switching squads changes the local picture; the summary labels the selected squad's
+local count and the number of delivered reports. Enemy live actors and shot endpoints
+require that squad's identified sight. Actual firing events snapshot which observers
+could see both endpoints before simultaneous casualties, so killing shots remain
+visible to real witnesses without hidden-position leaks. Changing perspective removes
+cues not witnessed by the newly selected squad. Friendly status remains available.
+
+Observed contacts are transmitted as immutable position/time snapshots taking five
+executed seconds to arrive. Amber `? REPORT Ns` marks observation age, not countdown
+or live tracking. One packet per faction/contact is in flight; intermediate updates
+wait, and the latest actually observed memory can be sent once the channel is free.
+Packets preserve original coordinates through hidden movement/death and sender loss.
+Observed elimination sends a delayed removal after earlier in-flight packets. Hidden
+death leaves remembered reports intact. Reports never authorize a shot or preferred
+target; each squad's own three-second acquisition and LOS/range still apply.
+
+Transmission/delivery occurs only on execution ticks, not planning/UI/playback time.
+Both factions use the same saved transport; red still acts on its own local contacts.
+V1–V17 retain aggregate visibility and existing fields/rules. This is fixed abstract
+sharing, not a leader/radio network: no range/channel failures, sender-loss cancellation,
+search arcs or real communications modeling. A selected squad's lost contact may have
+no marker until its report is delivered; there is no separate per-observer memory UI.
+
+Playtest: fresh demo, approach a contact, execute and select the observing squad.
+Switch to a distant squad: live enemies disappear, then a timestamped amber report
+appears five seconds after transmission. The report stays at observed coordinates
+while the enemy moves unseen, and grants no fire permission. SAVE & CAMPAIGN/LOAD
+retains packets, ages and delivery deadlines. Windows/fidelity remain unvalidated.

@@ -51,10 +51,12 @@ static func visible(a: Vector2, b: Vector2, observer_height: float = 1.6, target
     return true
 
 func setup(payload: Dictionary) -> void:
-    state = {"version": 17, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
+    state = {"version": 18, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
     state["contacts"] = {"UKR": {}, "RU": {}}
+    state["shared_contacts"] = {"UKR": {}, "RU": {}}
+    state["pending_reports"] = {"UKR": {}, "RU": {}}
     state["movement_modes"] = {}
     state["fire_modes"] = {}
     state["fire_targets"] = {}
@@ -285,6 +287,44 @@ func last_known_contacts(faction: String) -> Array:
             var record: Dictionary = state["contacts"][faction][id]
             contacts.append({"id": id, "position": record["position"].duplicate(), "seen_at": record["seen_at"]})
     return contacts
+
+# Fixed in-flight snapshots: never overwrite a packet with a later hidden/live
+# position. Delivery and transmission happen once per executed second.
+func _update_shared_reports() -> void:
+    if int(state["version"]) < 18: return
+    var elapsed := int(state["elapsed"])
+    for faction in ["UKR", "RU"]:
+        var pending: Dictionary = state["pending_reports"][faction]
+        var shared: Dictionary = state["shared_contacts"][faction]
+        var local: Dictionary = state["contacts"][faction]
+        for id in pending.keys():
+            var packet: Dictionary = pending[id]
+            if int(packet["deliver_at"]) <= elapsed:
+                if packet["kind"] == "contact":
+                    shared[id] = {"position": packet["position"].duplicate(), "seen_at": int(packet["seen_at"])}
+                else:
+                    shared.erase(id)
+                pending.erase(id)
+        for target in state["squads"]:
+            if target["faction"] == faction or pending.has(target["id"]): continue
+            var id: String = target["id"]
+            if local.has(id) and int(local[id]["seen_at"]) > int(shared.get(id, {}).get("seen_at", -1)):
+                var record: Dictionary = local[id]
+                pending[id] = {"position": record["position"].duplicate(), "seen_at": int(record["seen_at"]), "sent_at": elapsed, "deliver_at": elapsed + 5, "kind": "contact"}
+            elif not local.has(id) and shared.has(id):
+                # Absence after an observed death confirms elimination; a hidden
+                # death leaves local memory intact and cannot send a removal.
+                pending[id] = {"position": shared[id]["position"].duplicate(), "seen_at": elapsed, "sent_at": elapsed, "deliver_at": elapsed + 5, "kind": "lost"}
+
+func shared_reports(faction: String, observer_id: String) -> Array:
+    var reports: Array = []
+    if int(state["version"]) < 18 or state["phase"] == "finished": return reports
+    var observer := squad_by_id(observer_id)
+    for id in state["shared_contacts"][faction]:
+        if not can_spot(observer, squad_by_id(id)):
+            var record: Dictionary = state["shared_contacts"][faction][id]
+            reports.append({"id": id, "position": record["position"].duplicate(), "seen_at": int(record["seen_at"])})
+    return reports
 
 func can_engage(shooter: Dictionary, target: Dictionary) -> bool:
     return not shooter.is_empty() and not target.is_empty() and int(shooter["alive"]) > 0 and int(target["alive"]) > 0 and shooter["faction"] != target["faction"] and position(shooter).distance_to(position(target)) < 230.0 and squad_visible(shooter, target) and (not limited_visibility() or can_spot(shooter, target))
@@ -544,6 +584,11 @@ func step() -> void:
         # Hidden enemy endpoints must not be revealed by presentation cues.
         if int(state["version"]) >= 15: event["weapon_role"] = weapon_role(shooter["id"])
         event["player_visible"] = is_observed("UKR", shooter) and is_observed("UKR", target)
+        if int(state["version"]) >= 18:
+            event["local_observers"] = []
+            for observer in state["squads"]:
+                if observer["faction"] == "UKR" and int(observer["alive"]) > 0 and (shooter["faction"] == "UKR" or can_spot(observer, shooter)) and (target["faction"] == "UKR" or can_spot(observer, target)):
+                    event["local_observers"].append(observer["id"])
         last_events.append(event)
         attacks.append({"target": target["id"], "losses": losses, "pressure": 0.07 + rounds * 0.012})
     for attack in attacks:
@@ -556,6 +601,7 @@ func step() -> void:
         for squad in state["squads"]:
             if int(squad["alive"]) <= 0: state["command_remaining"][squad["id"]] = 0
     _update_contacts()
+    _update_shared_reports()
     var on_objective := {"UKR": false, "RU": false}
     for squad in state["squads"]:
         if int(squad["alive"]) > 0 and position(squad).distance_to(Vector2(256, 256)) <= 52:
@@ -622,10 +668,10 @@ func result() -> Dictionary:
         "elapsed": state["elapsed"], "objective": state["objective"].duplicate(true), "forces": forces}
 
 static func validate(saved: Variant, payload: Dictionary) -> bool:
-    if not saved is Dictionary or not _integer(saved.get("version"), 1, 17):
+    if not saved is Dictionary or not _integer(saved.get("version"), 1, 18):
         return false
     var version := int(saved["version"])
-    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12) + 2 * int(version >= 13) + int(version >= 14) + int(version >= 15) + int(version >= 16) + int(version >= 17)
+    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12) + 2 * int(version >= 13) + int(version >= 14) + int(version >= 15) + int(version >= 16) + int(version >= 17) + 2 * int(version >= 18)
     if saved.size() != field_count:
         return false
     for key in ["version", "battle_id", "phase", "elapsed", "remaining", "objective", "squads", "orders", "winner"]:
@@ -782,6 +828,20 @@ static func _validate_fields(saved: Dictionary, payload: Dictionary) -> bool:
         for id in known:
             if not _integer(commands.get(id), 0, 5): return false
             if int(commands[id]) > 0 and (not saved["orders"].has(id) or int(known[id]["alive"]) <= 0 or saved["morale_states"][id] == "broken"): return false
+    if int(saved["version"]) >= 18:
+        for key in ["shared_contacts", "pending_reports"]:
+            var maps = saved.get(key)
+            if not maps is Dictionary or maps.size() != 2: return false
+            for faction in ["UKR", "RU"]:
+                var records = maps.get(faction)
+                if not records is Dictionary: return false
+                for id in records:
+                    if not known.has(id) or known[id]["faction"] == faction: return false
+                    var record = records[id]
+                    var pending: bool = key == "pending_reports"
+                    if not record is Dictionary or record.size() != (5 if pending else 2) or not _point(record.get("position")) or not _integer(record.get("seen_at"), 1, int(saved["elapsed"]) if pending else int(saved["elapsed"]) - 5): return false
+                    if inside_building(Vector2(record["position"][0], record["position"][1]), 0.5): return false
+                    if pending and (record.get("kind") not in ["contact", "lost"] or not _integer(record.get("deliver_at"), int(saved["elapsed"]) + 1, int(saved["elapsed"]) + 5) or not _integer(record.get("sent_at"), int(record["seen_at"]), int(saved["elapsed"])) or int(record["deliver_at"]) != int(record["sent_at"]) + 5): return false
     var survivors := {"UKR": 0, "RU": 0}
     for squad in saved["squads"]:
         survivors[squad["faction"]] += int(squad["alive"])

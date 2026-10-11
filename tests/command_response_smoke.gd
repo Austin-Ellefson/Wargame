@@ -11,6 +11,9 @@ func same(a: Variant,b: Variant) -> bool: return JSON.parse_string(JSON.stringif
 func fixture() -> RefCounted:
     var sim = Battle.new()
     sim.setup(PAYLOAD)
+    sim.state["version"] = 17
+    sim.state.erase("shared_contacts")
+    sim.state.erase("pending_reports")
     for squad in sim.state["squads"]:
         squad["ammo"] = 0
     sim.squad_by_id("UKR_S1")["position"] = [180,245]
@@ -82,6 +85,8 @@ func _run() -> void:
     var legacy = fixture()
     legacy.state["version"] = 16
     legacy.state.erase("command_remaining")
+    legacy.state.erase("shared_contacts")
+    legacy.state.erase("pending_reports")
     legacy.execute()
     legacy.step()
     check(Battle.validate(legacy.state,PAYLOAD) and not same(start,legacy.squad_by_id("UKR_S1")["position"]), "V16 retains immediate movement and old fields.")
@@ -106,6 +111,9 @@ func _run() -> void:
     game.save_path = directory.path_join("campaign.json")
     game.battle_export_directory = directory
     game._play_demo()
+    game.tactical_simulation.state["version"] = 17
+    game.tactical_simulation.state.erase("shared_contacts")
+    game.tactical_simulation.state.erase("pending_reports")
     var battle = game.tactical_simulation
     battle.order_move("UKR_S1",Vector2(210,245),true,"quick")
     battle.execute()

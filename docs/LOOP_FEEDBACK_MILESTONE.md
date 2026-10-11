@@ -693,3 +693,21 @@ is delivered as the scheduled task result in ChatGPT.
   Open project.godot in Godot 4.5.1/F5/fresh integrated demo for V17. Existing
   pending battles retain their rules. Next: delayed shared-contact reports with
   local firing restrictions and exact disk restart preserved.
+
+
+## Delayed shared-contact reports — 2026-10-11
+
+- In validation: codex/delayed-contact-reports, explicit tested PR #29 base
+  b7dfb3f9a616059deb0919a76689ce840d0d12ce (CI 38168470311 success).
+  No overlapping task/newer branch or merges found.
+- V18 immutable five-second reports and delayed observed-death confirmations;
+  selected-squad live sight/cue permissions, amber timestamped markers. Shared
+  reports never grant local firing. Strict maps, disk restart and old rules covered.
+- Initial inferred-type parse error and immediate-memory UI fixture assumptions
+  corrected. Latest observed memory queues after an earlier packet rather than
+  dropping sightings made while the packet was in flight. New UI uses real
+  selection/delivery, reports captured old position instead of hidden live actor.
+- Full final suite/CI/render evidence pending. Frozen downloads/contracts preserved.
+- Limits: fixed transport, no leaders/radios/failed channels, per-observer memory
+  UI or Windows/fidelity validation. Red acts only on local sight.
+- Next: observer-level contact memory, with clear local/shared timestamps.
