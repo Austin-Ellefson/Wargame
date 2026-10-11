@@ -21,8 +21,8 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/covered-objective-positions / PR #23
-- Post-milestone next task: persistent infantry fatigue and visible movement cost
+- Latest validated post-milestone descendant: codex/infantry-fatigue / PR #24
+- Post-milestone next task: morale states and deterministic retreat/rally behavior
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -473,3 +473,11 @@ is delivered as the scheduled task result in ChatGPT.
 ## Infantry fatigue — 2026-10-11
 
 - In validation on codex/infantry-fatigue, based on tested covered-objective-positions PR #23. Integer fatigue storage fixes JSON round-trip drift discovered by tactical_smoke. Initial validation scope parse error corrected. Full checks/render CI pending.
+
+## codex/infantry-fatigue — validated 2026-10-11
+
+- Ready for review, draft PR #24, base codex/covered-objective-positions.
+- Tested gameplay: 11c9a990161902025d76dad064caa5ddf977b344. All Godot checks, 26 terrain tests and diff check passed.
+- CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38153705906 succeeded. Inspected artifact 11707716785: All 17 Godot checks plus 26 terrain tests pass together. Inspected actual earned FAT28 percent after QUICK movement at 00:57 (ammunition disabled only in that render checkpoint), real 00:03 shot/casualty/pinning feedback and readable completed report. Full disk/combat outcome equality passes after integer storage fixed initial JSON drift; initial parse-scope error corrected. CI retains nonfatal VSync/anchor/test-event warnings.
+- Frozen milestone and prior downloads preserved; no Windows or Combat Mission fidelity claim.
+- Next: morale states and deterministic retreat/rally behavior.
