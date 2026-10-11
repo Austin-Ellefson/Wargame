@@ -571,6 +571,7 @@ func _refresh() -> void:
         movement_buttons[mode].text = mode.to_upper() + (" *" if command_mode == mode else "")
     for id in squad_buttons:
         var squad: Dictionary = simulation.squad_by_id(id)
+        if int(squad.get("alive", 0)) <= 0: continue
         if simulation.morale_state(id) == "broken":
             squad_buttons[id].text += " BROKEN"
         elif simulation.is_pinned(squad):

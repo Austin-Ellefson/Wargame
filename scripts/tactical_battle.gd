@@ -264,6 +264,7 @@ func hunt_paused(squad: Dictionary) -> bool:
     return false
 
 func movement_status(squad: Dictionary) -> String:
+    if int(squad["alive"]) <= 0: return "NONE"
     if morale_state(squad["id"]) == "broken":
         return "WITHDRAWING" if state["orders"].has(squad["id"]) else "RALLY %ds" % int(state["rally_remaining"][squad["id"]])
     var mode := movement_mode(squad["id"])

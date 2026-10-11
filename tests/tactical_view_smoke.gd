@@ -349,6 +349,9 @@ func _run() -> void:
     for faction in ["UKR", "RU"]:
         var force: Dictionary = completed_result["forces"][faction]
         check(str(force["id"]) in view.completed_report_label.text, "Completed report must identify both campaign formations.")
+    for id in view.squad_buttons:
+        if int(game.tactical_simulation.squad_by_id(id)["alive"]) == 0:
+            check(view.squad_buttons[id].disabled and "BROKEN" not in view.squad_buttons[id].text, "Eliminated buttons must refresh counts and omit living morale status.")
     if not report_capture.is_empty() and DisplayServer.get_name() != "headless":
         await RenderingServer.frame_post_draw
         var report_image := root.get_texture().get_image()

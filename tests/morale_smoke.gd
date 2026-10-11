@@ -29,6 +29,10 @@ func finish(battle: RefCounted) -> void:
         if battle.state["phase"] == "planning": battle.execute()
         battle.step()
 func _run() -> void:
+    var eliminated = fixture()
+    eliminated.squad_by_id("UKR_S1")["alive"] = 0
+    eliminated.state["morale_states"]["UKR_S1"] = "broken"
+    check(eliminated.movement_status(eliminated.squad_by_id("UKR_S1")) == "NONE", "Eliminated squads must not show a rally or withdrawal order.")
     var waiting = fixture()
     waiting.squad_by_id("UKR_S1")["morale"] = 70
     waiting.squad_by_id("UKR_S1")["suppression"] = 0.7
