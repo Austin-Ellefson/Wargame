@@ -59,6 +59,8 @@ func _run() -> void:
     check(capped.fatigue("UKR_S1") == 1.0, "Moving fatigue must remain bounded at one.")
     var legacy = fixture()
     legacy.state["version"] = 11
+    legacy.state.erase("morale_states")
+    legacy.state.erase("rally_remaining")
     legacy.state.erase("fatigue")
     check(Battle.validate(legacy.state, PAYLOAD), "V11 must retain its original field contract.")
     legacy.execute()

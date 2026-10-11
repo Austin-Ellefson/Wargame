@@ -56,6 +56,8 @@ func _run() -> void:
     var old = Battle.new()
     old.setup(PAYLOAD)
     old.state["version"] = 7
+    old.state.erase("morale_states")
+    old.state.erase("rally_remaining")
     old.state.erase("fatigue")
     old.state.erase("pause_remaining")
     check(Battle.validate(old.state, PAYLOAD) and not old.order_pause("UKR_S1", 15), "Old v7 fields/rules must remain valid without timers.")

@@ -257,6 +257,33 @@ func _run() -> void:
         await RenderingServer.frame_post_draw
         check(root.get_texture().get_image().save_png(capture.get_base_dir().path_join("fatigue-preview.png")) == OK, "Actual earned-fatigue capture must save.")
     game.tactical_simulation.restore(fatigue_checkpoint)
+    # Seed a damaged/suppressed render checkpoint; real-fire break is proved by morale_smoke.
+    for squad in game.tactical_simulation.state["squads"]: squad["ammo"] = 0
+    var damaged: Dictionary = game.tactical_simulation.squad_by_id("UKR_S1")
+    damaged["alive"] = 4
+    damaged["morale"] = 60
+    damaged["suppression"] = 0.72
+    var withdrawal_origin := Battle.position(damaged)
+    for tick in range(6): game.tactical_simulation.step()
+    view.selected = "UKR_S1"
+    view._refresh()
+    check(game.tactical_simulation.morale_state("UKR_S1") == "broken" and Battle.position(damaged).x < withdrawal_origin.x and "WITHDRAWING" in view.selection_label.text and "NO FIRE" in view.selection_label.text, "Real executed morale reaction must display withdrawal and withheld fire.")
+    if not capture.is_empty() and DisplayServer.get_name() != "headless":
+        await RenderingServer.frame_post_draw
+        check(root.get_texture().get_image().save_png(capture.get_base_dir().path_join("morale-withdrawal-preview.png")) == OK, "Executed morale withdrawal capture must save.")
+    var rally_visible := false
+    for tick in range(160):
+        if game.tactical_simulation.state["phase"] == "planning": game.tactical_simulation.execute()
+        game.tactical_simulation.step()
+        if game.tactical_simulation.state["rally_remaining"]["UKR_S1"] == 25 and not game.tactical_simulation.state["orders"].has("UKR_S1"):
+            rally_visible = true
+            break
+    view._refresh()
+    check(rally_visible and "RALLY 25s" in view.selection_label.text, "Actual rear arrival must show the remaining rally countdown.")
+    if not capture.is_empty() and DisplayServer.get_name() != "headless":
+        await RenderingServer.frame_post_draw
+        check(root.get_texture().get_image().save_png(capture.get_base_dir().path_join("morale-rally-preview.png")) == OK, "Actual rally countdown capture must save.")
+    game.tactical_simulation.restore(fatigue_checkpoint)
     view.selected = "UKR_S2"
     view._refresh()
     # The observed execution contact becomes stale without tracking hidden motion.

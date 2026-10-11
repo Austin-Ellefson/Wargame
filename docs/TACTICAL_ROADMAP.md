@@ -12,11 +12,11 @@ Repeatable campaign/contact/battle/result loop, two-battle restart regression,
 visible shots and personnel/ammunition/suppression feedback, battle reports,
 local spotting and remembered contacts, MOVE/QUICK/HUNT, fire preferences,
 queued routes and pauses, pinning, local opponent reaction, cover-aware routes
-and separated covered capture positions. Fatigue is the current implementation.
+and separated covered capture positions. Fatigue and morale-driven withdrawal/rally are implemented on subsequent tested descendants.
 
 ## Next infantry increments
 
-1. Morale states and retreat/rally behavior with readable command consequences.
+1. Validate and refine morale retreat/rally with user playtests; add leaders/C2 later.
 2. Standing/crouched/prone posture with movement, observation and protection tradeoffs.
 3. Squad weapon roles and fire cadence, ammunition and bounded casualty accounting.
 4. Acquisition delay and command/communication limits; no hidden target tracking.

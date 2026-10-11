@@ -41,6 +41,8 @@ jobs:
             ${{ runner.temp }}/order-path-preview.png
             ${{ runner.temp }}/timed-pause-preview.png
             ${{ runner.temp }}/fatigue-preview.png
+            ${{ runner.temp }}/morale-withdrawal-preview.png
+            ${{ runner.temp }}/morale-rally-preview.png
             ${{ runner.temp }}/queued-waypoints-preview.png
             ${{ runner.temp }}/movement-orders-preview.png
             ${{ runner.temp }}/contact-memory-preview.png
