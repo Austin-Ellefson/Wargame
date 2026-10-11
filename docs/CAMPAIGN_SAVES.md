@@ -217,3 +217,14 @@ or campaign/result/GIS/export/launcher fields change. Morale state does not yet
 carry across battles; no leaders, C2, surrender, formations or coordinated retreat.
 Real-fire regression triggers a break without injected damage; rendered withdrawal/
 rally uses a seeded damaged checkpoint, actual movement and timer progression.
+
+
+## Infantry posture (tactical v14)
+
+V14 adds `postures`, keyed by exactly every squad ID, with `stand`, `crouch` or
+`prone` values. Missing/extra IDs, unknown/nonstrings and nonstanding broken
+squads reject. Postures, routes, contacts and timed pauses survive exact disk
+restart; mixed-posture real combat reaches identical complete outcomes. V1–V13
+keep their original fields, standing LOS/range/exposure and movement behavior,
+and cannot receive posture orders. No silent upgrade occurs. Campaign v2,
+battle result v1, export/GIS fields and optional Windows launchers are unchanged.

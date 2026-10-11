@@ -41,6 +41,8 @@ var pause_button: Button
 var clear_target_button: Button
 var fire_buttons := {}
 var movement_buttons := {}
+var posture_buttons := {}
+var bodies := {}
 var command_mode := "move"
 var hold_button: Button
 var squad_buttons := {}
@@ -120,49 +122,57 @@ func _build_interface() -> void:
     summary_label = _label("", Vector2(986, 155), 16, 245)
     for index in range(4):
         var id := "UKR_S%d" % (index + 1)
-        var button := _button("", Rect2(986, 212 + index * 38, 248, 32), func():
+        var button := _button("", Rect2(986, 200 + index * 34, 248, 32), func():
             selected = id
             _refresh())
         button.add_theme_font_size_override("font_size", 13)
         squad_buttons[id] = button
-    selection_label = _label("", Vector2(986, 374), 13, 244)
+    selection_label = _label("", Vector2(986, 350), 13, 244)
     selection_label.add_theme_constant_override("line_spacing", -2)
     for index in range(3):
+        var value: String = ["stand", "crouch", "prone"][index]
+        var button := _button(value.to_upper(), Rect2(986 + index * 84, 414, 80, 26), func():
+            simulation.order_posture(selected, value)
+            _refresh())
+        button.add_theme_font_size_override("font_size", 12)
+        button.tooltip_text = "Lower posture reduces speed, observation range and exposure. Changes immediately during planning."
+        posture_buttons[value] = button
+    for index in range(3):
         var mode: String = ["move", "quick", "hunt"][index]
-        var button := _button(mode.to_upper(), Rect2(986 + index * 84, 436, 80, 26), func():
+        var button := _button(mode.to_upper(), Rect2(986 + index * 84, 444, 80, 26), func():
             command_mode = mode
             _refresh())
         button.add_theme_font_size_override("font_size", 12)
-        button.tooltip_text = {"move": "2.4 m/s normal movement", "quick": "4 m/s fast movement; no fatigue model yet", "hunt": "1.2 m/s; pauses on local contact or SUP >= 25%"}[mode]
+        button.tooltip_text = {"move": "2.4 m/s normal movement", "quick": "4 m/s before fatigue/posture/suppression; tires fastest", "hunt": "1.2 m/s; pauses on local contact or SUP >= 25%"}[mode]
         movement_buttons[mode] = button
     for index in range(2):
         var mode: String = ["auto", "hold"][index]
-        var button := _button("", Rect2(986 + index * 84, 470, 80, 26), func():
+        var button := _button("", Rect2(986 + index * 84, 476, 80, 26), func():
             simulation.order_fire(selected, mode)
             _refresh())
         button.add_theme_font_size_override("font_size", 12)
         button.tooltip_text = "HOLD FIRE also withholds return fire; movement and spotting continue." if mode == "hold" else "Automatic fire at locally visible targets."
         fire_buttons[mode] = button
-    clear_target_button = _button("CLEAR TARGET", Rect2(1154, 470, 80, 26), func():
+    clear_target_button = _button("CLEAR TARGET", Rect2(1154, 476, 80, 26), func():
         simulation.order_target(selected, "")
         _refresh())
     clear_target_button.add_theme_font_size_override("font_size", 10)
-    hold_button = _button("HOLD POSITION", Rect2(986, 502, 122, 26), func():
+    hold_button = _button("HOLD POSITION", Rect2(986, 508, 122, 26), func():
         simulation.order_hold(selected)
         _refresh())
-    pause_button = _button("PAUSE +15s", Rect2(1112, 502, 122, 26), func():
+    pause_button = _button("PAUSE +15s", Rect2(1112, 508, 122, 26), func():
         var current := int(simulation.state["pause_remaining"].get(selected, 0))
         var following := 15 if current == 0 else (30 if current == 15 else (60 if current == 30 else 0))
         simulation.order_pause(selected, following)
         _refresh())
     pause_button.add_theme_font_size_override("font_size", 12)
     pause_button.tooltip_text = "Cycle 0/15/30/60 seconds. Delays movement only; firing continues."
-    execute_button = _button("EXECUTE 60 SECONDS", Rect2(986, 534, 248, 32), _execute)
-    speed_button = _button("PLAYBACK 4x", Rect2(986, 574, 248, 28), func():
+    execute_button = _button("EXECUTE 60 SECONDS", Rect2(986, 540, 248, 32), _execute)
+    speed_button = _button("PLAYBACK 4x", Rect2(986, 578, 248, 28), func():
         speed = 8.0 if speed == 4.0 else 4.0
         speed_button.text = "PLAYBACK %dx" % int(speed))
-    back_button = _button("SAVE & CAMPAIGN", Rect2(986, 610, 248, 30), _back)
-    report_label = _label("", Vector2(986, 648), 12, 244)
+    back_button = _button("SAVE & CAMPAIGN", Rect2(986, 614, 248, 30), _back)
+    report_label = _label("", Vector2(986, 650), 12, 244)
     _label("Left: select  /  Right: move  /  Wheel: zoom  /  Middle-drag: pan  /  Shift + middle-drag: rotate", Vector2(24, 691), 13)
 
 func _material(color: Color, unshaded: bool = false) -> StandardMaterial3D:
@@ -263,11 +273,12 @@ func _build_world() -> void:
         world.add_child(actor)
         actors[squad["id"]] = actor
         var color := Color("459ddb") if squad["faction"] == "UKR" else Color("c56556")
+        bodies[squad["id"]] = []
         for offset in [Vector3(-4, 0, 2), Vector3(0, 0, -3), Vector3(4, 0, 2)]:
             var body := CapsuleMesh.new()
             body.radius = 1.8
             body.height = 6
-            _mesh(body, offset + Vector3(0, 3, 0), _material(color), actor)
+            bodies[squad["id"]].append(_mesh(body, offset + Vector3(0, 3, 0), _material(color), actor))
         var label := Label3D.new()
         label.font_size = 28
         label.pixel_size = 0.35
@@ -389,8 +400,8 @@ func _show_shot_events(events: Array) -> void:
             observed_shot_events.pop_front()
         var start := Vector2(float(event["from"][0]), float(event["from"][1]))
         var finish := Vector2(float(event["to"][0]), float(event["to"][1]))
-        var start_3d := Vector3(start.x, Battle.terrain_height(start.x, start.y) + 7.0, start.y)
-        var finish_3d := Vector3(finish.x, Battle.terrain_height(finish.x, finish.y) + 5.0, finish.y)
+        var start_3d := Vector3(start.x, Battle.terrain_height(start.x, start.y) + 4.0 * simulation.posture_height(event["shooter"]), start.y)
+        var finish_3d := Vector3(finish.x, Battle.terrain_height(finish.x, finish.y) + 3.0 * simulation.posture_height(event["target"]), finish.y)
         var cue := Node3D.new()
         world.add_child(cue)
         var flash := SphereMesh.new()
@@ -557,6 +568,8 @@ func _refresh() -> void:
             selection_label.tooltip_text = "FAT: movement fatigue. QUICK tires fastest; fatigue reduces speed. Stationary execution seconds restore it. Planning time does not."
     if int(state["version"]) >= 5 and not selected_squad.is_empty():
         selection_label.text += "\nOrder: " + simulation.movement_status(selected_squad)
+    if int(state["version"]) >= 14 and not selected_squad.is_empty():
+        selection_label.text += " | " + simulation.posture(selected).to_upper()
     if int(state["version"]) >= 6 and not selected_squad.is_empty():
         selection_label.text += " | " + ("NO FIRE" if simulation.morale_state(selected) == "broken" else "HOLD FIRE" if simulation.fire_mode(selected) == "hold" else "AUTO")
     clear_target_button.visible = int(state["version"]) >= 7
@@ -565,6 +578,10 @@ func _refresh() -> void:
         fire_buttons[mode].visible = int(state["version"]) >= 6
         fire_buttons[mode].disabled = state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0 or simulation.morale_state(selected) == "broken"
         fire_buttons[mode].text = ("AUTO" if mode == "auto" else "HOLD FIRE") + (" *" if simulation.fire_mode(selected) == mode else "")
+    for value in posture_buttons:
+        posture_buttons[value].visible = int(state["version"]) >= 14
+        posture_buttons[value].disabled = (state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0 or simulation.morale_state(selected) == "broken")
+        posture_buttons[value].text = value.to_upper() + (" *" if simulation.posture(selected) == value else "")
     for mode in movement_buttons:
         movement_buttons[mode].visible = int(state["version"]) >= 5
         movement_buttons[mode].disabled = state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0 or simulation.morale_state(selected) == "broken"
@@ -609,6 +626,12 @@ func _refresh() -> void:
     for squad in state["squads"]:
         var point: Vector2 = Battle.position(squad)
         actors[squad["id"]].position = Vector3(point.x, Battle.terrain_height(point.x, point.y), point.y)
+        var value: String = simulation.posture(squad["id"])
+        for index in range(bodies[squad["id"]].size()):
+            var body: MeshInstance3D = bodies[squad["id"]][index]
+            var height_scale: float = {"stand": 1.0, "crouch": 0.6, "prone": 0.25}[value]
+            body.scale = Vector3(1, height_scale, 2.0 if value == "prone" else 1.0)
+            body.position.y = 3.0 * height_scale
         var observed: bool = state["phase"] == "finished" or simulation.is_observed("UKR", squad)
         actors[squad["id"]].visible = int(squad["alive"]) > 0 and observed
         labels[squad["id"]].text = "%s %dP %dR SUP%d%s" % [str(squad["id"]).replace("_", " "), squad["alive"], squad["ammo"], int(float(squad["suppression"]) * 100), " *" if squad["id"] == selected else ""]

@@ -33,6 +33,7 @@ Click **PLAY INTEGRATED DEMO** in a new campaign. It executes the documented two
 - Select a blue squad and **MOVE**, **QUICK** or **HUNT**, then right-click ground to replace its routed movement order. **Shift + right-click** appends a waypoint in the existing route mode. **HOLD POSITION** clears the route.
 - **AUTO / HOLD FIRE** controls firing, including return fire. **Shift + left-click** a contact to prefer it only when the selected squad can locally engage it; **CLEAR TARGET** returns to nearest eligible targets.
 - With a queued route, **PAUSE** cycles 0/15/30/60 simulated seconds before moving; firing continues. Remaining waits and routes survive restart. HUNT also pauses on local contacts or pressure.
+- **STAND / CROUCH / PRONE** changes posture while planning. Lower posture slows movement, reduces observation range and exposure, and may lose terrain sight. Posture persists on restart. Broken squads stand for withdrawal.
 - Click **EXECUTE 60 SECONDS**. Both sides move and fire simultaneously. Playback defaults to 4x and can switch to 8x.
 - Capture the gold objective. Fire is automatic within 230 m with line of sight; woods reduce hit probability. Suppression slows movement, pins heavily pressured squads and reduces firing effectiveness. Live enemy contacts reveal no exact strength; amber last-seen markers remain at observed positions without tracking hidden movement.
 - **SAVE & CAMPAIGN** preserves an unfinished battle and its campaign lock. **OPEN TACTICAL BATTLE** resumes it.
@@ -63,7 +64,7 @@ See [native battle behavior and limits](docs/NATIVE_TACTICAL.md).
 - The battle center is the geographic center of its sector, not a detected real contact point. The uniform latitude/longitude grid spans about 20x20 km; `sector_size_km` is nominal, not an exact metric measurement.
 - The Python terrain bridge can prepare real OSM features, a projected elevation grid, and a CMAutoEditor elevation CSV. It does not create a CMBS scenario, launch the game, or import battle results.
 - Only the first same-sector opposing pair starts a battle. Crossing moves and larger battles need later rules.
-- Native battles currently use synthetic terrain and abstract infantry combat. OSM/DEM import, vehicles, detailed ballistics, fatigue, delayed spotting/contact sharing and deeper force behavior are later work. Windows validation and Combat Mission fidelity remain unverified.
+- Native battles currently use synthetic terrain and abstract infantry combat. OSM/DEM import, vehicles, detailed ballistics, delayed spotting/contact sharing and deeper force behavior are later work. Windows validation and Combat Mission fidelity remain unverified.
 - Contact, tactical interval boundaries and applied results autosave. Startup still opens the initial scenario until **LOAD**. An unfinished battle locks campaign turns and movement.
 
 ## Validation

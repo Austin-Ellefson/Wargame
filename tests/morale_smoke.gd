@@ -64,6 +64,7 @@ func _run() -> void:
     check(blue["ammo"] < 100, "Rallied shaken survivors must be able to fire again.")
     var legacy = fixture()
     legacy.state["version"] = 12
+    if int(legacy.state["version"]) < 14: legacy.state.erase("postures")
     legacy.state.erase("morale_states")
     legacy.state.erase("rally_remaining")
     check(Battle.validate(legacy.state, PAYLOAD), "V12 must preserve its original state fields.")

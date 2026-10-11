@@ -68,6 +68,7 @@ func _run() -> void:
     check(not blocked.opponent_engaging(blocked.squad_by_id("RU_S1")), "Building-blocked contact cannot cause the firing reaction.")
     var legacy = fixture()
     legacy.state["version"] = 8
+    if int(legacy.state["version"]) < 14: legacy.state.erase("postures")
     legacy.state.erase("morale_states")
     legacy.state.erase("rally_remaining")
     legacy.state.erase("fatigue")

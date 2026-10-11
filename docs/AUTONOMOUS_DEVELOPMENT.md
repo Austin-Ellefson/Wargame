@@ -215,3 +215,20 @@ This setup change contains instructions only; these missing tools must be addres
 - CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38154770519 succeeded. Inspected artifact 11707872681: All 18 Godot checks and 26 terrain tests pass on the combined candidate. Inspected actual shot/casualty/pinning execution, completed two-sided report with eliminated-order fix, withdrawal at 00:09 and RALLY25s at the rear at 00:54. Morale render uses seeded stress and ammunition disabled; separate actual concentrated fire regression triggers break. Actual disk restart preserves routes, a 17-second partial rally and full outcomes. First pinning regression exposed expected broken-versus-return-fire interaction; fixture now isolates high morale. Initial render exposed eliminated RALLY labels, corrected with regression before this successful CI. Nonfatal renderer/test harness warnings remain.
 - Frozen milestone and prior downloads preserved; no Windows or Combat Mission fidelity claim.
 - Next: standing crouched and prone infantry posture commands.
+
+
+## Infantry posture — 2026-10-11
+
+- In validation on codex/infantry-posture, explicit base tested PR #25
+  codex/morale-retreat-rally at 79ccfc713a0ce4e395441c071f6144205d03fd5d
+  (combined CI 38154985632 success). No newer open task/branch or merges found.
+- V14 adds strict posture state and planning commands, movement/sight/exposure
+  tradeoffs, low-height terrain LOS and symbolic body/shot-height feedback.
+  Broken withdrawal forces standing; older versions preserve original behavior.
+- Meaningful regressions include actual motion and attacks, lost/reacquired
+  sight, hill occlusion, malformed saves, UI clicks and full campaign disk outcomes.
+  Initial version-fixture/type errors and a routed-distance assertion corrected.
+- Full suite/CI render evidence pending. Frozen ready builds preserved.
+- Limits: abstract tuning, no posture transition time/enemy posture planner or
+  individual soldier animation; no Windows or fidelity validation.
+- Next: infantry weapon roles/cadence with bounded ammunition and casualties.

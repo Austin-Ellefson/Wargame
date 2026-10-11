@@ -38,11 +38,11 @@ static func cover(point: Vector2) -> float:
             return 0.55
     return 0.12
 
-static func visible(a: Vector2, b: Vector2) -> bool:
+static func visible(a: Vector2, b: Vector2, observer_height: float = 1.6, target_height: float = 1.6) -> bool:
     var distance := a.distance_to(b)
     var samples := maxi(1, int(ceil(distance / 4.0)))
-    var start_height := terrain_height(a.x, a.y) + 1.6
-    var end_height := terrain_height(b.x, b.y) + 1.6
+    var start_height := terrain_height(a.x, a.y) + observer_height
+    var end_height := terrain_height(b.x, b.y) + target_height
     for index in range(1, samples):
         var fraction := float(index) / samples
         var point := a.lerp(b, fraction)
@@ -51,7 +51,7 @@ static func visible(a: Vector2, b: Vector2) -> bool:
     return true
 
 func setup(payload: Dictionary) -> void:
-    state = {"version": 13, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
+    state = {"version": 14, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
     state["contacts"] = {"UKR": {}, "RU": {}}
@@ -62,6 +62,7 @@ func setup(payload: Dictionary) -> void:
     state["fatigue"] = {}
     state["morale_states"] = {}
     state["rally_remaining"] = {}
+    state["postures"] = {}
     for squad in state["squads"]:
         state["fire_modes"][squad["id"]] = "auto"
         state["fire_targets"][squad["id"]] = ""
@@ -69,6 +70,7 @@ func setup(payload: Dictionary) -> void:
         state["fatigue"][squad["id"]] = 0
         state["morale_states"][squad["id"]] = "steady"
         state["rally_remaining"][squad["id"]] = 0
+        state["postures"][squad["id"]] = "stand"
     last_events = []
     _build_navigation()
     _update_contacts()
@@ -108,6 +110,38 @@ func squad_by_id(id: String) -> Dictionary:
             return squad
     return {}
 
+func posture(id: String) -> String:
+    return str(state["postures"][id]) if int(state["version"]) >= 14 else "stand"
+
+func posture_height(id: String) -> float:
+    return float({"stand": 1.6, "crouch": 1.0, "prone": 0.35}[posture(id)])
+
+func squad_visible(observer: Dictionary, target: Dictionary) -> bool:
+    return visible(position(observer), position(target), posture_height(observer["id"]), posture_height(target["id"]))
+
+func spot_limit(observer: Dictionary, target: Dictionary) -> float:
+    var terrain_limit := WOODS_SPOT_RANGE if cover(position(target)) > 0.2 else SPOT_RANGE
+    # Fixed prototype tradeoffs, no random acquisition or hidden information.
+    var observation: float = {"stand": 1.0, "crouch": 0.9, "prone": 0.75}[posture(observer["id"])]
+    var concealment: float = {"stand": 1.0, "crouch": 0.85, "prone": 0.65}[posture(target["id"])]
+    return terrain_limit * observation * concealment
+
+func posture_speed(id: String) -> float:
+    return float({"stand": 1.0, "crouch": 0.7, "prone": 0.3}[posture(id)])
+
+func hit_probability(shooter: Dictionary, target: Dictionary) -> float:
+    var distance := position(shooter).distance_to(position(target))
+    var exposure: float = {"stand": 1.0, "crouch": 0.75, "prone": 0.5}[posture(target["id"])]
+    return 0.14 * (1.0 - distance / 400.0) * (1.0 - cover(position(target))) * (1.0 - 0.75 * float(shooter["suppression"])) * (0.75 if morale_state(shooter["id"]) == "shaken" else 1.0) * exposure
+
+func order_posture(id: String, value: String, player: bool = true) -> bool:
+    var squad := squad_by_id(id)
+    if int(state["version"]) < 14 or state["phase"] != "planning" or value not in ["stand", "crouch", "prone"] or squad.is_empty() or int(squad["alive"]) <= 0 or morale_state(id) == "broken" or (player and squad["faction"] != "UKR"):
+        return false
+    state["postures"][id] = value
+    _update_contacts()
+    return true
+
 func morale_state(id: String) -> String:
     return str(state["morale_states"][id]) if int(state["version"]) >= 13 else "steady"
 
@@ -116,6 +150,7 @@ func _retreat_route(squad: Dictionary) -> void:
     state["orders"].erase(id)
     state["movement_modes"].erase(id)
     state["pause_remaining"][id] = 0
+    if int(state["version"]) >= 14: state["postures"][id] = "stand"
     _assign_route(id, Vector2(32 if squad["faction"] == "UKR" else 480, clampf(position(squad).y, 24, 488)), "quick")
 
 func _update_morale(squad: Dictionary) -> void:
@@ -162,8 +197,7 @@ func limited_visibility() -> bool:
 func can_spot(observer: Dictionary, target: Dictionary) -> bool:
     if observer.is_empty() or target.is_empty() or int(observer["alive"]) <= 0 or int(target["alive"]) <= 0 or observer["faction"] == target["faction"]:
         return false
-    var limit := WOODS_SPOT_RANGE if cover(position(target)) > 0.2 else SPOT_RANGE
-    return position(observer).distance_to(position(target)) <= limit and visible(position(observer), position(target))
+    return position(observer).distance_to(position(target)) <= spot_limit(observer, target) and squad_visible(observer, target)
 
 func is_observed(faction: String, target: Dictionary) -> bool:
     if target.is_empty():
@@ -196,8 +230,8 @@ func _update_contacts() -> void:
                 # of the position. A hidden death must leave memory untouched.
                 for observer in state["squads"]:
                     if observer["faction"] == faction and int(observer["alive"]) > 0:
-                        var limit := WOODS_SPOT_RANGE if cover(position(target)) > 0.2 else SPOT_RANGE
-                        if position(observer).distance_to(position(target)) <= limit and visible(position(observer), position(target)):
+                        var limit := spot_limit(observer, target)
+                        if position(observer).distance_to(position(target)) <= limit and squad_visible(observer, target):
                             state["contacts"][faction].erase(target["id"])
                             break
 
@@ -212,7 +246,7 @@ func last_known_contacts(faction: String) -> Array:
     return contacts
 
 func can_engage(shooter: Dictionary, target: Dictionary) -> bool:
-    return not shooter.is_empty() and not target.is_empty() and int(shooter["alive"]) > 0 and int(target["alive"]) > 0 and shooter["faction"] != target["faction"] and position(shooter).distance_to(position(target)) < 230.0 and visible(position(shooter), position(target)) and (not limited_visibility() or can_spot(shooter, target))
+    return not shooter.is_empty() and not target.is_empty() and int(shooter["alive"]) > 0 and int(target["alive"]) > 0 and shooter["faction"] != target["faction"] and position(shooter).distance_to(position(target)) < 230.0 and squad_visible(shooter, target) and (not limited_visibility() or can_spot(shooter, target))
 
 func order_target(id: String, target_id: String, player: bool = true) -> bool:
     var squad := squad_by_id(id)
@@ -400,6 +434,7 @@ func step() -> void:
         var base_speed: float = {"move": 2.4, "quick": 4.0, "hunt": 1.2}[movement_mode(squad["id"])] if not path.is_empty() else 0.0
         var mode := movement_mode(squad["id"])
         var speed: float = float(base_speed) * (1.0 - 0.8 * float(squad["suppression"])) * (1.0 - 0.5 * fatigue(squad["id"])) * (0.75 if morale_state(squad["id"]) == "shaken" else 1.0)
+        speed *= posture_speed(squad["id"])
         if waiting or is_pinned(squad) or hunt_paused(squad) or opponent_engaging(squad):
             speed = 0.0
         var travelled := 0.0
@@ -440,8 +475,7 @@ func step() -> void:
                 continue
             var rounds := mini(int(shooter["alive"]), int(shooter["ammo"]))
             shooter["ammo"] = int(shooter["ammo"]) - rounds
-            var distance := position(shooter).distance_to(position(target))
-            var chance := 0.14 * (1.0 - distance / 400.0) * (1.0 - cover(position(target))) * (1.0 - 0.75 * float(shooter["suppression"])) * (0.75 if morale_state(shooter["id"]) == "shaken" else 1.0)
+            var chance := hit_probability(shooter, target)
             var random := RandomNumberGenerator.new()
             random.seed = (str(state["battle_id"]) + ":" + str(state["elapsed"]) + ":" + str(shooter["id"])).sha256_text().left(8).hex_to_int()
             var losses := 0
@@ -495,7 +529,7 @@ func _nearest_target(shooter: Dictionary) -> Dictionary:
         if candidate["faction"] == shooter["faction"] or int(candidate["alive"]) <= 0:
             continue
         var separation := position(shooter).distance_to(position(candidate))
-        if separation < distance and visible(position(shooter), position(candidate)) and (not limited_visibility() or can_spot(shooter, candidate)):
+        if separation < distance and squad_visible(shooter, candidate) and (not limited_visibility() or can_spot(shooter, candidate)):
             distance = separation
             best = candidate
     return best
@@ -529,10 +563,10 @@ func result() -> Dictionary:
         "elapsed": state["elapsed"], "objective": state["objective"].duplicate(true), "forces": forces}
 
 static func validate(saved: Variant, payload: Dictionary) -> bool:
-    if not saved is Dictionary or not _integer(saved.get("version"), 1, 13):
+    if not saved is Dictionary or not _integer(saved.get("version"), 1, 14):
         return false
     var version := int(saved["version"])
-    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12) + 2 * int(version >= 13)
+    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12) + 2 * int(version >= 13) + int(version >= 14)
     if saved.size() != field_count:
         return false
     for key in ["version", "battle_id", "phase", "elapsed", "remaining", "objective", "squads", "orders", "winner"]:
@@ -664,6 +698,12 @@ static func _validate_fields(saved: Dictionary, payload: Dictionary) -> bool:
             if states.get(id) not in ["steady", "shaken", "broken"] or not _integer(rally.get(id), 0, 30): return false
             if states[id] != "broken" and rally[id] != 0: return false
             if states[id] == "broken" and int(squad["alive"]) > 0 and rally[id] == 0: return false
+    if int(saved["version"]) >= 14:
+        var postures = saved.get("postures")
+        if not postures is Dictionary or postures.size() != known.size(): return false
+        for id in known:
+            if postures.get(id) not in ["stand", "crouch", "prone"]: return false
+            if saved["morale_states"][id] == "broken" and postures[id] != "stand": return false
     var survivors := {"UKR": 0, "RU": 0}
     for squad in saved["squads"]:
         survivors[squad["faction"]] += int(squad["alive"])

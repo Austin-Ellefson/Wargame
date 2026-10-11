@@ -493,3 +493,14 @@ is delivered as the scheduled task result in ChatGPT.
 - CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38154770519 succeeded. Inspected artifact 11707872681: All 18 Godot checks and 26 terrain tests pass on the combined candidate. Inspected actual shot/casualty/pinning execution, completed two-sided report with eliminated-order fix, withdrawal at 00:09 and RALLY25s at the rear at 00:54. Morale render uses seeded stress and ammunition disabled; separate actual concentrated fire regression triggers break. Actual disk restart preserves routes, a 17-second partial rally and full outcomes. First pinning regression exposed expected broken-versus-return-fire interaction; fixture now isolates high morale. Initial render exposed eliminated RALLY labels, corrected with regression before this successful CI. Nonfatal renderer/test harness warnings remain.
 - Frozen milestone and prior downloads preserved; no Windows or Combat Mission fidelity claim.
 - Next: standing crouched and prone infantry posture commands.
+
+
+## Infantry posture — 2026-10-11
+
+- In validation: codex/infantry-posture, base PR #25 at
+  79ccfc713a0ce4e395441c071f6144205d03fd5d (CI 38154985632 success).
+- Strict V14 postures, movement/sight/exposure tradeoffs, lower-eye hill LOS,
+  symbolic posture and actual shot cues. Campaign/export/GIS/launchers preserved.
+- Regression exercises real commands/movement/attacks and actual disk restart.
+  Initial test parse/version/routed-distance assumptions fixed. CI pending.
+- Frozen milestone build preserved; no Windows or realistic-fidelity claim.
