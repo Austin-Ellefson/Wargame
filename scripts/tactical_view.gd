@@ -407,7 +407,8 @@ func _show_shot_events(events: Array) -> void:
         var flash := SphereMesh.new()
         flash.radius = 3.0
         flash.height = 6.0
-        _mesh(flash, start_3d, _shot_material(Color("fff2a8")), cue)
+        var support: bool = event.get("weapon_role", "rifle") == "support"
+        _mesh(flash, start_3d, _shot_material(Color("ffcc8a") if support else Color("fff2a8")), cue)
         var trail := BoxMesh.new()
         trail.size = Vector3(0.9, 0.9, start_3d.distance_to(finish_3d))
         var tracer := _mesh(trail, (start_3d + finish_3d) * 0.5, _shot_material(Color("ffb43b")), cue)
@@ -447,6 +448,8 @@ func _show_combat_changes(before: Dictionary) -> void:
         if status_changed:
             changes.append(status)
         var line := "%s  %s" % [str(squad["id"]).replace("_", " "), "  ".join(changes)]
+        if int(simulation.state["version"]) >= 15:
+            line = "%s %s  %s" % [str(squad["id"]).replace("_", " "), "SUPPORT" if simulation.weapon_role(squad["id"]) == "support" else "RIFLE", "  ".join(changes)]
         if personnel_change > 0:
             casualty_lines.append(line)
         else:
@@ -567,6 +570,10 @@ func _refresh() -> void:
         if int(state["version"]) >= 12:
             selection_label.text = selection_label.text.replace("\n", " | FAT%d%%\n" % int(round(simulation.fatigue(selected) * 100)))
             selection_label.tooltip_text = "FAT: movement fatigue. QUICK tires fastest; fatigue reduces speed. Stationary execution seconds restore it. Planning time does not."
+    if int(state["version"]) >= 15 and not selected_squad.is_empty() and int(selected_squad["alive"]) > 0:
+        var role: String = simulation.weapon_role(selected)
+        selection_label.text = selection_label.text.replace("S" + selected.right(1) + "  |", "S" + selected.right(1) + (" SUPPORT" if role == "support" else " RIFLE") + " |")
+        selection_label.tooltip_text += "\nRIFLE: 1 round per survivor every 3s. SUPPORT: 2 per survivor every 2s, lower per-round hit chance; uses rounds faster. Both require local sight."
     if int(state["version"]) >= 5 and not selected_squad.is_empty():
         selection_label.text += "\nOrder: " + simulation.movement_status(selected_squad)
     if int(state["version"]) >= 14 and not selected_squad.is_empty():

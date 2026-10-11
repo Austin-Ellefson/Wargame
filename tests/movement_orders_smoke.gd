@@ -126,6 +126,7 @@ func _run() -> void:
     for version in [1, 2, 3, 4]:
         var legacy = fixture("move")
         legacy.state["version"] = version
+        if int(legacy.state["version"]) < 15: legacy.state.erase("weapon_roles")
         if int(legacy.state["version"]) < 14: legacy.state.erase("postures")
         if version < 13: legacy.state.erase("morale_states")
         if version < 13: legacy.state.erase("rally_remaining")

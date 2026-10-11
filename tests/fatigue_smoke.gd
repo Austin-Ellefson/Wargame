@@ -59,6 +59,7 @@ func _run() -> void:
     check(capped.fatigue("UKR_S1") == 1.0, "Moving fatigue must remain bounded at one.")
     var legacy = fixture()
     legacy.state["version"] = 11
+    if int(legacy.state["version"]) < 15: legacy.state.erase("weapon_roles")
     if int(legacy.state["version"]) < 14: legacy.state.erase("postures")
     legacy.state.erase("morale_states")
     legacy.state.erase("rally_remaining")

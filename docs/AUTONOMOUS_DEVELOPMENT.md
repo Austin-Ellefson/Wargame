@@ -246,3 +246,34 @@ This setup change contains instructions only; these missing tools must be addres
 - Old fields/rules and frozen ready branches preserved. No Windows/fidelity claim;
   instant posture changes, standing red planner and abstract squad bodies remain.
 - Next: infantry weapon roles/fire cadence with bounded ammunition/casualties.
+
+
+## Infantry rifle/support profiles — 2026-10-11
+
+- In validation on codex/infantry-fire-profiles, explicit tested base PR #26
+  codex/infantry-posture at 505b84c0e73812ff05327d0e81a36b7216e0fca4
+  (combined CI 38164319208 success). No duplicate role task or newer branch found.
+- V15 strict fixed rifle/support roles, distinct cadence/burst size, finite shared
+  ammo, per-round exposure tuning, same-tick attacks and readable friendly role
+  status/cues. Old rules and campaign/GIS/export/launcher contracts preserved.
+- All 20 local Godot checks and 26 terrain tests passed. Added actual volley/ammo/
+  pressure, partial/exhausted ammo, hold/hidden restrictions, simultaneous losses,
+  strict role validation, UI selection and pre-volley real disk continuation.
+- Initial UI type inference and malformed-role comparison errors were caught and
+  corrected before successful checks. CI/render inspection pending.
+- No individual weapons, reload/overheat, resupply or fidelity/Windows validation.
+- Next: deterministic spotting acquisition delay; C2 delay is a separate later step.
+
+
+## Rifle/support profiles — validated 2026-10-11
+
+- Ready for review: codex/infantry-fire-profiles, draft PR #27, base tested PR #26.
+- Tested code 247ca3edc861ae451130835bca3665d256af78f2: all 20 Godot checks,
+  26 terrain tests and diff check passed. Combined CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/38165101643 succeeded.
+- Inspected artifact 11711941046: actual SUPPORT -18R shots at 00:04 and readable
+  bounded completed report. Initial type/save errors and ambiguous role labels
+  fixed before this successful candidate. Full restart/two-battle tests pass.
+- Frozen builds/contracts preserved; no Windows or realistic-fidelity validation.
+  Abstract fixed roles, no individual weapons/reloads/overheating/resupply.
+- Next: deterministic spotting acquisition delay, with C2 limits separate later.

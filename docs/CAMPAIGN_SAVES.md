@@ -228,3 +228,16 @@ restart; mixed-posture real combat reaches identical complete outcomes. V1–V13
 keep their original fields, standing LOS/range/exposure and movement behavior,
 and cannot receive posture orders. No silent upgrade occurs. Campaign v2,
 battle result v1, export/GIS fields and optional Windows launchers are unchanged.
+
+
+## Rifle/support cadence (tactical v15)
+
+V15 adds `weapon_roles` for exactly every squad ID. S1/S3 must be `rifle`, S2/S4
+must be `support`, on both sides. Missing/extra IDs, altered assignments, unknown
+values and nonstrings reject before applying live state. Role is a fixed fictional
+roster profile; saves cannot fabricate a different equipment mix. All existing
+ammo and survivor bounds remain in force. Cadence uses persisted elapsed seconds,
+so a checkpoint at 00:01 fires the same support volley at 00:02 after restart.
+Complete campaign disk continuation with mixed profiles produces identical state
+and result. V1–V14 retain original fields and rifle cadence; no upgrade on load.
+Campaign v2/result v1, GIS/export fields and Windows launchers remain unchanged.
