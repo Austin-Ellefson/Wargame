@@ -920,3 +920,24 @@ is delivered as the scheduled task result in ChatGPT.
   radio network or individual perception; no Windows/Combat Mission fidelity claim.
 - Next focused task: explicit squad facing and bounded fire arcs; version orders,
   require local visibility for targets, preserve restart and existing animations.
+
+
+## Squad facing and fire arcs — in validation 2026-10-11
+
+- Branch `codex/squad-facing-fire-arcs`, tested PR #33 base
+  83c9f30361156466fa20cb7288bff2f34959c719; final baseline CI38173815596 success.
+- Versioned v20 heading/width orders, planning FACE + ground click, ARC0/90/180
+  and cyan selected-friendly maximum-range outline. Local acquisition/LOS/range
+  still required; outside-arc enemies remain visible but cannot receive fire.
+- Real shot/edge/wrap/hidden-target/route-origin/withdrawal/strict-save regressions,
+  full default v19 outcome parity, actual bounded-arc every-tick disk continuation
+  and mouse-input/figure-facing/cancellation/presentation-purity tests added.
+- Fixed initial GDScript inference annotations before testing; focus feedback now
+  distinguishes acquired outside-arc targets without leaking hidden bearings.
+  Shortened v20 phase header to leave readable room for FACE/ARC controls.
+- Final combined Godot/terrain checks, draft PR, rendered CI and artifact review
+  pending. Do not promote before checks finish. V1–V19 fields/rules retained.
+- Limits: direction-only fire restriction, no traverse delay/self-defense exception
+  or individual perception; no Windows/fidelity claim. Frozen downloads preserved.
+- Next focused task: ammunition-consuming area suppression orders at ground points,
+  without converting remembered contacts to live knowledge or targeted entity fire.

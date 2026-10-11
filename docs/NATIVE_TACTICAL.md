@@ -6,10 +6,10 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/observer-contact-memory` descendant includes route previews,
+The newer `codex/squad-facing-fire-arcs` descendant includes route previews,
 camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
 queued waypoints, timed pauses, local-contact reactions and cover-weighted red routes. The milestone
-branch above remains frozen. Fresh battles use tactical rules v19, including selected-squad visibility and delayed shared reports. See the five-step
+branch above remains frozen. Fresh battles use tactical rules v20, including selected-squad visibility and delayed shared reports. See the five-step
 batch test guide in [FIVE_STEP_TACTICAL_PROGRESS.md](FIVE_STEP_TACTICAL_PROGRESS.md).
 
 ## Complete game loop
@@ -615,3 +615,31 @@ Try the integrated demo, execute until contact is acquired, move out of sight an
 select other squads. Compare LOCAL and REPORT ages, Save/Load during execution
 using the existing checkpoint workflow, and confirm hidden markers cannot be
 Shift-clicked as direct targets. Godot 4.5.1/project.godot/F5 remains the launch path.
+
+
+## Squad facing and covered fire arcs (v20)
+
+During planning, select a blue squad, click **FACE**, then left-click a ground
+point. The order changes bearing without moving or replacing the squad's route.
+Click FACE again or right-click to cancel the cursor mode. **ARC OFF / 90° / 180°**
+cycles unrestricted fire and a cone centered on that bearing. A cyan selected
+friendly outline shows the direction/230m maximum firing range; terrain, local
+sight and acquisition still decide whether a target is eligible. Map-edge clipping
+keeps the preview within the playable window. FACE's whole-degree bearing is
+clockwise from north0/east90/south180/west270. Controls freeze during execution.
+
+A squad can still spot enemies outside its arc, but withholds all fire there,
+including return fire and any old preferred-target order. An acquired preferred
+target outside the arc says **Focus: outside arc**. Hidden targets retain generic
+waiting-for-sight feedback. Clear the arc to restore unrestricted local fire.
+Movement carries the arc's origin but keeps its world direction; it does not
+automatically point toward the route or threats. Broken squads clear their arc
+and withdraw under the existing rules. Red uses unrestricted fire by default.
+
+Stationary living figures face the order after real-shot recoil expires; moving
+figures follow actual travel and witnessed shots face actual endpoints. Known
+casualties do not turn. The order does not change spotting, exposure, cover or
+turning delays; no quick self-defense exception, traverse speed, per-soldier
+sectors or ammunition inventory is modeled. Existing saves keep their version;
+start a fresh integrated demo for v20. This remains a synthetic prototype, with
+no Windows or Combat Mission fidelity validation.

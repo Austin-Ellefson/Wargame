@@ -25,6 +25,7 @@ func _run() -> void:
     battle.state.erase("shared_contacts")
     battle.state.erase("pending_reports")
     battle.state.erase("observer_contacts")
+    battle.state.erase("facing_orders")
     for squad in battle.state["squads"]:
         squad["ammo"] = 0
     var blue: Dictionary = battle.squad_by_id("UKR_S1")
@@ -56,6 +57,7 @@ func _run() -> void:
     legacy.state.erase("shared_contacts")
     legacy.state.erase("pending_reports")
     legacy.state.erase("observer_contacts")
+    legacy.state.erase("facing_orders")
     legacy.state["version"] = 1
     if int(legacy.state["version"]) < 15: legacy.state.erase("weapon_roles")
     if int(legacy.state["version"]) < 14: legacy.state.erase("postures")
@@ -92,6 +94,7 @@ func _run() -> void:
     firefight.state.erase("shared_contacts")
     firefight.state.erase("pending_reports")
     firefight.state.erase("observer_contacts")
+    firefight.state.erase("facing_orders")
     for squad in firefight.state["squads"]:
         if squad["faction"] == "UKR":
             squad["ammo"] = 0
