@@ -476,7 +476,7 @@ func _animate_soldiers(delta: float) -> void:
             if int(simulation.state["version"]) >= 18 and body.recoil_remaining > 0 and selected not in body.shot_witnesses:
                 body.clear_shot()
             if not actors[id].visible: body.clear_shot()
-            if moving and body.recoil_remaining <= 0: body.rotation.y = motion["heading"]
+            if moving and body.current_pose != "casualty" and body.recoil_remaining <= 0: body.rotation.y = motion["heading"]
             body.animate(delta, moving, float(motion.get("phase", 0.0)) + index * 0.7)
 
 func _status_snapshot() -> Dictionary:

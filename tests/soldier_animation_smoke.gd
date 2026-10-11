@@ -68,6 +68,22 @@ func _run() -> void:
         check(not view.motions["UKR_S1"]["moving"] and snapshot(body) == idle, "Actual pinned halt must restore complete idle geometry despite retained route.")
         view.queue_free()
         await process_frame
+    # Known casualty slots must not turn or articulate while survivors move.
+    var casualty_battle = fixture()
+    casualty_battle.squad_by_id("UKR_S1")["alive"] = 8
+    casualty_battle.order_move("UKR_S1",Vector2(180,250),true,"quick")
+    var casualty_view = await open_view(casualty_battle)
+    var fallen = casualty_view.bodies["UKR_S1"][8]
+    var fallen_pose: Array = snapshot(fallen)
+    var fallen_heading: float = fallen.rotation.y
+    casualty_battle.execute()
+    for tick in range(6):
+        casualty_battle.step()
+        casualty_view._refresh()
+    casualty_view._animate_soldiers(0.1)
+    check(snapshot(fallen) == fallen_pose and fallen.rotation.y == fallen_heading and not fallen.muzzle.visible, "Known fallen slot must not walk, rotate or fire with moving survivors.")
+    casualty_view.queue_free()
+    await process_frame
     var battle = fixture()
     battle.squad_by_id("RU_S1")["position"]=[220,250]
     battle.squad_by_id("UKR_S1")["ammo"]=360
@@ -87,7 +103,7 @@ func _run() -> void:
     view._refresh()
     check(not body.muzzle.visible, "Re-selecting the observer must not replay a past shot.")
     for speed in [1.0,4.0,8.0]:
-        view.speed=speed
+        while view.speed != speed: view.speed_button.pressed.emit()
         # Another actual shot at cadence; no synthetic fire() event fixture.
         for tick in range(3):
             battle.step()
