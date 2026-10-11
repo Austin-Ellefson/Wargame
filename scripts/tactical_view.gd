@@ -631,7 +631,8 @@ func _refresh_arc_preview() -> void:
         var start := Vector3(a.x, Battle.terrain_height(a.x,a.y) + 1.0, a.y)
         var end := Vector3(b.x, Battle.terrain_height(b.x,b.y) + 1.0, b.y)
         var line := BoxMesh.new()
-        line.size = Vector3(0.65,0.4,start.distance_to(end))
+        var thickness := 0.035 if camera_distance < 80 else 0.65
+        line.size = Vector3(thickness,thickness,start.distance_to(end))
         var instance := _mesh(line,(start+end)*0.5,_material(Color("69ead4"),true),arc_preview)
         instance.look_at(end,Vector3.UP)
 

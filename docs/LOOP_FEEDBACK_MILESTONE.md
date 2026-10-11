@@ -935,9 +935,18 @@ is delivered as the scheduled task result in ChatGPT.
 - Fixed initial GDScript inference annotations before testing; focus feedback now
   distinguishes acquired outside-arc targets without leaking hidden bearings.
   Shortened v20 phase header to leave readable room for FACE/ARC controls.
+  First rendered CI38174507882 passed; inspected artifact11715017733. Close
+  inspection exposed thick cyan preview over figures; adaptive width fix and
+  actual INSPECT/RESET purity regression added, pending final rerender.
 - Final combined Godot/terrain checks, draft PR, rendered CI and artifact review
   pending. Do not promote before checks finish. V1–V19 fields/rules retained.
 - Limits: direction-only fire restriction, no traverse delay/self-defense exception
   or individual perception; no Windows/fidelity claim. Frozen downloads preserved.
 - Next focused task: ammunition-consuming area suppression orders at ground points,
   without converting remembered contacts to live knowledge or targeted entity fire.
+
+- Publication checkpoint: final local 27 Godot checks, 26 terrain tests and diff
+  check passed with adaptive preview before the execution environment disconnected.
+  Same tested edits published directly through GitHub with expected-head lease;
+  final CI/rerender pending. Do not claim final refined-artifact visual inspection
+  until a working inspection environment is available.

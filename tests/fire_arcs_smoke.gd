@@ -209,6 +209,13 @@ func _run() -> void:
     view._refresh()
     check(same(before,gui.state), "Arc preview refresh remains pure.")
     await capture_frame("fire-arc-planning-preview")
+    click(Vector2(679,88),MOUSE_BUTTON_LEFT)
+    await process_frame
+    check(view.camera_distance == 24 and is_equal_approx(view.arc_preview.get_child(0).mesh.size.x,0.035) and same(before,gui.state), "Actual INSPECT uses a thin arc outline without changing orders or state.")
+    await capture_frame("fire-arc-inspection-preview")
+    click(Vector2(863,88),MOUSE_BUTTON_LEFT)
+    await process_frame
+    check(is_equal_approx(view.arc_preview.get_child(0).mesh.size.x,0.65), "RESET restores readable overview outline width.")
     click(Vector2(422,88),MOUSE_BUTTON_LEFT)
     await process_frame
     click(screen + Vector2(24,112),MOUSE_BUTTON_RIGHT)
