@@ -189,8 +189,10 @@ func _run() -> void:
         await RenderingServer.frame_post_draw
         check(root.get_texture().get_image().save_png(capture.get_base_dir().path_join("acquisition-pending-preview.png")) == OK, "Pending-acquisition capture must save.")
     game.tactical_simulation.squad_by_id("UKR_S1")["ammo"] = 9
+    var acquisition_before: Dictionary = view._status_snapshot()
     game.tactical_simulation.step()
     view._show_shot_events(game.tactical_simulation.consume_events())
+    view._show_combat_changes(acquisition_before)
     view._refresh()
     check(view.actors["RU_S1"].visible and not view.shot_cues.is_empty(), "Third second must reveal the identified contact with an actual delayed shot cue.")
     if not capture.is_empty() and DisplayServer.get_name() != "headless":
