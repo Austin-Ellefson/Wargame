@@ -25,6 +25,10 @@ Read docs/LOOP_FEEDBACK_MILESTONE.md first. The current user-requested milestone
 2. Add transient firing events tied to actual simulated attacks, render readable shot/muzzle cues, and show casualty/suppression feedback. Presentation must not change outcomes or restart determinism.
 3. Add a readable completed battle report and practical command feedback; camera pan/orbit and order-path previews are supporting tasks if needed. Validate the combined milestone and prepare the requested check-in with a playable download.
 4. After the milestone check-in, add more tactical depth in small steps: morale behavior, player/enemy visibility, and stronger opponent decisions. Preserve deterministic outcomes across save/load.
+   The user reiterated the goal of Combat Mission-like battles on 2026-10-10.
+   Prioritize meaningful infantry decisions: suppression/pinning, limited enemy
+   visibility, then explicit movement/fire orders and opponent reactions. Keep
+   behavior documented and tested; do not imply parity with Combat Mission.
 5. Import prepared elevation into the native renderer and simulation together; validate orientation, movement and LOS against known synthetic fixtures before adding OSM features. Keep source provenance and distinguish generated test terrain from real GIS data.
 6. Add vehicles and equipment composition with a versioned simulation/save contract and bounded formation losses.
 

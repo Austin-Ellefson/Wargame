@@ -65,8 +65,16 @@ Squads route on an 8 m grid with building clearance. They move at an abstract
 terrain/building line-of-sight checks and a distance/cover/suppression probability.
 Attacks are collected before casualties apply, allowing simultaneous fire.
 Woods provide cover; they do not yet conceal units. Each deployed person starts
-with an abstract pool of 40 rounds. Morale decreases with casualties; independent
-morale-driven behavior is subsequent work. Expenditure reduces operational supply
+with an abstract pool of 40 rounds. Morale decreases with casualties. On the
+`codex/suppression-pinning` descendant, new engagements use tactical rules v2:
+a living squad is **PINNED** when suppression reaches `0.50 + morale * 0.0035`
+(morale is 0–100). Suppression recovers by 0.035 per simulated second before
+movement. Pinned squads halt but retain their routes, can return fire with the
+existing suppression penalty, and automatically resume movement below the
+threshold. Low morale makes pinning easier. The roster, world label and selected
+squad panel show **PINNED**; latest-volley feedback reports status transitions.
+These are prototype tuning values, not measured Combat Mission rules or validated
+real-world parameters. Expenditure reduces operational supply
 by up to five abstract percentage points per battle, rather than inventing a
 campaign-wide ammunition inventory.
 
@@ -98,6 +106,12 @@ to resume. Saves preserve squad positions, counts, ammunition, morale, suppressi
 paths, execution clock, objective control, contact origins and resolved IDs.
 Shot randomness comes from battle ID, simulated tick and squad ID, so a restored
 engagement reaches the same outcome with the same orders.
+
+Tactical saves carry their rules version separately from campaign schema v2.
+Existing tactical v1 engagements load and finish with their original slowed
+movement rules, while newly created engagements use v2 pinning. Result/export
+shapes and campaign schema remain unchanged. Unknown tactical versions are
+rejected; there is no automatic rewrite of an in-flight battle.
 
 If a result cannot be saved, force changes and resolved history roll back and
 the completed battle stays available for retry. Unsupported/malformed saves and
