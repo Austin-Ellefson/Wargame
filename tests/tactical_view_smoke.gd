@@ -50,9 +50,22 @@ func _run() -> void:
     click(local + Vector2(24, 112), MOUSE_BUTTON_RIGHT)
     await process_frame
     check(game.tactical_simulation.state["orders"].has("UKR_S1"), "Actual viewport mouse input must issue a movement order.")
+    var ordered_state: Dictionary = game.tactical_simulation.state.duplicate(true)
+    view._refresh()
+    check(view.order_preview.get_child_count() >= 2, "Selected movement orders must draw a multi-dot route preview.")
+    check(same(game.tactical_simulation.state, ordered_state), "Route preview rendering must not change authoritative tactical state.")
+    var path_capture := ""
+    for argument in OS.get_cmdline_user_args():
+        if argument.begins_with("--path-capture="):
+            path_capture = argument.trim_prefix("--path-capture=")
+    if not path_capture.is_empty() and DisplayServer.get_name() != "headless":
+        await RenderingServer.frame_post_draw
+        var path_image := root.get_texture().get_image()
+        check(path_image.save_png(path_capture) == OK, "Rendered route preview must save.")
     # Button and execution must carry the same scene/model instance through a checkpoint.
     view._execute()
     check(view.execute_button.disabled and view.back_button.disabled, "Execution must freeze turn/back controls.")
+    check(view.order_preview.get_child_count() == 0, "Route preview must clear when execution begins.")
     view.set_process(false)
     # Put one opposing pair in close, unobstructed range. Advance only until an
     # actual casualty occurs so the rendered execution fixture shows personnel,

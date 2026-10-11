@@ -16,6 +16,7 @@ var world: Node3D
 var actors := {}
 var labels := {}
 var markers := {}
+var order_preview: Node3D
 var shot_cues: Array = []
 var observed_shot_events: Array = []
 var phase_label: Label
@@ -239,6 +240,8 @@ func _build_world() -> void:
         marker.bottom_radius = 5
         marker.height = 0.4
         markers[squad["id"]] = _mesh(marker, Vector3.ZERO, _material(color, true))
+    order_preview = Node3D.new()
+    world.add_child(order_preview)
 
 func _map_input(event: InputEvent) -> void:
     if not event is InputEventMouseButton or not event.pressed:
@@ -369,6 +372,35 @@ func _age_shot_cues(delta: float) -> void:
                 node.queue_free()
             shot_cues.remove_at(index)
 
+func _clear_order_preview() -> void:
+    for child in order_preview.get_children():
+        order_preview.remove_child(child)
+        child.queue_free()
+
+func _refresh_order_preview() -> void:
+    _clear_order_preview()
+    if simulation.state["phase"] != "planning":
+        return
+    var squad: Dictionary = simulation.squad_by_id(selected)
+    var path: Array = simulation.state["orders"].get(selected, [])
+    if squad.is_empty() or squad["faction"] != "UKR" or int(squad["alive"]) <= 0 or path.is_empty():
+        return
+    var material := _material(Color(0.28, 0.78, 1.0, 0.86), true)
+    material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+    var previous := Battle.position(squad)
+    for waypoint in path:
+        var finish := Vector2(float(waypoint[0]), float(waypoint[1]))
+        var distance := previous.distance_to(finish)
+        var dots := maxi(1, int(ceil(distance / 14.0)))
+        for index in range(1, dots + 1):
+            var point := previous.lerp(finish, float(index) / dots)
+            var dot := CylinderMesh.new()
+            dot.top_radius = 1.7
+            dot.bottom_radius = 1.7
+            dot.height = 0.25
+            _mesh(dot, Vector3(point.x, Battle.terrain_height(point.x, point.y) + 0.8, point.y), material, order_preview)
+        previous = finish
+
 func _back() -> void:
     if simulation.state["phase"] == "finished":
         commit_result.emit(simulation.result())
@@ -415,6 +447,7 @@ func _refresh() -> void:
         var result: Dictionary = simulation.result()
         completed_report_label.text = _battle_report(result)
         report_label.text = "Review the completed report. APPLY commits it once and returns to the campaign."
+    _refresh_order_preview()
     for squad in state["squads"]:
         var point: Vector2 = Battle.position(squad)
         actors[squad["id"]].position = Vector3(point.x, Battle.terrain_height(point.x, point.y), point.y)

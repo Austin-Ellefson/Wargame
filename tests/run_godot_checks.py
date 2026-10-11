@@ -14,6 +14,7 @@ def main():
     parser.add_argument("--render-check", action="store_true")
     parser.add_argument("--capture", type=Path)
     parser.add_argument("--report-capture", type=Path)
+    parser.add_argument("--path-capture", type=Path)
     parser.add_argument("--logs-dir", type=Path)
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
@@ -30,6 +31,9 @@ def main():
         if args.report_capture:
             args.report_capture = args.report_capture.resolve()
             args.report_capture.parent.mkdir(parents=True, exist_ok=True)
+        if args.path_capture:
+            args.path_capture = args.path_capture.resolve()
+            args.path_capture.parent.mkdir(parents=True, exist_ok=True)
         command = ["--rendering-method", "gl_compatibility", "--audio-driver", "Dummy",
                    "--script", "res://tests/tactical_view_smoke.gd"]
         if args.capture:
@@ -38,6 +42,10 @@ def main():
             if "--" not in command:
                 command.append("--")
             command.append(f"--report-capture={args.report_capture}")
+        if args.path_capture:
+            if "--" not in command:
+                command.append("--")
+            command.append(f"--path-capture={args.path_capture}")
         checks.append(("render", command))
     for name, flags in checks:
         result = subprocess.run([args.godot, "--path", str(root), *flags], cwd=root,
@@ -55,6 +63,9 @@ def main():
         return 1
     if args.render_check and args.report_capture and not args.report_capture.is_file():
         print("FAILED: rendered report screenshot was not created", file=sys.stderr)
+        return 1
+    if args.render_check and args.path_capture and not args.path_capture.is_file():
+        print("FAILED: rendered path screenshot was not created", file=sys.stderr)
         return 1
     print(f"Godot checks complete; logs: {logs}")
     return 0

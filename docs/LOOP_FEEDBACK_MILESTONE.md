@@ -180,6 +180,33 @@ access/dependency blockers. Do not announce completion with incomplete gates.
   schedule after this check-in was prepared. Preserve this branch/commit for the
   user's download; later work must not obscure it.
 
+## Post-milestone run record — selected order path preview, 2026-10-10
+
+- Preserved milestone branch/commit remain `codex/completed-battle-report` and
+  `733b6d8feafcd2f96265cfb387dd2d0823945966`; its ZIP and PR #10 are unchanged.
+- Branch / draft PR: `codex/order-path-preview` / PR #11, based directly on the
+  preserved milestone branch. Gameplay commit:
+  `5b573826bf457cc630fe5216a99de8e6cbb6df47`.
+- During planning, the selected living Ukrainian squad now shows bright-blue
+  dots along its complete saved route, including intermediate building-avoidance
+  waypoints. Execution clears the preview. Rendering only reads the existing
+  order and does not modify simulation state, saves, outcomes or RNG.
+- Regression coverage issues an order through actual viewport input, verifies a
+  multi-dot preview without state mutation, and proves execution clears it.
+  Local Godot 4.5.1 editor, campaign, save/load, tactical, repeat-loop and
+  tactical-view checks passed together; terrain bridge: 26 passed;
+  `git diff --check` passed.
+- CI evidence: https://github.com/Austin-Ellefson/Wargame/actions/runs/38100096376
+  completed successfully. Inspected artifact `tactical-validation` ID
+  11687700236: `order-path-preview.png` is a readable 1280x720 planning frame
+  showing the selected squad's dotted route across the terrain while all command
+  controls remain unobscured.
+- Limits: Linux software rendering is not Windows input/performance validation.
+  The preview shows the current squad-level route, not formation spacing or
+  individual soldier paths.
+- Next: retain the frozen milestone build for user testing; a later independent
+  usability pass may add camera pan/rotation without changing simulation state.
+
 ## Scope and priorities
 
 Camera pan/rotation and movement paths support readable combat, but must not
