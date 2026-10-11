@@ -68,6 +68,12 @@ func _run() -> void:
     var hidden_before: int = view.shot_cues.size()
     view._show_shot_events([{"type": "shot", "player_visible": false, "shooter": "RU_S1", "target": "UKR_S1"}])
     check(view.shot_cues.size() == hidden_before and view.observed_shot_events.is_empty(), "Unobserved shot events must not create cues or recorded visible endpoints.")
+    click(Vector2(1170, 483), MOUSE_BUTTON_LEFT)
+    await process_frame
+    check(game.tactical_simulation.fire_mode("UKR_S1") == "hold" and "HOLD FIRE" in view.selection_label.text, "Actual HOLD FIRE input must set and display the selected squad's fire rule.")
+    click(Vector2(1040, 483), MOUSE_BUTTON_LEFT)
+    await process_frame
+    check(game.tactical_simulation.fire_mode("UKR_S1") == "auto", "Actual AUTO input must restore fire.")
     var intended := Vector3(210, Battle.terrain_height(210, 245), 245)
     var local: Vector2 = view.camera.unproject_position(intended)
     var hit: Vector2 = view._ground_point(local)
@@ -128,7 +134,7 @@ func _run() -> void:
         check(path_image.save_png(path_capture) == OK, "Rendered route preview must save.")
     # Button and execution must carry the same scene/model instance through a checkpoint.
     view._execute()
-    for button in view.movement_buttons.values():
+    for button in view.movement_buttons.values() + view.fire_buttons.values():
         check(button.disabled, "Movement-mode controls must freeze during execution.")
     check(view.execute_button.disabled and view.back_button.disabled, "Execution must freeze turn/back controls.")
     check(view.order_preview.get_child_count() == 0, "Route preview must clear when execution begins.")
@@ -226,7 +232,7 @@ func _run() -> void:
     view.selected = "UKR_S1"
     view._refresh()
     check(view.squad_buttons["UKR_S1"].disabled and view.hold_button.disabled, "Dead squads must be visibly disabled and unable to receive orders.")
-    for button in view.movement_buttons.values():
+    for button in view.movement_buttons.values() + view.fire_buttons.values():
         check(button.disabled, "Dead squads must have disabled movement-mode controls.")
     game.tactical_simulation.squad_by_id("UKR_S1")["alive"] = selected_alive
     view._refresh()
