@@ -87,7 +87,7 @@ func _run() -> void:
     check(game.tactical_simulation.posture("UKR_S1") == "crouch" and "CROUCH" in view.selection_label.text, "Actual CROUCH input must set and display posture.")
     click(Vector2(1190, 427), MOUSE_BUTTON_LEFT)
     await process_frame
-    check(game.tactical_simulation.posture("UKR_S1") == "prone" and view.bodies["UKR_S1"][0].scale.y == 0.25, "Actual PRONE input must lower the symbolic squad bodies.")
+    check(game.tactical_simulation.posture("UKR_S1") == "prone" and view.bodies["UKR_S1"][0].current_pose == "prone", "Actual PRONE input must pose the individual soldiers prone.")
     click(Vector2(1040, 427), MOUSE_BUTTON_LEFT)
     await process_frame
     check(game.tactical_simulation.posture("UKR_S1") == "stand", "Actual STAND input must restore posture.")

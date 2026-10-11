@@ -746,3 +746,18 @@ is delivered as the scheduled task result in ChatGPT.
   no observer-specific remembered marker yet; Linux checks do not prove Windows
   compatibility or realistic combat fidelity. Frozen milestone downloads preserved.
 - Next focused task: observer-level contact memory with separate local/shared timestamps.
+
+## Individual soldier visuals — in validation 2026-10-11
+
+- Branch codex/individual-soldier-visuals; tested base delayed-contact-reports PR #30
+  at 4323c302476987a97b8c21f77ae88981bf5d8d1a (CI 38169698216 success).
+- User asked when soldier models would happen, then approved continuing the proposed
+  visual priority. Scope is procedural individual figures/static postures, known
+  casualties and close inspection camera; animation is the following focused task.
+- New regression checks real firing/casualties, nominal live enemy figure counts,
+  exact complete authoritative-state/results equality against an unrendered twin,
+  posture geometry, camera isolation/reset. No save/simulation contract changed.
+- Initial local suite: new regression and all logic passed; UI camera-reset comparison
+  exposed inconsistent initial/focused terrain height. Initial camera now uses the
+  same placement helper as reset. Final suite/CI and actual renders pending.
+- Preserve frozen downloads. No Windows/per-soldier AI/animation/fidelity claim.

@@ -547,3 +547,24 @@ Switch to a distant squad: live enemies disappear, then a timestamped amber repo
 appears five seconds after transmission. The report stays at observed coordinates
 while the enemy moves unseen, and grants no fire permission. SAVE & CAMPAIGN/LOAD
 retains packets, ages and delivery deadlines. Windows/fidelity remain unvalidated.
+
+## Individual soldier figures — presentation increment
+
+The individual-soldier-visuals descendant replaces three oversized squad capsules
+with one procedural low-poly helmeted rifle figure per initially deployed soldier
+(up to nine per squad). STAND/CROUCH/PRONE articulate torso, arms and legs. Blue
+casualties become grey fallen figures without rifles, including eliminated squads.
+Enemy figures remain hidden until acquired; live enemy formations retain nominal
+initial figure counts so exact hidden losses are not exposed. The finished report
+reveals actual surviving/lost personnel. These are display slots, not individual
+soldier identities, independent pathfinding, collision, weapon inventory or AI.
+
+Click INSPECT SQUAD for a close camera on the selected friendly squad. Middle-drag
+pans and Shift-middle-drag rotates; RESET CAMERA restores overview distance.
+Figures conform to terrain height at fixed formation offsets, which may overlap
+obstacles: offsets do not participate in simulation movement/LOS. Shot endpoints
+now use infantry height, with smaller cues in inspection view. Firing and movement
+animations are the next presentation increment; this pass provides static poses.
+No downloaded art or external asset dependency. Tactical v18/campaign v2/result v1
+are unchanged; presentation leaves authoritative state and RNG untouched. Linux
+render checks do not prove Windows performance or realistic fidelity.

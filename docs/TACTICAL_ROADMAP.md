@@ -22,6 +22,14 @@ and separated covered capture positions. Fatigue and morale-driven withdrawal/ra
 4. Local acquisition delay: implemented on tested codex/spotting-acquisition PR #28 (v16). Five-second movement response implemented on tested codex/movement-command-response PR #29 (v17). Delayed shared-contact reports and selected local visibility are implemented on tested codex/delayed-contact-reports PR #30 (v18). Observer-level contact memory is next; leaders/radios remain future work and no hidden target tracking.
 5. More credible opponent support, maneuver and withdrawal, using observed information.
 
+## Current presentation priority (user requested 2026-10-11)
+
+Individual soldier figures are now the focused task on codex/individual-soldier-visuals,
+based on tested delayed-contact-reports PR #30. First deliver low-poly procedural
+figures, articulated static postures, known friendly casualties and inspection camera.
+Then add movement/firing animations driven by real movement/shots without consuming
+simulation RNG. Observer-level contact memory remains queued after this visual work.
+
 ## Larger milestones after infantry is stable
 
 - Imported elevation used consistently for rendering, movement and line of sight;
