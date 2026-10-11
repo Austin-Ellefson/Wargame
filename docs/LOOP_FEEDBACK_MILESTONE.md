@@ -21,8 +21,8 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/last-known-contacts / PR #15
-- Post-milestone task in progress: codex/infantry-movement-orders; rendered CI pending
+- Latest validated post-milestone descendant: codex/infantry-movement-orders / PR #16
+- Post-milestone next task: explicit AUTO/HOLD FIRE infantry control
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -356,3 +356,44 @@ is delivered as the scheduled task result in ChatGPT.
 - Next: distinct infantry movement orders with deterministic response/speed
   tradeoffs, readable queued orders and regression coverage. Keep weapons,
   vehicles and broader opponent modeling in separate tasks.
+
+## Post-milestone run record — infantry movement orders, 2026-10-11
+
+- Status: ready for review; draft PR #16, `codex/infantry-movement-orders`, based
+  on tested `codex/last-known-contacts` (PR #15), head 4fcb4aa. Tested code commit:
+  `138ca1fa1511443099c479234a7635c1de050704`. Frozen milestone preserved.
+- New tactical v5 offers MOVE 2.4 m/s, QUICK 4 m/s and HUNT 1.2 m/s, before
+  existing suppression slowing. HUNT pauses on its own local sight of a living
+  enemy or suppression >=25% after recovery, retaining the route and return fire.
+  Shared/remembered contacts alone do not trigger it; clearing conditions resumes
+  movement. Pinning stops every mode. Scripted opponent retains MOVE.
+- Mode selection configures the next right-click command without mutating a
+  queued order. Selected-squad feedback shows actual mode/HUNT PAUSED. Controls
+  freeze during execution; dead squads cannot receive commands. Hold, reaching
+  the destination and elimination clear mode/path together.
+- New movement_modes map is paired exactly with nonempty orders and validated.
+  Old v1-v4 saves retain fields/rules and reject new modes. Campaign schema v2,
+  result v1, legacy export/GIS contracts and Windows launchers unchanged.
+- Ten Godot checks, 26 terrain tests and git diff --check passed locally on the
+  same candidate. Added coverage includes distinct speeds, HUNT local contact
+  and fire, shared-contact isolation, suppression recovery, pinning, replacement,
+  completion/death cleanup, malformed maps, legacy restart, actual campaign disk
+  persistence and complete restarted outcomes. Existing two-battle checks pass.
+- CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38145385583 succeeded.
+  Inspected tactical-validation artifact 11704915470: planning shows HUNT and
+  a queued route; execution at 00:03 shows HUNT PAUSED with actual observed
+  shot cues, personnel/ammunition changes and pinning. The completed report and
+  apply controls remain readable. Fixture places opposing squads in clear local
+  contact; dedicated logic tests cover acquisition, pause and resume rules.
+- Initial editor check caught an inferred Variant speed variable; explicit float
+  typing fixed it before successful checks/publication. No remaining failed check.
+- Download:
+  https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/infantry-movement-orders
+  Godot 4.5.1, open project.godot, F5, fresh PLAY INTEGRATED DEMO. Choose a squad
+  and mode, then right-click. Older loaded engagements keep normal movement.
+- Limits: abstract tuning, no fatigue/posture/weapon-specific speed or accuracy,
+  HUNT reversible pause rather than permanent halt. Linux evidence does not
+  establish Windows validation or Combat Mission fidelity.
+- Next: AUTO/HOLD FIRE controls with versioned state, readable feedback, local
+  LOS preservation and actual disk-restart regression; broader opponent reactions,
+  area fire, weapons, vehicles and fatigue remain separate tasks.

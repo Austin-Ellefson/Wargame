@@ -121,10 +121,13 @@ This setup change contains instructions only; these missing tools must be addres
 - Frozen milestone build preserved. Next: focused infantry movement modes.
 
 ## Infantry movement modes — 2026-10-11
-- Status: in progress, local checks passed; CI/render review pending.
+- Status: ready for review; draft PR #16, code 138ca1fa.
 - Branch: codex/infantry-movement-orders, based on tested PR #15.
 - MOVE/QUICK/HUNT choose distinct pace; HUNT pauses on local contact/pressure
   and retains its route. Versioned v5 modes persist; older engagements keep rules.
 - Ten local Godot checks and 26 terrain tests passed. UI input regression uses
-  actual mode-button clicks and map commands; execution capture added to CI.
+  actual mode-button clicks and map commands; CI 38145385583 succeeded.
+  Artifact 11704915470 inspected: queued HUNT, execution HUNT PAUSED with real
+  shots/feedback and completed report readable. Full evidence is in the ledger.
 - Frozen milestone preserved. No fatigue, Windows or Combat Mission fidelity claim.
+- Next: explicit AUTO/HOLD FIRE infantry control with deterministic save validation.
