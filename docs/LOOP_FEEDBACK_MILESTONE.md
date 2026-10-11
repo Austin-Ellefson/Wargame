@@ -21,8 +21,8 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/infantry-posture / PR #26
-- Post-milestone next task: infantry weapon roles and fire cadence
+- Latest validated post-milestone descendant: codex/infantry-fire-profiles / PR #27
+- Post-milestone next task: deterministic spotting acquisition delay
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -557,3 +557,34 @@ is delivered as the scheduled task result in ChatGPT.
   two-sided completed report. Review found ambiguous SUP role/suppression labels.
   Roles now spell out RIFLE/SUPPORT; regression checks the exact selected role,
   rather than matching the suppression abbreviation. Corrected CI pending.
+
+
+## codex/infantry-fire-profiles — validated 2026-10-11
+
+- Ready for review, draft PR #27, explicit base tested codex/infantry-posture
+  PR #26 at 505b84c0e73812ff05327d0e81a36b7216e0fca4.
+- Tested code: 247ca3edc861ae451130835bca3665d256af78f2. V15 fixed rifle
+  S1/S3 and support S2/S4 profiles on both sides; rifle volleys every 3 seconds
+  use one round/person, support every 2 seconds uses two. Support per-round hit
+  probability is 0.65 of rifle; larger volleys exert more suppression and spend
+  the same finite ammunition faster. Same-tick attacks remain simultaneous.
+- All 20 local Godot checks, 26 terrain tests and diff check passed. Combined
+  CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38165101643 succeeded
+  on this same candidate. Inspected artifact 11711941046: support-fire-preview
+  shows actual 00:04 SUPPORT -18R volleys and muzzle/shot cues; completed report
+  shows deployed/surviving/lost personnel and bounded once-only consequences.
+  Exact role-label checks fix the initial SUP/suppression ambiguity.
+- New tests prove actual cadence/pressure/ammunition effects, partial/exhausted
+  ammo, hold/hidden restrictions, simultaneous bounded attacks, strict role maps,
+  V14 preservation and full actual disk continuation from before a support volley.
+  Two actual campaign contacts, fresh IDs, retained losses/history, retreat,
+  unlock and stale/duplicate rejection also pass. Nonfatal VSync/anchor/input
+  harness warnings remain; no script errors.
+- Frozen downloads preserved. V1–V14 rules, campaign/result contracts, GIS,
+  exports and Windows launchers preserved. No Windows or realistic-fidelity
+  validation; abstract squad profiles, no individual weapons, reloads, overheating
+  or resupply. Render uses a close-contact checkpoint with actual simulated shots.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/infantry-fire-profiles
+  Open project.godot in Godot 4.5.1, F5, LOAD an existing slot or start a fresh
+  integrated demo for V15. Older pending battles retain their original rules.
+- Next: deterministic spotting acquisition delay; C2 limits are a separate task.

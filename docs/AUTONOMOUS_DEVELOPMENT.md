@@ -263,3 +263,17 @@ This setup change contains instructions only; these missing tools must be addres
   corrected before successful checks. CI/render inspection pending.
 - No individual weapons, reload/overheat, resupply or fidelity/Windows validation.
 - Next: deterministic spotting acquisition delay; C2 delay is a separate later step.
+
+
+## Rifle/support profiles — validated 2026-10-11
+
+- Ready for review: codex/infantry-fire-profiles, draft PR #27, base tested PR #26.
+- Tested code 247ca3edc861ae451130835bca3665d256af78f2: all 20 Godot checks,
+  26 terrain tests and diff check passed. Combined CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/38165101643 succeeded.
+- Inspected artifact 11711941046: actual SUPPORT -18R shots at 00:04 and readable
+  bounded completed report. Initial type/save errors and ambiguous role labels
+  fixed before this successful candidate. Full restart/two-battle tests pass.
+- Frozen builds/contracts preserved; no Windows or realistic-fidelity validation.
+  Abstract fixed roles, no individual weapons/reloads/overheating/resupply.
+- Next: deterministic spotting acquisition delay, with C2 limits separate later.

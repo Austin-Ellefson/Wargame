@@ -22,7 +22,7 @@ The prototype uses a 4x4 grid over a fictional test area in central Ukraine. For
 
 Clone this repository and import its root `project.godot` in Godot. Press **F5** to run.
 
-Download **[`codex/infantry-posture`](https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/infantry-posture)** for the latest tested build, including repeat battles, firing/report feedback, current and last-known enemy contacts, MOVE/QUICK/HUNT, fire control, queued routes, timed pauses, local-contact opponent reactions and terrain-aware red routes and separated covered objective positions and persistent infantry fatigue, morale-driven withdrawal/rally and standing/crouched/prone posture tradeoffs. The preserved milestone is also available on `codex/completed-battle-report`. The stacked PRs remain unmerged. Import `project.godot`, then press **F5**.
+Download **[`codex/infantry-fire-profiles`](https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/infantry-fire-profiles)** for the latest tested build, including repeat battles, firing/report feedback, current and last-known enemy contacts, MOVE/QUICK/HUNT, fire control, queued routes, timed pauses, local-contact opponent reactions and terrain-aware red routes and separated covered objective positions and persistent infantry fatigue, morale-driven withdrawal/rally and standing/crouched/prone posture tradeoffs and distinct rifle/support fire profiles. The preserved milestone is also available on `codex/completed-battle-report`. The stacked PRs remain unmerged. Import `project.godot`, then press **F5**.
 
 ### Try the integrated battle
 
@@ -34,6 +34,7 @@ Click **PLAY INTEGRATED DEMO** in a new campaign. It executes the documented two
 - **AUTO / HOLD FIRE** controls firing, including return fire. **Shift + left-click** a contact to prefer it only when the selected squad can locally engage it; **CLEAR TARGET** returns to nearest eligible targets.
 - With a queued route, **PAUSE** cycles 0/15/30/60 simulated seconds before moving; firing continues. Remaining waits and routes survive restart. HUNT also pauses on local contacts or pressure.
 - **STAND / CROUCH / PRONE** changes posture while planning. Lower posture slows movement, reduces observation range and exposure, and may lose terrain sight. Posture persists on restart. Broken squads stand for withdrawal.
+- Fresh battles use **RIFLE** squads S1/S3 (one round/person every 3 seconds) and **SUPPORT** squads S2/S4 (two rounds/person every 2 seconds). Support volleys spend finite ammunition faster and apply more suppression; these are abstract squad profiles. Older pending battles retain their saved rules.
 - Click **EXECUTE 60 SECONDS**. Both sides move and fire simultaneously. Playback defaults to 4x and can switch to 8x.
 - Capture the gold objective. Fire is automatic within 230 m with line of sight; woods reduce hit probability. Suppression slows movement, pins heavily pressured squads and reduces firing effectiveness. Live enemy contacts reveal no exact strength; amber last-seen markers remain at observed positions without tracking hidden movement.
 - **SAVE & CAMPAIGN** preserves an unfinished battle and its campaign lock. **OPEN TACTICAL BATTLE** resumes it.

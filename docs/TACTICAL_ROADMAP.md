@@ -18,7 +18,7 @@ and separated covered capture positions. Fatigue and morale-driven withdrawal/ra
 
 1. Validate and refine morale retreat/rally with user playtests; add leaders/C2 later.
 2. Standing/crouched/prone posture with movement, observation and protection tradeoffs: implemented on tested codex/infantry-posture PR #26 (v14); playtest tuning and transition delays remain future work.
-3. Squad weapon roles and fire cadence, ammunition and bounded casualty accounting.
+3. Squad weapon roles and fire cadence, ammunition and bounded casualty accounting: implemented on tested codex/infantry-fire-profiles PR #27 (v15). Individual weapon inventories and reloads remain future work.
 4. Acquisition delay and command/communication limits; no hidden target tracking.
 5. More credible opponent support, maneuver and withdrawal, using observed information.
 
