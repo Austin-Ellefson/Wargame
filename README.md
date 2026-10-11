@@ -22,13 +22,14 @@ The prototype uses a 4x4 grid over a fictional test area in central Ukraine. For
 
 Clone this repository and import its root `project.godot` in Godot. Press **F5** to run.
 
-Download **`codex/integrated-tactical-battle`** for this build. It includes the save/load and terrain-bridge branches; the stacked PRs are still unmerged. Import its `project.godot`, then press **F5**.
+Download **`codex/tactical-camera-controls`** for the latest tested build, including repeat battles, firing cues, live feedback, a battle report, route previews and camera navigation. The preserved milestone is also available on `codex/completed-battle-report`. The stacked PRs remain unmerged. Import `project.godot`, then press **F5**.
 
 ### Try the integrated battle
 
 Click **PLAY INTEGRATED DEMO** in a new campaign. It executes the documented two-turn contact and opens `T003_B2` on a synthetic 512 x 512 m map.
 
 - You command the blue detachment: up to four nine-person squads. Red is a scripted opponent.
+- Middle-drag to pan, Shift + middle-drag to rotate, and use the wheel to zoom. **RESET CAMERA** restores the overview.
 - Select a blue squad in the map or side panel; right-click ground to order movement. Orders route around buildings. **HOLD POSITION** clears an order.
 - Click **EXECUTE 60 SECONDS**. Both sides move and fire simultaneously. Playback defaults to 4x and can switch to 8x.
 - Capture the gold objective. Fire is automatic within 230 m with line of sight; woods reduce hit probability. Suppression slows movement and reduces firing effectiveness.

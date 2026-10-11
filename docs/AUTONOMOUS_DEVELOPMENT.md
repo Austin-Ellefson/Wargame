@@ -74,9 +74,13 @@ This setup change contains instructions only; these missing tools must be addres
 
 ## Camera navigation — 2026-10-10
 - Branch: codex/tactical-camera-controls, stacked on codex/order-path-preview.
-- Status: implemented; local Godot checks passed; CI rendering pending.
+- Status: ready for review; draft PR #12, gameplay commit 8f50548.
+- Validation: editor and all five Godot smoke checks, 26 GIS tests and diff check
+  passed. CI 38112521064 passed; rotated camera, execution and report previews
+  inspected in artifact 11692042769. Windows remains unverified.
 - Added bounded middle-drag pan, Shift-middle orbit and one-click reset. Actual
   GUI-event regression covers picking/orders after navigation, state isolation,
   reset and camera use during execution. No save/simulation contract changed.
 - Preserve the completed-battle-report milestone download.
-- Next: inspect camera render evidence, then a small independent tactical task.
+- Next: preserve the tested camera descendant and frozen milestone build; a
+  small morale behavior with deterministic restart tests is a subsequent task.
