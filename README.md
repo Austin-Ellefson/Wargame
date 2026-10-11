@@ -22,17 +22,19 @@ The prototype uses a 4x4 grid over a fictional test area in central Ukraine. For
 
 Clone this repository and import its root `project.godot` in Godot. Press **F5** to run.
 
-Download **`codex/tactical-camera-controls`** for the latest tested build, including repeat battles, firing cues, live feedback, a battle report, route previews and camera navigation. The preserved milestone is also available on `codex/completed-battle-report`. The stacked PRs remain unmerged. Import `project.godot`, then press **F5**.
+Download **[`codex/opponent-contact-reaction`](https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/opponent-contact-reaction)** for the latest tested build, including repeat battles, firing/report feedback, current and last-known enemy contacts, MOVE/QUICK/HUNT, fire control, queued routes, timed pauses and local-contact opponent reactions. The preserved milestone is also available on `codex/completed-battle-report`. The stacked PRs remain unmerged. Import `project.godot`, then press **F5**.
 
 ### Try the integrated battle
 
 Click **PLAY INTEGRATED DEMO** in a new campaign. It executes the documented two-turn contact and opens `T003_B2` on a synthetic 512 x 512 m map.
 
-- You command the blue detachment: up to four nine-person squads. Red is a scripted opponent.
+- You command the blue detachment: up to four nine-person squads. Red follows objective routes and stops to engage its own locally visible firing contacts.
 - Middle-drag to pan, Shift + middle-drag to rotate, and use the wheel to zoom. **RESET CAMERA** restores the overview.
-- Select a blue squad in the map or side panel; right-click ground to order movement. Orders route around buildings. **HOLD POSITION** clears an order.
+- Select a blue squad and **MOVE**, **QUICK** or **HUNT**, then right-click ground to replace its routed movement order. **Shift + right-click** appends a waypoint in the existing route mode. **HOLD POSITION** clears the route.
+- **AUTO / HOLD FIRE** controls firing, including return fire. **Shift + left-click** a contact to prefer it only when the selected squad can locally engage it; **CLEAR TARGET** returns to nearest eligible targets.
+- With a queued route, **PAUSE** cycles 0/15/30/60 simulated seconds before moving; firing continues. Remaining waits and routes survive restart. HUNT also pauses on local contacts or pressure.
 - Click **EXECUTE 60 SECONDS**. Both sides move and fire simultaneously. Playback defaults to 4x and can switch to 8x.
-- Capture the gold objective. Fire is automatic within 230 m with line of sight; woods reduce hit probability. Suppression slows movement and reduces firing effectiveness.
+- Capture the gold objective. Fire is automatic within 230 m with line of sight; woods reduce hit probability. Suppression slows movement, pins heavily pressured squads and reduces firing effectiveness. Live enemy contacts reveal no exact strength; amber last-seen markers remain at observed positions without tracking hidden movement.
 - **SAVE & CAMPAIGN** preserves an unfinished battle and its campaign lock. **OPEN TACTICAL BATTLE** resumes it.
 - A battle ends on detachment elimination or after six intervals. Click **APPLY & CAMPAIGN** to apply the result and save. Vehicles stay in reserve; losses affect only the infantry actually deployed.
 - On restart, click **LOAD** to restore your save before starting another demo.
@@ -61,7 +63,7 @@ See [native battle behavior and limits](docs/NATIVE_TACTICAL.md).
 - The battle center is the geographic center of its sector, not a detected real contact point. The uniform latitude/longitude grid spans about 20x20 km; `sector_size_km` is nominal, not an exact metric measurement.
 - The Python terrain bridge can prepare real OSM features, a projected elevation grid, and a CMAutoEditor elevation CSV. It does not create a CMBS scenario, launch the game, or import battle results.
 - Only the first same-sector opposing pair starts a battle. Crossing moves and larger battles need later rules.
-- Native battles currently use synthetic terrain and abstract infantry combat. OSM/DEM import, vehicles, fog of war, detailed ballistics and realistic force behavior are later work.
+- Native battles currently use synthetic terrain and abstract infantry combat. OSM/DEM import, vehicles, detailed ballistics, fatigue, delayed spotting/contact sharing and deeper force behavior are later work. Windows validation and Combat Mission fidelity remain unverified.
 - Contact, tactical interval boundaries and applied results autosave. Startup still opens the initial scenario until **LOAD**. An unfinished battle locks campaign turns and movement.
 
 ## Validation

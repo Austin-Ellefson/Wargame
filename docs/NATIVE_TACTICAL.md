@@ -6,9 +6,11 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/infantry-movement-orders` descendant includes route previews,
-camera navigation, pinning, spotting, saved contact memory and movement modes.
-The milestone branch above remains frozen. Fresh battles use tactical rules v5.
+The newer `codex/opponent-contact-reaction` descendant includes route previews,
+camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
+queued waypoints, timed pauses and local-contact opponent reactions. The milestone
+branch above remains frozen. Fresh battles use tactical rules v9. See the five-step
+batch test guide in [FIVE_STEP_TACTICAL_PROGRESS.md](FIVE_STEP_TACTICAL_PROGRESS.md).
 
 ## Complete game loop
 

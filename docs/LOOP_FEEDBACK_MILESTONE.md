@@ -21,8 +21,8 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/timed-movement-pauses / PR #20
-- Post-milestone next task: local-contact opponent reaction
+- Latest validated post-milestone descendant: codex/opponent-contact-reaction / PR #21
+- Post-milestone next task: cover-aware opponent movement using deterministic terrain and local knowledge
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -437,3 +437,13 @@ is delivered as the scheduled task result in ChatGPT.
 - Inspected artifact 11704464132: Execution at 00:03 shows WAIT 12s (QUICK), ammunition expenditure and actual shot cues while the timer continues; HUNT feedback and completed report remain readable. Mid-wait disk checkpoint restores 18 seconds rather than restarting.
 - Frozen milestone preserved; no Windows or Combat Mission fidelity validation.
 - Next: local-contact opponent reaction.
+
+## Five-step batch: codex/opponent-contact-reaction — 2026-10-11
+
+- Ready for review; draft PR #21, base codex/timed-movement-pauses.
+- Tested code: 72493794c5ea0ac73fbace9bfdc7fb4c9eb40de4.
+- Full local Godot suite, 26 terrain tests and diff check passed.
+- CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38147734045 succeeded.
+- Inspected artifact 11705009344: Combined fourteen Godot checks and 26 terrain tests passed. Inspected queued routes, preferred-target shot/HUNT execution, WAIT 12s with real firing, and readable completed report. UI regression proves the observed red squad stayed at its firing position; logic covers local/shared/hidden isolation, ammo/resume, blocked LOS, V8 preservation and real disk restart.
+- Frozen milestone preserved; no Windows or Combat Mission fidelity validation.
+- Next: cover-aware opponent movement using deterministic terrain and local knowledge.
