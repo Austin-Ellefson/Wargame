@@ -61,6 +61,7 @@ func _run() -> void:
         old.state["version"] = version
         old.state.erase("fire_modes")
         old.state.erase("fire_targets")
+        old.state.erase("pause_remaining")
         if version < 5: old.state.erase("movement_modes")
         if version < 4: old.state.erase("contacts")
         check(Battle.validate(old.state, PAYLOAD) and not old.order_fire("UKR_S1", "hold"), "Legacy engagements retain automatic fire and their old contract.")

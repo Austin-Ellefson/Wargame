@@ -104,3 +104,17 @@ existing 8 m building-clearance grid. Each queue uses one movement mode.
 No save fields or simulation rules change: complete routes already persist in
 `orders`. Tactical v7 remains current; old engagements keep their fields/rules.
 Disk-restart regression now includes a multi-leg campaign route.
+
+## Timed movement pauses (tactical v8)
+
+With a queued route, PAUSE cycles 0/15/30/60 simulated seconds. The squad waits
+before moving, but can spot/fire and receive damage. Countdown runs only during
+execution, independently of playback speed; pinning/HUNT may still prevent
+movement after it expires. WAIT status and remaining seconds are visible.
+A replacement route, Hold, destination completion or elimination clears the
+wait; appending retains it. Commands remain frozen during execution.
+
+V8 persists `pause_remaining` for every squad ID as integer 0–60; a positive
+value requires a nonempty queued route. Missing/extra IDs, fractional/negative/
+excessive values and orphan waits reject the save. V1-v7 retain original
+fields/rules. No RNG, campaign/result/export or GIS contract changes.

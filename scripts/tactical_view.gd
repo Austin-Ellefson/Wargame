@@ -37,6 +37,7 @@ var report_label: Label
 var execute_button: Button
 var back_button: Button
 var speed_button: Button
+var pause_button: Button
 var clear_target_button: Button
 var fire_buttons := {}
 var movement_buttons := {}
@@ -146,9 +147,16 @@ func _build_interface() -> void:
         simulation.order_target(selected, "")
         _refresh())
     clear_target_button.add_theme_font_size_override("font_size", 10)
-    hold_button = _button("HOLD POSITION", Rect2(986, 502, 248, 26), func():
+    hold_button = _button("HOLD POSITION", Rect2(986, 502, 122, 26), func():
         simulation.order_hold(selected)
         _refresh())
+    pause_button = _button("PAUSE +15s", Rect2(1112, 502, 122, 26), func():
+        var current := int(simulation.state["pause_remaining"].get(selected, 0))
+        var following := 15 if current == 0 else (30 if current == 15 else (60 if current == 30 else 0))
+        simulation.order_pause(selected, following)
+        _refresh())
+    pause_button.add_theme_font_size_override("font_size", 12)
+    pause_button.tooltip_text = "Cycle 0/15/30/60 seconds. Delays movement only; firing continues."
     execute_button = _button("EXECUTE 60 SECONDS", Rect2(986, 534, 248, 32), _execute)
     speed_button = _button("PLAYBACK 4x", Rect2(986, 574, 248, 28), func():
         speed = 8.0 if speed == 4.0 else 4.0
@@ -563,6 +571,9 @@ func _refresh() -> void:
         if simulation.is_pinned(squad):
             squad_buttons[id].text += " PINNED"
     hold_button.disabled = state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0
+    pause_button.visible = int(state["version"]) >= 8
+    pause_button.disabled = hold_button.disabled or not state["orders"].has(selected)
+    pause_button.text = "PAUSE %ds" % int(state["pause_remaining"].get(selected, 0)) if int(state["version"]) >= 8 and int(state["pause_remaining"].get(selected, 0)) > 0 else "PAUSE +15s"
     execute_button.disabled = state["phase"] != "planning"
     execute_button.text = "%d SECONDS REMAINING" % state["remaining"] if state["phase"] == "execution" else "EXECUTE 60 SECONDS"
     back_button.disabled = state["phase"] == "execution"

@@ -142,6 +142,13 @@ func _run() -> void:
     if not path_capture.is_empty() and DisplayServer.get_name() != "headless":
         await RenderingServer.frame_post_draw
         check(root.get_texture().get_image().save_png(path_capture.get_base_dir().path_join("queued-waypoints-preview.png")) == OK, "Queued-route capture must save.")
+    click(Vector2(1170, 515), MOUSE_BUTTON_LEFT)
+    await process_frame
+    check(game.tactical_simulation.state["pause_remaining"]["UKR_S1"] == 15 and "WAIT 15s" in view.selection_label.text, "Pause button must set and show a timed wait on a queued route.")
+    for index in range(3):
+        click(Vector2(1170, 515), MOUSE_BUTTON_LEFT)
+        await process_frame
+    check(game.tactical_simulation.state["pause_remaining"]["UKR_S1"] == 0, "Pause selector must cycle through 15/30/60/0 seconds.")
     var planning_checkpoint: Dictionary = game.tactical_simulation.state.duplicate(true)
     game.tactical_simulation.squad_by_id("UKR_S1")["position"] = [180, 245]
     game.tactical_simulation.squad_by_id("RU_S1")["position"] = [240, 245]
@@ -160,6 +167,8 @@ func _run() -> void:
     game.tactical_simulation.squad_by_id("RU_S1")["position"] = [240, 245]
     game.tactical_simulation.order_target("UKR_S1", "RU_S1")
     view._refresh()
+    game.tactical_simulation.order_move("UKR_S3", Vector2(210, 300), true, "quick")
+    game.tactical_simulation.order_pause("UKR_S3", 15)
     # Button and execution must carry the same scene/model instance through a checkpoint.
     view._execute()
     for button in view.movement_buttons.values() + view.fire_buttons.values():
@@ -227,6 +236,12 @@ func _run() -> void:
     if not capture.is_empty() and DisplayServer.get_name() != "headless":
         await RenderingServer.frame_post_draw
         check(root.get_texture().get_image().save_png(capture.get_base_dir().path_join("movement-orders-preview.png")) == OK, "HUNT execution preview must save.")
+    view.selected = "UKR_S3"
+    view._refresh()
+    check("WAIT" in view.selection_label.text and view.pause_button.disabled, "Execution must show a decreasing wait and frozen pause control.")
+    if not capture.is_empty() and DisplayServer.get_name() != "headless":
+        await RenderingServer.frame_post_draw
+        check(root.get_texture().get_image().save_png(capture.get_base_dir().path_join("timed-pause-preview.png")) == OK, "Timed-wait execution capture must save.")
     view.selected = "UKR_S2"
     view._refresh()
     # The observed execution contact becomes stale without tracking hidden motion.
