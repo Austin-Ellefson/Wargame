@@ -232,3 +232,17 @@ This setup change contains instructions only; these missing tools must be addres
 - Limits: abstract tuning, no posture transition time/enemy posture planner or
   individual soldier animation; no Windows or fidelity validation.
 - Next: infantry weapon roles/cadence with bounded ammunition and casualties.
+
+
+## Infantry posture — validated 2026-10-11
+
+- Ready for review: codex/infantry-posture, draft PR #26, based on tested PR #25.
+- Tested gameplay d0c113b6ab93eaaf5eecb995eefaf76c2fcb4932; all 19 Godot checks,
+  26 terrain tests and diff check passed. Combined CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38164109023 succeeded.
+- Inspected artifact 11711402288: actual low-posture shots at 00:06 and readable
+  completed report. Initial summary overlap fixed and covered by bounds checks.
+  Logic proves actual posture effects and exact real-combat disk continuation;
+  two-battle campaign loop remains passing. Full evidence in milestone ledger.
+- Old fields/rules and frozen ready branches preserved. No Windows/fidelity claim;
+  instant posture changes, standing red planner and abstract squad bodies remain.
+- Next: infantry weapon roles/fire cadence with bounded ammunition/casualties.

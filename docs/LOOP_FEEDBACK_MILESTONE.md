@@ -21,8 +21,8 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/morale-retreat-rally / PR #25
-- Post-milestone next task: standing crouched and prone infantry posture commands
+- Latest validated post-milestone descendant: codex/infantry-posture / PR #26
+- Post-milestone next task: infantry weapon roles and fire cadence
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -510,3 +510,29 @@ is delivered as the scheduled task result in ChatGPT.
   at 00:06. Visual inspection caught completed-summary/roster overlap after
   the denser controls. Compact summary/selection labels and bounds regressions
   added before final validation; readiness remains pending the corrected CI.
+
+
+## codex/infantry-posture — validated 2026-10-11
+
+- Ready for review, draft PR #26, explicit base codex/morale-retreat-rally PR #25
+  at 79ccfc713a0ce4e395441c071f6144205d03fd5d (CI 38154985632 success).
+- Tested gameplay commit: d0c113b6ab93eaaf5eecb995eefaf76c2fcb4932. Tactical v14 persists
+  strict per-squad postures, standing/crouched/prone movement, observation,
+  concealment/exposure and terrain LOS. Withdrawal stands broken squads.
+- All 19 local Godot checks, 26 terrain tests and diff check passed on the corrected
+  candidate. Combined CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38164109023 succeeded.
+- Inspected artifact 11711402288: PRONE at actual firing 00:06, rounds/suppression,
+  symbolic lowered bodies, frozen controls and readable completed report.
+  Shortened summary/selection and roster spacing correct overlap found in initial
+  render 11711526519; new UI bounds checks pass. The render uses a mixed-posture
+  checkpoint and close-contact positions; shots are actually simulated. Separate
+  regression uses real posture-button inputs and proves actual movement, sight,
+  hill occlusion, exposure attacks and full real-combat campaign disk equality.
+- Two actual campaign contacts, fresh IDs T003_B2/T004_B2, restart, retained history/
+  losses, retreat, unlocked turns and stale/duplicate rejection pass in this CI.
+  Nonfatal renderer/anchor/test-event warnings remain; no script errors.
+- Frozen milestone and prior downloads preserved. V1–V13 keep original fields/
+  rules; campaign/result/GIS/export/Windows launchers unchanged. No Windows or
+  Combat Mission fidelity validation. Instant posture changes, abstract tuning,
+  standing red planner and symbolic squad bodies remain limitations.
+- Next: infantry weapon roles and fire cadence, with bounded ammunition/casualties.
