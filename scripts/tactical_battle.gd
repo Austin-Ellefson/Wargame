@@ -50,11 +50,14 @@ static func visible(a: Vector2, b: Vector2) -> bool:
     return true
 
 func setup(payload: Dictionary) -> void:
-    state = {"version": 5, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
+    state = {"version": 6, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
     state["contacts"] = {"UKR": {}, "RU": {}}
     state["movement_modes"] = {}
+    state["fire_modes"] = {}
+    for squad in state["squads"]:
+        state["fire_modes"][squad["id"]] = "auto"
     last_events = []
     _build_navigation()
     _update_contacts()
@@ -153,6 +156,16 @@ func last_known_contacts(faction: String) -> Array:
             var record: Dictionary = state["contacts"][faction][id]
             contacts.append({"id": id, "position": record["position"].duplicate(), "seen_at": record["seen_at"]})
     return contacts
+
+func fire_mode(id: String) -> String:
+    return str(state["fire_modes"][id]) if int(state["version"]) >= 6 else "auto"
+
+func order_fire(id: String, mode: String, player: bool = true) -> bool:
+    var squad := squad_by_id(id)
+    if int(state["version"]) < 6 or state["phase"] != "planning" or mode not in ["auto", "hold"] or squad.is_empty() or int(squad["alive"]) <= 0 or (player and squad["faction"] != "UKR"):
+        return false
+    state["fire_modes"][id] = mode
+    return true
 
 func movement_mode(id: String) -> String:
     if not state["orders"].has(id):
@@ -260,7 +273,7 @@ func step() -> void:
     var attacks: Array = []
     if int(state["elapsed"]) % 3 == 0:
         for shooter in state["squads"]:
-            if int(shooter["alive"]) <= 0 or int(shooter["ammo"]) <= 0:
+            if int(shooter["alive"]) <= 0 or int(shooter["ammo"]) <= 0 or fire_mode(shooter["id"]) == "hold":
                 continue
             var target := _nearest_target(shooter)
             if target.is_empty():
@@ -352,9 +365,11 @@ func result() -> Dictionary:
         "elapsed": state["elapsed"], "objective": state["objective"].duplicate(true), "forces": forces}
 
 static func validate(saved: Variant, payload: Dictionary) -> bool:
-    if not saved is Dictionary or not _integer(saved.get("version"), 1, 5):
+    if not saved is Dictionary or not _integer(saved.get("version"), 1, 6):
         return false
-    if saved.size() != (11 if int(saved["version"]) == 5 else (10 if int(saved["version"]) == 4 else 9)):
+    var version := int(saved["version"])
+    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6)
+    if saved.size() != field_count:
         return false
     for key in ["version", "battle_id", "phase", "elapsed", "remaining", "objective", "squads", "orders", "winner"]:
         if not saved.has(key):
@@ -438,6 +453,13 @@ static func _validate_fields(saved: Dictionary, payload: Dictionary) -> bool:
             return false
         for id in modes:
             if not saved["orders"].has(id) or modes[id] not in ["move", "quick", "hunt"] or saved["orders"][id].is_empty():
+                return false
+    if int(saved["version"]) >= 6:
+        var modes = saved.get("fire_modes")
+        if not modes is Dictionary or modes.size() != known.size():
+            return false
+        for id in known:
+            if modes.get(id) not in ["auto", "hold"]:
                 return false
     var survivors := {"UKR": 0, "RU": 0}
     for squad in saved["squads"]:

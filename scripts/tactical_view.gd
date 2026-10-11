@@ -37,6 +37,7 @@ var report_label: Label
 var execute_button: Button
 var back_button: Button
 var speed_button: Button
+var fire_buttons := {}
 var movement_buttons := {}
 var command_mode := "move"
 var hold_button: Button
@@ -122,7 +123,8 @@ func _build_interface() -> void:
             _refresh())
         button.add_theme_font_size_override("font_size", 13)
         squad_buttons[id] = button
-    selection_label = _label("", Vector2(986, 374), 14, 244)
+    selection_label = _label("", Vector2(986, 374), 13, 244)
+    selection_label.add_theme_constant_override("line_spacing", -2)
     for index in range(3):
         var mode: String = ["move", "quick", "hunt"][index]
         var button := _button(mode.to_upper(), Rect2(986 + index * 84, 436, 80, 26), func():
@@ -131,15 +133,23 @@ func _build_interface() -> void:
         button.add_theme_font_size_override("font_size", 12)
         button.tooltip_text = {"move": "2.4 m/s normal movement", "quick": "4 m/s fast movement; no fatigue model yet", "hunt": "1.2 m/s; pauses on local contact or SUP >= 25%"}[mode]
         movement_buttons[mode] = button
-    hold_button = _button("HOLD POSITION", Rect2(986, 470, 248, 28), func():
+    for index in range(2):
+        var mode: String = ["auto", "hold"][index]
+        var button := _button("", Rect2(986 + index * 126, 470, 122, 26), func():
+            simulation.order_fire(selected, mode)
+            _refresh())
+        button.add_theme_font_size_override("font_size", 12)
+        button.tooltip_text = "HOLD FIRE also withholds return fire; movement and spotting continue." if mode == "hold" else "Automatic fire at locally visible targets."
+        fire_buttons[mode] = button
+    hold_button = _button("HOLD POSITION", Rect2(986, 502, 248, 26), func():
         simulation.order_hold(selected)
         _refresh())
-    execute_button = _button("EXECUTE 60 SECONDS", Rect2(986, 506, 248, 32), _execute)
-    speed_button = _button("PLAYBACK 4x", Rect2(986, 546, 248, 32), func():
+    execute_button = _button("EXECUTE 60 SECONDS", Rect2(986, 534, 248, 32), _execute)
+    speed_button = _button("PLAYBACK 4x", Rect2(986, 574, 248, 28), func():
         speed = 8.0 if speed == 4.0 else 4.0
         speed_button.text = "PLAYBACK %dx" % int(speed))
-    back_button = _button("SAVE & CAMPAIGN", Rect2(986, 586, 248, 32), _back)
-    report_label = _label("", Vector2(986, 627), 13, 244)
+    back_button = _button("SAVE & CAMPAIGN", Rect2(986, 610, 248, 30), _back)
+    report_label = _label("", Vector2(986, 648), 12, 244)
     _label("Left: select  /  Right: move  /  Wheel: zoom  /  Middle-drag: pan  /  Shift + middle-drag: rotate", Vector2(24, 691), 13)
 
 func _material(color: Color, unshaded: bool = false) -> StandardMaterial3D:
@@ -516,6 +526,12 @@ func _refresh() -> void:
         selection_label.text = "Squad %s  |  %s\n%d rounds  /  Morale %d  /  SUP%d%%" % [selected.right(1), simulation.combat_status(selected_squad), selected_squad["ammo"], selected_squad["morale"], int(float(selected_squad["suppression"]) * 100)]
     if int(state["version"]) >= 5 and not selected_squad.is_empty():
         selection_label.text += "\nOrder: " + simulation.movement_status(selected_squad)
+    if int(state["version"]) >= 6 and not selected_squad.is_empty():
+        selection_label.text += " | " + ("HOLD FIRE" if simulation.fire_mode(selected) == "hold" else "AUTO")
+    for mode in fire_buttons:
+        fire_buttons[mode].visible = int(state["version"]) >= 6
+        fire_buttons[mode].disabled = state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0
+        fire_buttons[mode].text = ("AUTO" if mode == "auto" else "HOLD FIRE") + (" *" if simulation.fire_mode(selected) == mode else "")
     for mode in movement_buttons:
         movement_buttons[mode].visible = int(state["version"]) >= 5
         movement_buttons[mode].disabled = state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0
@@ -539,7 +555,7 @@ func _refresh() -> void:
     if int(state["version"]) >= 4:
         report_label.text = "Amber ? = last seen, not current. Woods conceal distant squads."
     if int(state["version"]) >= 5:
-        report_label.text = "Choose mode, then right-click. Amber ? = last seen."
+        report_label.text = "Mode + right-click. Amber = last seen."
     if state["phase"] == "finished":
         var result: Dictionary = simulation.result()
         completed_report_label.text = _battle_report(result)

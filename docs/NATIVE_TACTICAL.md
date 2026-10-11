@@ -201,3 +201,14 @@ accuracy penalty yet; HUNT is a reversible pause, not a permanent halt command
 or a reproduction of proprietary Combat Mission rules. Paths/modes persist
 across intervals and restart. Reaching the destination, Hold or elimination
 clears them. No presentation changes consume simulation RNG.
+
+## Infantry fire control (tactical v6)
+
+During planning, AUTO or HOLD FIRE changes the selected squad's firing rule.
+HOLD FIRE conserves all rounds and also withholds return fire; incoming fire,
+spotting and movement continue. AUTO uses the existing local LOS/range rules.
+Fire rules freeze during execution and persist across intervals and restart.
+New v6 saves add `fire_modes` for every squad ID, with `auto` or `hold` values;
+missing/extra IDs and unknown values reject the save. V1-v5 retain their automatic
+fire and original fields/rules. Campaign v2 and result v1 are unchanged. Holding
+fire does not introduce concealment benefits, weapon classes or ammo resupply.

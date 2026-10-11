@@ -64,3 +64,14 @@ no transient pause flag or extra RNG is saved. Disk restart preserves both modes
 and complete deterministic outcomes. Campaign schema remains v2; result v1 and
 legacy export contracts are unchanged. V1/V2/V3/V4 engagements retain original
 fields and speed/response rules and cannot accept QUICK/HUNT; no silent upgrade.
+
+## Infantry fire control (tactical v6)
+
+During planning, AUTO or HOLD FIRE changes the selected squad's firing rule.
+HOLD FIRE conserves all rounds and also withholds return fire; incoming fire,
+spotting and movement continue. AUTO uses the existing local LOS/range rules.
+Fire rules freeze during execution and persist across intervals and restart.
+New v6 saves add `fire_modes` for every squad ID, with `auto` or `hold` values;
+missing/extra IDs and unknown values reject the save. V1-v5 retain their automatic
+fire and original fields/rules. Campaign v2 and result v1 are unchanged. Holding
+fire does not introduce concealment benefits, weapon classes or ammo resupply.

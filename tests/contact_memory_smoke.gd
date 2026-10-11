@@ -105,6 +105,7 @@ func _run() -> void:
     legacy.state["version"] = 3
     legacy.state.erase("contacts")
     legacy.state.erase("movement_modes")
+    legacy.state.erase("fire_modes")
     check(Battle.validate(legacy.state, payload), "V3 saves without contact memory must remain valid.")
     var legacy_restart = Battle.new()
     legacy_restart.restore(JSON.parse_string(JSON.stringify(legacy.state)))

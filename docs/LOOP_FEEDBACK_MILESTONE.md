@@ -21,8 +21,8 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/infantry-movement-orders / PR #16
-- Post-milestone next task: explicit AUTO/HOLD FIRE infantry control
+- Latest validated post-milestone descendant: codex/infantry-fire-control / PR #17
+- Post-milestone next task: observed preferred-target orders
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -397,3 +397,13 @@ is delivered as the scheduled task result in ChatGPT.
 - Next: AUTO/HOLD FIRE controls with versioned state, readable feedback, local
   LOS preservation and actual disk-restart regression; broader opponent reactions,
   area fire, weapons, vehicles and fatigue remain separate tasks.
+
+## Five-step batch: codex/infantry-fire-control — 2026-10-11
+
+- Ready for review; draft PR #17, base codex/infantry-movement-orders.
+- Tested code: 1ad7350fc9ff0bbf67f7bcaae5893b983a99ec76.
+- Full local Godot suite, 26 terrain tests and diff check passed.
+- CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38146581297 succeeded.
+- Inspected artifact 11705446305: Readable AUTO/HOLD FIRE controls and separated order status during actual shot execution; completed report retained. First capture exposed tight spacing, corrected and rerendered.
+- Frozen milestone preserved; no Windows or Combat Mission fidelity validation.
+- Next: observed preferred-target orders.
