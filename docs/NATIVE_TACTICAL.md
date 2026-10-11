@@ -384,3 +384,42 @@ restoration directly, plus duplicate/stale results and two consecutive contacts.
 Rendered morale evidence uses a seeded damaged checkpoint; separate regression
 triggers break from actual simulated fire. Linux checks do not establish Windows
 validation, realistic infantry fidelity, or combined-arms completeness.
+
+
+## Infantry posture (tactical v14)
+
+Fresh engagements add STAND, CROUCH and PRONE planning controls for a living
+selected blue squad. Posture changes immediately without clearing its route,
+movement mode, fire preference or timed pause. Execution freezes these commands.
+Broken survivors stand automatically for rear withdrawal and reject posture
+overrides until rallied. Red defaults to standing; this increment adds no enemy
+posture planner. Start a fresh integrated demo to use v14; existing pending
+engagements retain their saved rules.
+
+| Posture | Movement multiplier | Observer range multiplier | Target concealment multiplier | Incoming hit multiplier | LOS height |
+| --- | --- | --- | --- | --- | --- |
+| STAND | 1.0 | 1.0 | 1.0 | 1.0 | 1.6 m |
+| CROUCH | 0.7 | 0.9 | 0.85 | 0.75 | 1.0 m |
+| PRONE | 0.3 | 0.75 | 0.65 | 0.5 | 0.35 m |
+
+Range multipliers combine with the existing open/woods range. Lower posture can
+lose sight behind hills; buildings still block all sight. Target exposure scales
+hit probability with the same per-shot random samples, ammunition and cadence.
+Suppression pressure is unchanged. Movement multipliers combine with fatigue,
+suppression, pinning, HUNT and morale. QUICK while prone crawls; it does not
+silently stand the squad. Fatigue still charges actual travelled distance.
+
+Selection text and starred buttons show current posture. Symbolic squad bodies
+lower/elongate, and visible shot cues follow their display height. These are
+exaggerated markers, not individual soldier animations. Hidden enemy state is
+not added to labels, markers or live feedback. Rendering consumes no combat RNG.
+
+Playtest: select S1, CROUCH then PRONE, queue MOVE/QUICK, execute and compare
+motion with a standing squad. At close contact watch actual shots and rounds;
+lower posture reduces exposure, without guaranteeing survival. SAVE & CAMPAIGN,
+quit/reopen/LOAD, and confirm postures and complete orders persist. Repeated
+campaign contact/results remain covered by the combined regression suite.
+
+The multipliers are abstract prototype tuning, not empirical combat values.
+No transition delay, weapon-specific posture restrictions, automatic cover
+seeking, individual soldiers, leaders or Windows validation is claimed.

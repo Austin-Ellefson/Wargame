@@ -69,18 +69,27 @@ func _run() -> void:
     var hidden_before: int = view.shot_cues.size()
     view._show_shot_events([{"type": "shot", "player_visible": false, "shooter": "RU_S1", "target": "UKR_S1"}])
     check(view.shot_cues.size() == hidden_before and view.observed_shot_events.is_empty(), "Unobserved shot events must not create cues or recorded visible endpoints.")
-    click(Vector2(1110, 483), MOUSE_BUTTON_LEFT)
+    click(Vector2(1110, 489), MOUSE_BUTTON_LEFT)
     await process_frame
     check(game.tactical_simulation.fire_mode("UKR_S1") == "hold" and "HOLD FIRE" in view.selection_label.text, "Actual HOLD FIRE input must set and display the selected squad's fire rule.")
-    click(Vector2(1040, 483), MOUSE_BUTTON_LEFT)
+    click(Vector2(1040, 489), MOUSE_BUTTON_LEFT)
     await process_frame
     check(game.tactical_simulation.fire_mode("UKR_S1") == "auto", "Actual AUTO input must restore fire.")
+    click(Vector2(1110, 427), MOUSE_BUTTON_LEFT)
+    await process_frame
+    check(game.tactical_simulation.posture("UKR_S1") == "crouch" and "CROUCH" in view.selection_label.text, "Actual CROUCH input must set and display posture.")
+    click(Vector2(1190, 427), MOUSE_BUTTON_LEFT)
+    await process_frame
+    check(game.tactical_simulation.posture("UKR_S1") == "prone" and view.bodies["UKR_S1"][0].scale.y == 0.25, "Actual PRONE input must lower the symbolic squad bodies.")
+    click(Vector2(1040, 427), MOUSE_BUTTON_LEFT)
+    await process_frame
+    check(game.tactical_simulation.posture("UKR_S1") == "stand", "Actual STAND input must restore posture.")
     var intended := Vector3(210, Battle.terrain_height(210, 245), 245)
     var local: Vector2 = view.camera.unproject_position(intended)
     var hit: Vector2 = view._ground_point(local)
     check(hit.distance_to(Vector2(210, 245)) < 6, "Projected ground picking must agree with terrain coordinates.")
     var before_mode: Dictionary = game.tactical_simulation.state.duplicate(true)
-    click(Vector2(1110, 449), MOUSE_BUTTON_LEFT)
+    click(Vector2(1110, 457), MOUSE_BUTTON_LEFT)
     await process_frame
     check(view.command_mode == "quick" and same(before_mode, game.tactical_simulation.state), "Selecting QUICK must only change the next-command mode.")
     click(local + Vector2(24, 112), MOUSE_BUTTON_RIGHT)
@@ -124,7 +133,7 @@ func _run() -> void:
     click(Vector2(860, 85), MOUSE_BUTTON_LEFT)
     await process_frame
     check(view.camera.transform.is_equal_approx(default_camera) and is_equal_approx(view.camera.fov, 52), "Reset-camera button must restore the original overview.")
-    click(Vector2(1190, 449), MOUSE_BUTTON_LEFT)
+    click(Vector2(1190, 457), MOUSE_BUTTON_LEFT)
     await process_frame
     click(view.camera.unproject_position(intended) + Vector2(24, 112), MOUSE_BUTTON_RIGHT)
     await process_frame
@@ -142,11 +151,11 @@ func _run() -> void:
     if not path_capture.is_empty() and DisplayServer.get_name() != "headless":
         await RenderingServer.frame_post_draw
         check(root.get_texture().get_image().save_png(path_capture.get_base_dir().path_join("queued-waypoints-preview.png")) == OK, "Queued-route capture must save.")
-    click(Vector2(1170, 515), MOUSE_BUTTON_LEFT)
+    click(Vector2(1170, 521), MOUSE_BUTTON_LEFT)
     await process_frame
     check(game.tactical_simulation.state["pause_remaining"]["UKR_S1"] == 15 and "WAIT 15s" in view.selection_label.text, "Pause button must set and show a timed wait on a queued route.")
     for index in range(3):
-        click(Vector2(1170, 515), MOUSE_BUTTON_LEFT)
+        click(Vector2(1170, 521), MOUSE_BUTTON_LEFT)
         await process_frame
     check(game.tactical_simulation.state["pause_remaining"]["UKR_S1"] == 0, "Pause selector must cycle through 15/30/60/0 seconds.")
     var planning_checkpoint: Dictionary = game.tactical_simulation.state.duplicate(true)
@@ -157,7 +166,7 @@ func _run() -> void:
     click(contact_screen + Vector2(24, 112), MOUSE_BUTTON_LEFT, true)
     await process_frame
     check(game.tactical_simulation.state["fire_targets"]["UKR_S1"] == "RU_S1" and "Focus: ready" in view.report_label.text, "Actual Shift-click must set an eligible observed preferred target.")
-    click(Vector2(1190, 483), MOUSE_BUTTON_LEFT)
+    click(Vector2(1190, 489), MOUSE_BUTTON_LEFT)
     await process_frame
     check(game.tactical_simulation.state["fire_targets"]["UKR_S1"] == "", "Clear-target button must reset preference.")
     click(contact_screen + Vector2(24, 112), MOUSE_BUTTON_LEFT, true)
@@ -171,7 +180,7 @@ func _run() -> void:
     game.tactical_simulation.order_pause("UKR_S3", 15)
     # Button and execution must carry the same scene/model instance through a checkpoint.
     view._execute()
-    for button in view.movement_buttons.values() + view.fire_buttons.values():
+    for button in view.movement_buttons.values() + view.fire_buttons.values() + view.posture_buttons.values():
         check(button.disabled, "Movement-mode controls must freeze during execution.")
     check(view.execute_button.disabled and view.back_button.disabled, "Execution must freeze turn/back controls.")
     check(view.order_preview.get_child_count() == 0, "Route preview must clear when execution begins.")
@@ -243,6 +252,26 @@ func _run() -> void:
     if not capture.is_empty() and DisplayServer.get_name() != "headless":
         await RenderingServer.frame_post_draw
         check(root.get_texture().get_image().save_png(capture.get_base_dir().path_join("timed-pause-preview.png")) == OK, "Timed-wait execution capture must save.")
+    var posture_checkpoint: Dictionary = game.tactical_simulation.state.duplicate(true)
+    game.tactical_simulation.state["postures"]["UKR_S1"] = "prone"
+    game.tactical_simulation.state["postures"]["UKR_S3"] = "crouch"
+    view.selected = "UKR_S1"
+    view._age_shot_cues(1.0)
+    var observed_before: int = view.observed_shot_events.size()
+    for tick in range(3):
+        var before: Dictionary = view._status_snapshot()
+        game.tactical_simulation.step()
+        view._show_shot_events(game.tactical_simulation.consume_events())
+        view._show_combat_changes(before)
+    view._refresh()
+    check("PRONE" in view.selection_label.text and view.observed_shot_events.size() > observed_before and not view.shot_cues.is_empty(), "Prone execution must display posture and actual firing cues.")
+    var rendered_posture: Dictionary = game.tactical_simulation.state.duplicate(true)
+    view._refresh()
+    check(same(rendered_posture, game.tactical_simulation.state), "Posture model and cue rendering must leave authoritative outcomes unchanged.")
+    if not capture.is_empty() and DisplayServer.get_name() != "headless":
+        await RenderingServer.frame_post_draw
+        check(root.get_texture().get_image().save_png(capture.get_base_dir().path_join("posture-execution-preview.png")) == OK, "Actual posture execution/shot capture must save.")
+    game.tactical_simulation.restore(posture_checkpoint)
     # Earn fatigue through actual QUICK movement in a detached render checkpoint.
     # Disable fixture ammunition, then restore the original combat before continuing.
     var fatigue_checkpoint: Dictionary = game.tactical_simulation.state.duplicate(true)
@@ -317,7 +346,7 @@ func _run() -> void:
     view.selected = "UKR_S1"
     view._refresh()
     check(view.squad_buttons["UKR_S1"].disabled and view.hold_button.disabled, "Dead squads must be visibly disabled and unable to receive orders.")
-    for button in view.movement_buttons.values() + view.fire_buttons.values():
+    for button in view.movement_buttons.values() + view.fire_buttons.values() + view.posture_buttons.values():
         check(button.disabled, "Dead squads must have disabled movement-mode controls.")
     game.tactical_simulation.squad_by_id("UKR_S1")["alive"] = selected_alive
     view._refresh()
@@ -356,6 +385,9 @@ func _run() -> void:
         await RenderingServer.frame_post_draw
         var report_image := root.get_texture().get_image()
         check(report_image.save_png(report_capture) == OK, "Rendered completed report must save.")
+    await process_frame
+    check(view.summary_label.get_rect().end.y <= view.squad_buttons["UKR_S1"].position.y, "Completed summary must fit above the roster without covering the first squad.")
+    check(view.selection_label.get_rect().end.y <= view.posture_buttons["stand"].position.y, "Selected completed state must fit above posture controls.")
     var completed_id := str(completed_result["battle_id"])
     view._back()
     check(not is_instance_valid(game.tactical_view) and game.battle_payload.is_empty(), "Apply must close the report and unlock the campaign.")

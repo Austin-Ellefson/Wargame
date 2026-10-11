@@ -51,6 +51,7 @@ func _run() -> void:
     var old = Battle.new()
     old.setup(PAYLOAD)
     old.state["version"] = 6
+    if int(old.state["version"]) < 14: old.state.erase("postures")
     old.state.erase("morale_states")
     old.state.erase("rally_remaining")
     old.state.erase("fatigue")
