@@ -47,6 +47,11 @@ jobs:
             ${{ runner.temp }}/acquisition-shot-preview.png
             ${{ runner.temp }}/command-response-preview.png
             ${{ runner.temp }}/shared-report-preview.png
+            ${{ runner.temp }}/soldiers-stand-preview.png
+            ${{ runner.temp }}/soldiers-crouch-preview.png
+            ${{ runner.temp }}/soldiers-prone-preview.png
+            ${{ runner.temp }}/soldiers-shot-preview.png
+            ${{ runner.temp }}/soldiers-casualties-preview.png
             ${{ runner.temp }}/morale-withdrawal-preview.png
             ${{ runner.temp }}/morale-rally-preview.png
             ${{ runner.temp }}/queued-waypoints-preview.png

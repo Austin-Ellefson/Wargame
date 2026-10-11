@@ -5,6 +5,7 @@ signal checkpoint
 signal leave_battle
 signal commit_result(result: Dictionary)
 
+const Soldier = preload("res://scripts/soldier_visual.gd")
 const Battle = preload("res://scripts/tactical_battle.gd")
 var simulation: RefCounted
 var selected := "UKR_S1"
@@ -16,6 +17,7 @@ var camera_focus := Vector2(256, 256)
 var camera_yaw := 0.0
 var camera_pitch := atan2(520.0, 394.0)
 var camera_distance := Vector2(520, 394).length()
+var inspect_button: Button
 var reset_camera_button: Button
 var world: Node3D
 var actors := {}
@@ -212,6 +214,7 @@ func _build_world() -> void:
     world.add_child(camera)
     camera.look_at(Vector3(256, 0, 256))
     camera.current = true
+    _update_camera()
     var surface := SurfaceTool.new()
     surface.begin(Mesh.PRIMITIVE_TRIANGLES)
     for z in range(64):
@@ -253,6 +256,15 @@ func _build_world() -> void:
             tree.bottom_radius = 5
             tree.height = 14
             _mesh(tree, Vector3(point.x, Battle.terrain_height(point.x, point.y) + 7, point.y), _material(Color("355346")))
+    inspect_button = _button("INSPECT SQUAD", Rect2(594, 70, 170, 36), func():
+        var squad: Dictionary = simulation.squad_by_id(selected)
+        if not squad.is_empty():
+            camera_focus = Battle.position(squad)
+            camera_distance = 24.0
+            camera_pitch = deg_to_rad(32)
+            camera.fov = 52
+            _update_camera()
+            _refresh())
     var objective := CylinderMesh.new()
     objective.top_radius = 52
     objective.bottom_radius = 52
@@ -274,11 +286,13 @@ func _build_world() -> void:
         actors[squad["id"]] = actor
         var color := Color("459ddb") if squad["faction"] == "UKR" else Color("c56556")
         bodies[squad["id"]] = []
-        for offset in [Vector3(-4, 0, 2), Vector3(0, 0, -3), Vector3(4, 0, 2)]:
-            var body := CapsuleMesh.new()
-            body.radius = 1.8
-            body.height = 6
-            bodies[squad["id"]].append(_mesh(body, offset + Vector3(0, 3, 0), _material(color), actor))
+        for index in range(int(squad["initial"])):
+            var body := Soldier.new()
+            actor.add_child(body)
+            body.setup(color, simulation.weapon_role(squad["id"]) == "support" and index == 0)
+            body.rotation.y = PI if squad["faction"] == "RU" else 0.0
+            body.position = Vector3((index % 3 - 1) * 3.0, 0, (index / 3) * 3.0 - 3.0)
+            bodies[squad["id"]].append(body)
         var label := Label3D.new()
         label.font_size = 28
         label.pixel_size = 0.35
@@ -301,7 +315,7 @@ func _map_input(event: InputEvent) -> void:
             camera_yaw = wrapf(camera_yaw - event.relative.x * 0.008, -PI, PI)
             camera_pitch = clampf(camera_pitch + event.relative.y * 0.006, deg_to_rad(25), deg_to_rad(75))
         else:
-            var scale := 0.9 * tan(deg_to_rad(camera.fov * 0.5)) / tan(deg_to_rad(26))
+            var scale := 0.9 * (camera_distance / Vector2(520, 394).length()) * tan(deg_to_rad(camera.fov * 0.5)) / tan(deg_to_rad(26))
             var right := Vector2(cos(camera_yaw), -sin(camera_yaw))
             var forward := Vector2(-sin(camera_yaw), -cos(camera_yaw))
             camera_focus += (-right * event.relative.x + forward * event.relative.y) * scale
@@ -345,7 +359,7 @@ func _map_input(event: InputEvent) -> void:
             _refresh()
 
 func _update_camera() -> void:
-    var focus := Vector3(camera_focus.x, 0, camera_focus.y)
+    var focus := Vector3(camera_focus.x, Battle.terrain_height(camera_focus.x, camera_focus.y), camera_focus.y)
     var horizontal := camera_distance * cos(camera_pitch)
     camera.position = focus + Vector3(sin(camera_yaw) * horizontal, camera_distance * sin(camera_pitch), cos(camera_yaw) * horizontal)
     camera.look_at(focus)
@@ -355,7 +369,9 @@ func _reset_camera() -> void:
     camera_yaw = 0
     camera_pitch = atan2(520.0, 394.0)
     camera.fov = 52
+    camera_distance = Vector2(520, 394).length()
     _update_camera()
+    _refresh()
 
 func _ground_point(screen: Vector2) -> Vector2:
     var origin := camera.project_ray_origin(screen)
@@ -401,17 +417,18 @@ func _show_shot_events(events: Array) -> void:
             observed_shot_events.pop_front()
         var start := Vector2(float(event["from"][0]), float(event["from"][1]))
         var finish := Vector2(float(event["to"][0]), float(event["to"][1]))
-        var start_3d := Vector3(start.x, Battle.terrain_height(start.x, start.y) + 4.0 * simulation.posture_height(event["shooter"]), start.y)
-        var finish_3d := Vector3(finish.x, Battle.terrain_height(finish.x, finish.y) + 3.0 * simulation.posture_height(event["target"]), finish.y)
+        var start_3d := Vector3(start.x, Battle.terrain_height(start.x, start.y) + 0.75 * simulation.posture_height(event["shooter"]), start.y)
+        var finish_3d := Vector3(finish.x, Battle.terrain_height(finish.x, finish.y) + simulation.posture_height(event["target"]), finish.y)
         var cue := Node3D.new()
         world.add_child(cue)
         var flash := SphereMesh.new()
-        flash.radius = 3.0
-        flash.height = 6.0
+        var cue_radius := 0.18 if camera_distance < 80 else 3.0
+        flash.radius = cue_radius
+        flash.height = cue_radius * 2.0
         var support: bool = event.get("weapon_role", "rifle") == "support"
         _mesh(flash, start_3d, _shot_material(Color("ffcc8a") if support else Color("fff2a8")), cue)
         var trail := BoxMesh.new()
-        trail.size = Vector3(0.9, 0.9, start_3d.distance_to(finish_3d))
+        trail.size = Vector3(0.035 if camera_distance < 80 else 0.9, 0.035 if camera_distance < 80 else 0.9, start_3d.distance_to(finish_3d))
         var tracer := _mesh(trail, (start_3d + finish_3d) * 0.5, _shot_material(Color("ffb43b")), cue)
         tracer.look_at(finish_3d, Vector3.UP)
         shot_cues.append({"node": cue, "ttl": 0.42, "local_observers": event.get("local_observers", []).duplicate()})
@@ -655,13 +672,15 @@ func _refresh() -> void:
         var point: Vector2 = Battle.position(squad)
         actors[squad["id"]].position = Vector3(point.x, Battle.terrain_height(point.x, point.y), point.y)
         var value: String = simulation.posture(squad["id"])
+        var known_losses: bool = squad["faction"] == "UKR" or state["phase"] == "finished"
         for index in range(bodies[squad["id"]].size()):
-            var body: MeshInstance3D = bodies[squad["id"]][index]
-            var height_scale: float = {"stand": 1.0, "crouch": 0.6, "prone": 0.25}[value]
-            body.scale = Vector3(1, height_scale, 2.0 if value == "prone" else 1.0)
-            body.position.y = 3.0 * height_scale
+            var body: Node3D = bodies[squad["id"]][index]
+            body.pose(value, known_losses and index >= int(squad["alive"]))
+            body.position.y = Battle.terrain_height(point.x + body.position.x, point.y + body.position.z) - Battle.terrain_height(point.x, point.y)
         var observed: bool = state["phase"] == "finished" or _player_observes(squad)
-        actors[squad["id"]].visible = int(squad["alive"]) > 0 and observed
+        actors[squad["id"]].visible = observed and (int(squad["alive"]) > 0 or known_losses)
+        labels[squad["id"]].position.y = 3.2 if camera_distance < 80 else 14.0
+        labels[squad["id"]].pixel_size = 0.035 if camera_distance < 80 else 0.35
         labels[squad["id"]].text = "%s %dP %dR SUP%d%s" % [str(squad["id"]).replace("_", " "), squad["alive"], squad["ammo"], int(float(squad["suppression"]) * 100), " *" if squad["id"] == selected else ""]
         if simulation.morale_state(squad["id"]) == "broken":
             labels[squad["id"]].text += "\nBROKEN"

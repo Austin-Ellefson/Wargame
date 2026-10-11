@@ -22,7 +22,7 @@ def main():
     logs.mkdir(parents=True, exist_ok=True)
     checks = [("editor", ["--headless", "--editor", "--quit"])]
     for name in ["campaign_smoke", "campaign_save_smoke", "tactical_smoke",
-                 "repeatable_loop_smoke", "suppression_smoke", "visibility_smoke", "contact_memory_smoke", "movement_orders_smoke", "fire_control_smoke", "target_orders_smoke", "timed_pause_smoke", "opponent_reaction_smoke", "cover_routing_smoke", "covered_goals_smoke", "fatigue_smoke", "morale_smoke", "posture_smoke", "weapon_roles_smoke", "acquisition_smoke", "command_response_smoke", "shared_reports_smoke", "tactical_view_smoke"]:
+                 "repeatable_loop_smoke", "suppression_smoke", "visibility_smoke", "contact_memory_smoke", "movement_orders_smoke", "fire_control_smoke", "target_orders_smoke", "timed_pause_smoke", "opponent_reaction_smoke", "cover_routing_smoke", "covered_goals_smoke", "fatigue_smoke", "morale_smoke", "posture_smoke", "weapon_roles_smoke", "acquisition_smoke", "command_response_smoke", "shared_reports_smoke", "soldier_visual_smoke", "tactical_view_smoke"]:
         checks.append((name, ["--headless", "--script", f"res://tests/{name}.gd"]))
     if args.render_check:
         if args.capture:
@@ -47,6 +47,10 @@ def main():
                 command.append("--")
             command.append(f"--path-capture={args.path_capture}")
         checks.append(("render", command))
+        soldier_command = ["--rendering-method", "gl_compatibility", "--audio-driver", "Dummy", "--script", "res://tests/soldier_visual_smoke.gd"]
+        if args.capture:
+            soldier_command.extend(["--", f"--capture={args.capture}"])
+        checks.append(("soldier_render", soldier_command))
     for name, flags in checks:
         result = subprocess.run([args.godot, "--path", str(root), *flags], cwd=root,
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
