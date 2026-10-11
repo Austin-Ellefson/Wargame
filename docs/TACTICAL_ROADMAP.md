@@ -24,11 +24,12 @@ and separated covered capture positions. Fatigue and morale-driven withdrawal/ra
 
 ## Current presentation priority (user requested 2026-10-11)
 
-Individual soldier figures are now the focused task on codex/individual-soldier-visuals,
-based on tested delayed-contact-reports PR #30. First deliver low-poly procedural
-figures, articulated static postures, known friendly casualties and inspection camera.
-Then add movement/firing animations driven by real movement/shots without consuming
-simulation RNG. Observer-level contact memory remains queued after this visual work.
+Individual low-poly figures, static postures, known casualty slots and an inspection
+camera are implemented on tested individual-soldier-visuals PR #31. Actual observed
+motion now drives walking/crouched stride/prone crawl, and witnessed shots drive
+snapshot aim/muzzle/recoil on tested soldier-motion-fire-animation PR #32. Playback
+cycles 4/8/1x. These are display rigs, not individual AI or interpolated route motion.
+Observer-level contact memory with separate local/shared timestamps is next.
 
 ## Larger milestones after infantry is stable
 

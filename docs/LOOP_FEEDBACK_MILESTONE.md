@@ -21,8 +21,8 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/individual-soldier-visuals / PR #31
-- Post-milestone next task: actual movement/firing animations; observer memory queued
+- Latest validated post-milestone descendant: codex/soldier-motion-fire-animation / PR #32
+- Post-milestone next task: observer-level contact memory
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -814,3 +814,48 @@ is delivered as the scheduled task result in ChatGPT.
 - New real-motion/wait/pinned/shot/selection regression; combined final tests/CI
   and actual paired stride/recoil/report render inspection pending.
 - Next: observer-level contact memory; retain ready figures branch and milestone.
+
+## codex/soldier-motion-fire-animation — validated 2026-10-11
+
+- Ready for review: draft PR #32; explicit tested base individual-soldier-visuals
+  PR #31 at ba78cd1c922d36576d29ad85c38b68f88bdefe60. No merges/force pushes.
+- Tested animation code: 1933013080685e84d539f9461dbe9ff3e9a2f267.
+- Combined successful CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38172678327
+  (verify.yml; tactical-validation artifact 11714971044). Prior code runs
+  38172340607/38172473351 succeeded before casualty/slow-frame refinements.
+- All 25 local Godot checks, 26 terrain tests and diff check passed together.
+  CI includes actual original UI, soldier and animation render checks.
+- Actual observed displacement drives walk/crouched stride/prone crawl and travel
+  facing. Real witnessed shot snapshots orient figures and trigger decorative
+  per-rifle flash/recoil for 0.42 wall seconds. 4/8/1x playback cycles through actual
+  GUI input; planning clicks never advance simulation. No queued-route idle gait.
+- Inspected actual 00:06 paired walking/crouched/crawling frames. Pixel differences
+  localized to figure regions: standing3124, crouched2311, prone1843 changed pixels
+  between phases (same authoritative state). Actual recoil captures at 1x/4x/8x
+  show correct playback label, rifle -9R, ammo342/333/324 respectively, shot direction
+  and individual muzzle cues at execution00:06/00:09/00:12. Finished06:00 report
+  remains readable: blue36/6/30, red36/5/31, objectives89/159s, campaign consequences.
+- Tests prove actual command-response idle, executed movement, pinned stop with
+  retained route/rest geometry, known casualty rig stillness, real shot lifetime,
+  hidden firing/selected witness clearance, no replay on reselection, newly acquired
+  enemy volley and discarded hidden motion history. A slow actual 4x frame executes
+  four ticks and preserves fresh flashes plus exact outcome against a twin.
+- Full real-combat regression advances animation at all speeds while comparing
+  authoritative state every tick and completed results to an unanimated twin.
+  Existing two-battle disk restart, locks, bounded once-only loss/result and failed
+  save rollback regressions remain passing. Saved contracts remain v18/v2/v1;
+  animation caches/phase/witnesses are transient and reset on reopening.
+- Fixed initial exact-east path assertion, new enemy cue initialization, casualty
+  rig turning and fresh cue expiry on slow frames. Capture speed labels now follow
+  actual speed-button binding; latest volley feedback included. No script errors
+  in successful checks; existing nonfatal driver/anchor/input warnings remain.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/soldier-motion-fire-animation
+  Godot4.5.1: import project.godot/F5/integrated demo; INSPECT SQUAD, planning
+  STAND/CROUCH/PRONE + right-click QUICK/MOVE, then execute. Watch wait before
+  motion; use playback1x and acquire contact for recoil. RESET CAMERA restores overview.
+- Limits: simple procedural animation, no individual AI/pathfinding/collision/aim
+  inventory/reloads or smooth center interpolation. Fixed display/loss slots may
+  overlap obstacles and follow squad centers; they are not individual corpses or
+  authoritative shooters. Nominal enemy figures preserve hidden survivor counts.
+  Not Windows/performance/realistic-fidelity validation. Frozen milestone preserved.
+- Next focused task: observer-level contact memory with distinct local/shared times.
