@@ -71,6 +71,8 @@ func _run() -> void:
         view._show_shot_events(battle.consume_events())
         view._show_combat_changes(status_before)
         view._refresh()
+        view.speed = [1.0,4.0,8.0][tick % 3]
+        view._animate_soldiers(0.08)
         check(same(battle.state,twin.state), "Rendered soldier battle must remain exactly equal to an unrendered deterministic twin.")
         var alive: int = battle.squad_by_id("UKR_S1")["alive"]
         var lost := 0

@@ -568,3 +568,21 @@ animations are the next presentation increment; this pass provides static poses.
 No downloaded art or external asset dependency. Tactical v18/campaign v2/result v1
 are unchanged; presentation leaves authoritative state and RNG untouched. Linux
 render checks do not prove Windows performance or realistic fidelity.
+
+## Soldier motion and firing animation
+
+The soldier-motion-fire-animation descendant adds procedural walking/crouched
+strides/prone crawling and travel facing only after an observed squad actually
+moves. A queued route or response/pause/pinning halt does not earn a gait.
+Squad centers still advance in simulation ticks; this pass animates limbs rather
+than interpolating route positions or adding individual formation pathfinding.
+
+Actual visible shot events supply captured aim direction, rifle/arm recoil and
+individual decorative muzzle flashes. Cues last 0.42 wall seconds at 1x/4x/8x,
+so faster playback does not shorten them. All nominal enemy figures may animate
+one witnessed squad volley; this does not identify individual shooters/weapons
+or disclose surviving enemy personnel. Selected-local visibility/witness rules
+still apply; changing observers clears old firing, and hidden movement history
+is discarded. Casualty slots never animate/fire. Animations reset on reopening
+and are outside saved state, simulation RNG and outcomes. Tactical v18/campaign
+v2/result v1 unchanged. No Windows performance or realistic fidelity validation.

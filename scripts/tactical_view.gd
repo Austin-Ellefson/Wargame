@@ -21,6 +21,7 @@ var inspect_button: Button
 var reset_camera_button: Button
 var world: Node3D
 var actors := {}
+var motions := {}
 var labels := {}
 var markers := {}
 var contact_markers := {}
@@ -171,7 +172,7 @@ func _build_interface() -> void:
     pause_button.tooltip_text = "Cycle 0/15/30/60 seconds. Delays movement only; firing continues."
     execute_button = _button("EXECUTE 60 SECONDS", Rect2(986, 540, 248, 32), _execute)
     speed_button = _button("PLAYBACK 4x", Rect2(986, 578, 248, 28), func():
-        speed = 8.0 if speed == 4.0 else 4.0
+        speed = {1.0: 4.0, 4.0: 8.0, 8.0: 1.0}[speed]
         speed_button.text = "PLAYBACK %dx" % int(speed))
     back_button = _button("SAVE & CAMPAIGN", Rect2(986, 614, 248, 30), _back)
     report_label = _label("", Vector2(986, 650), 12, 244)
@@ -392,7 +393,9 @@ func _execute() -> void:
 
 func _process(delta: float) -> void:
     _age_shot_cues(delta)
-    if simulation == null or simulation.state["phase"] != "execution":
+    if simulation == null: return
+    if simulation.state["phase"] != "execution":
+        _animate_soldiers(delta)
         return
     accumulator += delta * speed
     while accumulator >= 1.0 and simulation.state["phase"] == "execution":
@@ -402,6 +405,7 @@ func _process(delta: float) -> void:
         _show_combat_changes(before)
         accumulator -= 1.0
     _refresh()
+    _animate_soldiers(delta)
     if simulation.state["phase"] != "execution":
         checkpoint.emit()
 
@@ -419,6 +423,11 @@ func _show_shot_events(events: Array) -> void:
         var finish := Vector2(float(event["to"][0]), float(event["to"][1]))
         var start_3d := Vector3(start.x, Battle.terrain_height(start.x, start.y) + 0.75 * simulation.posture_height(event["shooter"]), start.y)
         var finish_3d := Vector3(finish.x, Battle.terrain_height(finish.x, finish.y) + simulation.posture_height(event["target"]), finish.y)
+        var heading := atan2(-(finish.x - start.x), -(finish.y - start.y))
+        for body in bodies.get(event["shooter"], []):
+            body.rotation.y = heading
+            body.fire(event.get("local_observers", []))
+            body.animate(0.0, false, 0.0)
         var cue := Node3D.new()
         world.add_child(cue)
         var flash := SphereMesh.new()
@@ -432,6 +441,43 @@ func _show_shot_events(events: Array) -> void:
         var tracer := _mesh(trail, (start_3d + finish_3d) * 0.5, _shot_material(Color("ffb43b")), cue)
         tracer.look_at(finish_3d, Vector3.UP)
         shot_cues.append({"node": cue, "ttl": 0.42, "local_observers": event.get("local_observers", []).duplicate()})
+
+func _record_motion(squad: Dictionary, observed: bool) -> void:
+    var id: String = squad["id"]
+    if not observed:
+        motions.erase(id)
+        for body in bodies[id]: body.clear_shot()
+        return
+    var point: Vector2 = Battle.position(squad)
+    var elapsed: int = simulation.state["elapsed"]
+    var previous: Dictionary = motions.get(id, {})
+    if previous.is_empty() or elapsed < int(previous["elapsed"]):
+        if not previous.is_empty():
+            for body in bodies[id]: body.clear_shot()
+        motions[id] = {"point": point, "elapsed": elapsed, "moving": false, "phase": 0.0, "rate": 0.0, "heading": 0.0 if squad["faction"] == "UKR" else PI}
+    elif elapsed != int(previous["elapsed"]):
+        var travel: Vector2 = point - previous["point"]
+        previous["moving"] = travel.length() > 0.0001
+        previous["rate"] = travel.length() / maxi(1, elapsed - int(previous["elapsed"]))
+        if previous["moving"]: previous["heading"] = atan2(-travel.x, -travel.y)
+        previous["point"] = point
+        previous["elapsed"] = elapsed
+    if simulation.state["phase"] != "execution" or int(squad["alive"]) <= 0:
+        motions[id]["moving"] = false
+
+func _animate_soldiers(delta: float) -> void:
+    for squad in simulation.state["squads"]:
+        var id: String = squad["id"]
+        var motion: Dictionary = motions.get(id, {})
+        var moving: bool = not motion.is_empty() and motion["moving"] and simulation.state["phase"] == "execution" and actors[id].visible
+        if moving: motion["phase"] += delta * speed * float(motion["rate"]) * 2.5
+        for index in range(bodies[id].size()):
+            var body: Node3D = bodies[id][index]
+            if int(simulation.state["version"]) >= 18 and body.recoil_remaining > 0 and selected not in body.shot_witnesses:
+                body.clear_shot()
+            if not actors[id].visible: body.clear_shot()
+            if moving and body.recoil_remaining <= 0: body.rotation.y = motion["heading"]
+            body.animate(delta, moving, float(motion.get("phase", 0.0)) + index * 0.7)
 
 func _status_snapshot() -> Dictionary:
     var snapshot := {}
@@ -672,12 +718,13 @@ func _refresh() -> void:
         var point: Vector2 = Battle.position(squad)
         actors[squad["id"]].position = Vector3(point.x, Battle.terrain_height(point.x, point.y), point.y)
         var value: String = simulation.posture(squad["id"])
+        var observed: bool = state["phase"] == "finished" or _player_observes(squad)
+        _record_motion(squad, observed)
         var known_losses: bool = squad["faction"] == "UKR" or state["phase"] == "finished"
         for index in range(bodies[squad["id"]].size()):
             var body: Node3D = bodies[squad["id"]][index]
             body.pose(value, known_losses and index >= int(squad["alive"]))
             body.position.y = Battle.terrain_height(point.x + body.position.x, point.y + body.position.z) - Battle.terrain_height(point.x, point.y)
-        var observed: bool = state["phase"] == "finished" or _player_observes(squad)
         actors[squad["id"]].visible = observed and (int(squad["alive"]) > 0 or known_losses)
         labels[squad["id"]].position.y = 3.2 if camera_distance < 80 else 14.0
         labels[squad["id"]].pixel_size = 0.035 if camera_distance < 80 else 0.35
@@ -693,3 +740,5 @@ func _refresh() -> void:
         if not path.is_empty():
             var target := Vector2(path.back()[0], path.back()[1])
             markers[squad["id"]].position = Vector3(target.x, Battle.terrain_height(target.x, target.y) + 0.7, target.y)
+
+    _animate_soldiers(0.0)

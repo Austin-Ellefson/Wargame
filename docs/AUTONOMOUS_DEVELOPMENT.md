@@ -487,3 +487,19 @@ This setup change contains instructions only; these missing tools must be addres
   or realistic-fidelity validation. Frozen ready milestone download preserved.
 - Next focused task: movement and firing animations tied to actual executed
   motion/shot events, outside saved state/RNG. Observer contact memory remains queued.
+
+## Soldier motion/fire animation — in validation 2026-10-11
+
+- codex/soldier-motion-fire-animation, explicit tested individual-soldier-visuals
+  PR #31 base ba78cd1c922d36576d29ad85c38b68f88bdefe60 (CI 38170726386 success).
+- Walking/crouched stride/prone crawl derive from actual observed displacement,
+  not queued routes. Visible shot snapshots orient rigs and trigger 0.42-second
+  wall-time recoil/muzzle flashes at 1/4/8x; selection/visibility clears witnesses.
+- No simulation/save changes or simulation RNG. Transient poses reset on reopen.
+  Hidden motion history discarded; live enemy nominal counts preserved.
+- Initial exact-east assertion corrected to actual terrain/grid path direction;
+  fixed newly acquired enemy shot initialization that could clear its real cue.
+  Full twin-outcome test now advances animation at all playback speeds.
+- New real-motion/wait/pinned/shot/selection regression; combined final tests/CI
+  and actual paired stride/recoil/report render inspection pending.
+- Next: observer-level contact memory; retain ready figures branch and milestone.
