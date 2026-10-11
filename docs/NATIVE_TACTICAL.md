@@ -6,7 +6,7 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/individual-soldier-visuals` descendant includes route previews,
+The newer `codex/soldier-motion-fire-animation` descendant includes route previews,
 camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
 queued waypoints, timed pauses, local-contact reactions and cover-weighted red routes. The milestone
 branch above remains frozen. Fresh battles use tactical rules v18, including selected-squad visibility and delayed shared reports. See the five-step
@@ -28,7 +28,8 @@ batch test guide in [FIVE_STEP_TACTICAL_PROGRESS.md](FIVE_STEP_TACTICAL_PROGRESS
 4. Execute a 60-second interval. Orders freeze, and both forces move/fire in
    simultaneous one-second ticks. The red opponent advances toward the objective.
    Playback at 4x takes approximately 15 real seconds per complete interval; 8x
-   changes presentation speed without changing simulated results. Each actual
+   takes about 7.5 seconds; 1x takes 60 seconds. The button cycles 4x/8x/1x
+   without changing simulated results. Each actual
    automatic attack flashes briefly at the firing squad and draws an orange shot
    cue toward its target. A cue means rounds were fired, not that they hit. Unit
    labels and the blue roster continuously show personnel, rounds and suppression.
@@ -91,13 +92,15 @@ presentation events: they are not added to the save schema, do not consume rando
 numbers, and cannot change the authoritative result or deterministic restart.
 The live combat panel is also presentation-only and compares state immediately
 before and after an authoritative tick. Casualties are listed first so personnel
-losses remain visible even when several squads fire together. Dead squads vanish,
+losses remain visible even when several squads fire together. In the preserved
+milestone dead squads vanish; newer soldier descendants show known loss slots.
 their roster button and hold control disable, and both movement and hold orders
 are rejected by the simulation.
 
-Legacy v1/v2 battles retain full enemy visibility. This first model has no detailed ballistics,
-weapon classes, armor, animations, multi-contact battles or realistic
-military-model validation. Those are separate, testable improvements. Existing
+Legacy v1/v2 battles retain full enemy visibility. The preserved milestone model
+has no detailed ballistics, weapon classes, armor or soldier animations. Later
+descendants add roles/animations below; none establish realistic military-model
+validation. Those are separate, testable improvements. Existing
 formation snapshots and legacy exports remain available.
 
 ## Current spotting in tactical rules v3
@@ -568,3 +571,21 @@ animations are the next presentation increment; this pass provides static poses.
 No downloaded art or external asset dependency. Tactical v18/campaign v2/result v1
 are unchanged; presentation leaves authoritative state and RNG untouched. Linux
 render checks do not prove Windows performance or realistic fidelity.
+
+## Soldier motion and firing animation
+
+The soldier-motion-fire-animation descendant adds procedural walking/crouched
+strides/prone crawling and travel facing only after an observed squad actually
+moves. A queued route or response/pause/pinning halt does not earn a gait.
+Squad centers still advance in simulation ticks; this pass animates limbs rather
+than interpolating route positions or adding individual formation pathfinding.
+
+Actual visible shot events supply captured aim direction, rifle/arm recoil and
+individual decorative muzzle flashes. Cues last 0.42 wall seconds at 1x/4x/8x,
+so faster playback does not shorten them. All nominal enemy figures may animate
+one witnessed squad volley; this does not identify individual shooters/weapons
+or disclose surviving enemy personnel. Selected-local visibility/witness rules
+still apply; changing observers clears old firing, and hidden movement history
+is discarded. Casualty slots never animate/fire. Animations reset on reopening
+and are outside saved state, simulation RNG and outcomes. Tactical v18/campaign
+v2/result v1 unchanged. No Windows performance or realistic fidelity validation.
