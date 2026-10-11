@@ -21,8 +21,8 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/spotting-acquisition / PR #28
-- Post-milestone next task: command/communication limits
+- Latest validated post-milestone descendant: codex/movement-command-response / PR #29
+- Post-milestone next task: delayed shared-contact reports
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -659,3 +659,37 @@ is delivered as the scheduled task result in ChatGPT.
   firing deaths needed timer cleanup before save; actual shot-death regression added.
 - Full candidate suite/CI/render review pending; frozen ready downloads preserved.
 - Next: delayed shared contact reports with local firing restrictions preserved.
+
+
+## codex/movement-command-response — validated 2026-10-11
+
+- Ready for review, draft PR #29, explicit tested base codex/spotting-acquisition
+  PR #28 at 71b641941218eba46f76cb69ba53b1883d824818 (CI 38167670786 success).
+- Tested gameplay 7ccaaa8d40c0e51d5ee94f35647bdda8e70715f3. All 22 local
+  Godot checks, 26 terrain tests and diff check passed. Combined CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/38168246861 succeeded.
+- Inspected artifact 11712579466: actual execution at 00:03 shows MOVE IN 2s
+  together with RIFLE -9R and actual shot cue. Completed report at 06:00 shows
+  both forces, bounded personnel losses, objective control and withdrawal.
+  Delay capture uses a close-contact/no-ammo checkpoint except the actual rifle
+  volley; subsequent combat/report is fully simulated. Nonfatal renderer/anchor/
+  input-harness warnings remain; no script errors.
+- V17 strict response map, replacement/new routes wait five executed seconds on
+  both sides. Append retains, pause counts concurrently, hold/death clear and
+  automatic withdrawal bypasses. Fire/local acquisition continue; no extra RNG.
+- Tests prove actual delayed movement/fire, query/planning purity, failed commands,
+  replacement/append/hold, concurrent pause, withdrawal/death cleanup, malformed
+  save maps, V16 compatibility and full actual partial-response disk outcomes.
+  Actual firing death clears response before checkpoint validation. HUNT halt
+  label priority corrected after initial UI assertion failure. The two-contact
+  campaign loop, history/losses/restart/retreat/unlock/stale/duplicate checks pass.
+- Older focused fixtures preserve old versions explicitly; fresh campaign, UI,
+  repeat-loop and response tests exercise V17. Frozen builds, V1–V16 rules/fields,
+  campaign/result/export/GIS/Windows launchers preserved. Publishing briefly hit
+  an exec transport disconnect; retry succeeded without duplicate remote writes.
+- Limits: fixed movement-response abstraction only, immediate HOLD/fire/posture,
+  no leader/radio/delayed shared-contact model. No Windows or fidelity validation.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/movement-command-response
+  Open project.godot in Godot 4.5.1/F5/fresh integrated demo for V17. Existing
+  pending battles retain their rules. Next: delayed shared-contact reports with
+  local firing restrictions and exact disk restart preserved.
