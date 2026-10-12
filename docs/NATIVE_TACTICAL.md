@@ -6,10 +6,10 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/ground-area-suppression` descendant includes route previews,
+The newer `codex/opponent-duck-under-fire` descendant includes route previews,
 camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
 queued waypoints, timed pauses, local-contact reactions and cover-weighted red routes. The milestone
-branch above remains frozen. Fresh battles use tactical rules v21, including selected-squad visibility and delayed shared reports. See the five-step
+branch above remains frozen. Fresh battles use tactical rules v22, including selected-squad visibility and delayed shared reports. See the five-step
 batch test guide in [FIVE_STEP_TACTICAL_PROGRESS.md](FIVE_STEP_TACTICAL_PROGRESS.md).
 
 ## Complete game loop
@@ -669,3 +669,23 @@ used still contributes to the existing campaign supply result. Saved orders and
 full outcomes resume exactly. Start a fresh integrated demo for v21; old battles
 retain their rules. This is abstract suppression, without ballistics, blast,
 individual aim/traverse, friendly fire or validated Combat Mission/Windows fidelity.
+
+
+## Opponent ducking under fire (v22)
+
+Red infantry reacts to its own suppression during execution: standing squads
+crouch at30%, then go prone at55%. They keep the lower posture until pressure
+fades below15%, so they do not toggle between poses every volley. This occurs
+after the normal per-second recovery and before movement/spotting/fire. Existing
+posture reductions to pace, exposure and observation range apply. Automatic
+morale withdrawal retains its standing/QUICK priority; dead units do not react.
+Blue posture stays under player control. Red keeps existing routes rather than
+seeking new cover in this increment.
+
+The reaction uses no attacker position or reported contact. Concealed area fire
+can make red duck while its shooter stays unidentified. Enemy figures reveal the
+pose only while your selected squad actually acquires them; exact live enemy
+pressure and losses stay hidden. Save/restart retains the current posture and
+pressure, with identical subsequent ticks/results. Start a fresh integrated demo
+for v22; old pending battles keep their rules. Prototype thresholds have no
+measured Combat Mission fidelity or Windows validation.

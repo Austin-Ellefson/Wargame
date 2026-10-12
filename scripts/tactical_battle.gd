@@ -51,7 +51,7 @@ static func visible(a: Vector2, b: Vector2, observer_height: float = 1.6, target
     return true
 
 func setup(payload: Dictionary) -> void:
-    state = {"version": 21, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
+    state = {"version": 22, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
     state["contacts"] = {"UKR": {}, "RU": {}}
@@ -209,6 +209,21 @@ func _update_morale(squad: Dictionary) -> void:
         _retreat_route(squad)
     else:
         state["morale_states"][id] = "shaken" if heavy_losses or int(squad["morale"]) < 60 or suppression >= 0.5 else "steady"
+
+# Red reacts to its own received pressure only; no attacker/contact lookup.
+# Existing saved posture supplies hysteresis. Planning and render queries do
+# not run this behavior, and automatic morale withdrawal keeps priority.
+func _opponent_duck(squad: Dictionary) -> void:
+    if int(state["version"]) < 22 or squad["faction"] != "RU" or int(squad["alive"]) <= 0 or morale_state(squad["id"]) == "broken": return
+    # Compare fixed precision to avoid JSON/binary drift at decimal thresholds.
+    var pressure := roundi(float(squad["suppression"]) * 1000000.0)
+    var id: String = squad["id"]
+    if pressure >= 550000:
+        state["postures"][id] = "prone"
+    elif pressure >= 300000 and posture(id) == "stand":
+        state["postures"][id] = "crouch"
+    elif pressure < 150000:
+        state["postures"][id] = "stand"
 
 func is_pinned(squad: Dictionary) -> bool:
     # V1 engagements retain their original rules when resumed. V2 pinning is
@@ -638,6 +653,7 @@ func step() -> void:
     for squad in state["squads"]:
         squad["suppression"] = maxf(0, float(squad["suppression"]) - 0.035)
         _update_morale(squad)
+        _opponent_duck(squad)
         if int(state["version"]) >= 17 and (not state["orders"].has(squad["id"]) or int(squad["alive"]) <= 0): state["command_remaining"][squad["id"]] = 0
         var responding := command_delay(squad["id"]) > 0
         if responding: state["command_remaining"][squad["id"]] = command_delay(squad["id"]) - 1
@@ -802,7 +818,7 @@ func result() -> Dictionary:
         "elapsed": state["elapsed"], "objective": state["objective"].duplicate(true), "forces": forces}
 
 static func validate(saved: Variant, payload: Dictionary) -> bool:
-    if not saved is Dictionary or not _integer(saved.get("version"), 1, 21):
+    if not saved is Dictionary or not _integer(saved.get("version"), 1, 22):
         return false
     var version := int(saved["version"])
     var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12) + 2 * int(version >= 13) + int(version >= 14) + int(version >= 15) + int(version >= 16) + int(version >= 17) + 2 * int(version >= 18) + int(version >= 19) + int(version >= 20) + int(version >= 21)
