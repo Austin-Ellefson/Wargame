@@ -12,6 +12,7 @@ func same(a: Variant,b: Variant) -> bool: return JSON.parse_string(JSON.stringif
 func fixture(id: String = "UKR_S1") -> RefCounted:
     var sim = Battle.new()
     sim.setup(PAYLOAD)
+    sim.state["version"] = 21
     for squad in sim.state["squads"]:
         squad["ammo"] = 0
         if squad["id"] not in [id,"RU_S1","RU_S2"]: squad["alive"] = 0

@@ -363,3 +363,24 @@ actual campaign disk restart restores orders, rounds, suppression, every tick/ev
 and completed outcomes. No-area v21 reproduces all v20 authoritative fields and
 results except its new empty map. Campaign v2/result v1, battle locks, once-only
 bounded losses, save rollback, export/GIS and optional Windows launchers unchanged.
+
+
+## Opponent duck response (tactical v22)
+
+V22 keeps the complete v21 field shape, including saved postures. Only fresh
+engagements use the new red behavior; v1–v21 retain their original posture rules.
+After0.035 per-second suppression recovery and morale handling, living nonbroken
+red squads crouch from standing at30% pressure and go prone at55%. Existing lower
+posture persists until pressure falls below15%, then they stand. Comparisons
+round to millionths to avoid JSON/binary threshold drift; no additional saved
+timer or random samples. Blue manual posture, dead units and standing automatic
+withdrawal remain unchanged. Posture's existing movement/exposure/sight tradeoffs
+apply to red. Planning and rendering do not advance reaction/recovery.
+
+No attacker/contact/report query enters this decision. Received suppression can
+change posture even when the source remains unidentified; it grants no sight or
+location. Current posture and suppression fully restore hysteresis from disk.
+Full real-fire campaign continuation compares every state/event and completed
+result. Quiet v22 battles reproduce all v21 fields/results except version.
+Campaign v2/result v1, locks, bounded once-only losses, save-write rollback,
+export/GIS fields and optional Windows launchers remain unchanged.

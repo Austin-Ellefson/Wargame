@@ -753,3 +753,22 @@ This setup change contains instructions only; these missing tools must be addres
   dispersion/ballistics/individual aim or Windows/Combat Mission fidelity proof.
 - Next focused task: opponent response to received suppression (duck/seek nearby
   cover) using own pressure/local terrain rather than hidden attacker coordinates.
+
+
+## Opponent duck response — in validation 2026-10-11 (America/Chicago)
+
+- Branch codex/opponent-duck-under-fire, tested PR #35 base
+  2a13dc407a268480718a0a8af20cab6bde8233af; final CI38186379868 success.
+- v22 red-only crouch/prone/recover from own suppression after tick recovery and
+  morale, before movement/acquisition. Existing posture supplies hysteresis; no
+  extra saved fields/RNG/contact lookup. Blue/dead/withdrawal priority preserved.
+- Focused tests pass real support fire from a concealed source, both postures,
+  quiet recovery, threshold/hysteresis/priority, old v21 rules/quiet full outcomes,
+  every-tick actual disk continuation and render-vs-twin purity. Area fixture is
+  explicitly pinned to v21 to keep previous version's regression meaningful.
+- Initial55% float edge test exposed binary subtraction drift; fixed by derived
+  millionth-precision comparisons, without rewriting suppression or old rules.
+- Combined final checks, draft PR/CI and actual acquired crouch/prone shot captures
+  pending; do not promote yet. Windows/fidelity unverified; frozen build preserved.
+- Next focused task: nearby-cover response to sustained pressure, based on own
+  suppression/local terrain without hidden attacker coordinates; keep scope small.
