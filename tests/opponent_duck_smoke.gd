@@ -177,6 +177,7 @@ func _run() -> void:
         if tick in [7,11]:
             var expected := "crouch" if tick == 7 else "prone"
             check(visible.posture("RU_S1") == expected and view.actors["RU_S1"].visible and view.bodies["RU_S1"][0].current_pose == expected and not view.shot_cues.is_empty(),"Actual acquired enemy duck geometry accompanies real shots.")
+            check(is_equal_approx(view.area_preview.get_child(1).pixel_size,0.035),"Close-zoom area order label uses readable scale while acquired enemy pose remains visible.")
             await capture_frame("opponent-duck-"+expected+"-preview")
     view.queue_free()
     await process_frame

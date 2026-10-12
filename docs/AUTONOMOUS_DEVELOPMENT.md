@@ -772,3 +772,7 @@ This setup change contains instructions only; these missing tools must be addres
   pending; do not promote yet. Windows/fidelity unverified; frozen build preserved.
 - Next focused task: nearby-cover response to sustained pressure, based on own
   suppression/local terrain without hidden attacker coordinates; keep scope small.
+
+- Initial CI38189250156 passed; artifact11720761195 inspected: actual crouch00:08,
+  prone00:12 and completed report. Found oversized close-zoom AREA FIRE label;
+  added adaptive scale/height and pure rendered regression, pending final rerender.

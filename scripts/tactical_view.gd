@@ -645,9 +645,9 @@ func _refresh_area_preview() -> void:
     var label := Label3D.new()
     label.text = "AREA FIRE"
     label.font_size = 32
-    label.pixel_size = 0.35
+    label.pixel_size = 0.035 if camera_distance < 80 else 0.35
     label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-    label.position = Vector3(point.x,Battle.terrain_height(point.x,point.y)+14,point.y)
+    label.position = Vector3(point.x,Battle.terrain_height(point.x,point.y)+(5.0 if camera_distance < 80 else 14.0),point.y)
     label.modulate = Color("ffc687")
     area_preview.add_child(label)
 
