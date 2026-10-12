@@ -254,6 +254,7 @@ func _run() -> void:
     view.camera_focus = Vector2(326,214)
     view.camera_distance = 50
     view.camera_pitch = deg_to_rad(40)
+    view.camera_yaw = deg_to_rad(75) # Observe the wooded edge from the open side.
     view._update_camera()
     start(visible)
     var unrendered = Battle.new()
