@@ -776,3 +776,48 @@ This setup change contains instructions only; these missing tools must be addres
 - Initial CI38189250156 passed; artifact11720761195 inspected: actual crouch00:08,
   prone00:12 and completed report. Found oversized close-zoom AREA FIRE label;
   added adaptive scale/height and pure rendered regression, pending final rerender.
+
+
+## Opponent duck response — validated 2026-10-11 (America/Chicago)
+
+- Ready for review: draft PR #36, codex/opponent-duck-under-fire; explicit tested
+  PR #35 base2a13dc407a268480718a0a8af20cab6bde8233af. Main remains starter
+  README; no merges/force pushes. Frozen milestone and earlier builds preserved.
+- Gameplay fcf523383b9e526d22976b3d40bdd73efeef88f5; tested refinement
+  2e98be3b1765ddc5d6d81184d6cfd18d405c12a4. All29 local Godot checks, 26 terrain tests and
+  diff check passed. Missing Godot/pytest/GIS dependencies were restored and run.
+- Initial CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38189250156
+  passed; artifact11720761195 inspected. Final combined CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/38189516298 passed
+  logic/terrain plus six rendered scripts; artifact11721271483 inspected.
+- Actual acquired nine-figure enemy crouch00:08 and prone00:12 accompany real
+  support -18R shot cues, blue288/252 rounds. No exact enemy live suppression/loss
+  labels are disclosed. Fixed an oversized close AREA FIRE label discovered in
+  initial capture; final adaptive scale/height separates it from ENEMY CONTACT.
+- Completed06:00 report remains readable: UKR wins, blue36/6/30 and red36/12/24,
+  objective80/15s, bounded losses/supply/morale and red retreat/unlock consequences.
+  V22's existing posture tradeoffs intentionally change combat/objective outcomes;
+  prototype balance/fidelity remains unvalidated, not inferred from these figures.
+- V22 uses own recovered suppression: red standing crouches at30%, prone at55%;
+  retains lower posture until below15%, then stands. No attacker/contact lookup,
+  route replacement, extra state field or RNG. Blue/manual posture, dead units
+  and standing morale withdrawal retain priority. Existing movement/exposure/sight
+  tradeoffs apply. Comparisons use derived millionths for stable decimal thresholds.
+- New regression proves actual support fire from concealed woods triggers both
+  postures/recovery while the source stays unidentified; threshold/hysteresis,
+  query/planning purity, priorities, v21 compatibility/complete quiet parity,
+  every-tick actual campaign disk continuation/results and render-vs-twin equality.
+  Existing loop/locks/once-only losses/results/save rollback/area/fire/animation
+  checks remain passing. Previous area-fire fixture pins v21 to keep legacy tests.
+- Fixed real binary55% edge after initial failure, leaving saved suppression/old
+  rules untouched. Successful checks have no script errors; existing nonfatal
+  driver/anchor/input-harness warnings remain. V1–V21 retain rules/fields; v22 uses
+  v21 save shape. Campaign v2/result v1/export/GIS/Windows launchers unchanged.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/opponent-duck-under-fire
+  Godot4.5.1/project.godot/F5/fresh integrated demo. Acquire red, suppress it via
+  AREA FIRE, watch lowered posture, stop fire and allow executed time to recover.
+- Limits: synthetic squad posture response, no cover-seeking/re-routing or
+  individual awareness. No Windows/Combat Mission fidelity claim. Daily cadence
+  and original prepared milestone remain preserved; no repeated milestone check-in.
+- Next focused task: deterministic nearby-cover response to sustained pressure
+  using own suppression/local terrain rather than hidden attacker coordinates.
