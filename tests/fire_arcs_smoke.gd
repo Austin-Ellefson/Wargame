@@ -13,6 +13,7 @@ func fixture() -> RefCounted:
     var sim = Battle.new()
     sim.setup(PAYLOAD)
     sim.state["version"] = 20
+    if int(sim.state["version"]) < 23: sim.state.erase("cover_responses")
     sim.state.erase("area_fire")
     for squad in sim.state["squads"]:
         squad["ammo"] = 0
@@ -139,6 +140,7 @@ func _run() -> void:
     var current = fixture()
     var legacy = fixture()
     legacy.state["version"] = 19
+    if int(legacy.state["version"]) < 23: legacy.state.erase("cover_responses")
     legacy.state.erase("facing_orders")
     legacy.state.erase("area_fire")
     check(Battle.validate(legacy.state,PAYLOAD) and not legacy.order_arc("UKR_S1",90), "V19 retains old fields and unrestricted fire; orders do not migrate saves.")

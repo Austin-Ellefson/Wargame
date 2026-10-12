@@ -12,6 +12,7 @@ func fixture() -> RefCounted:
     var battle = Battle.new()
     battle.setup(PAYLOAD)
     battle.state["version"] = 16
+    if int(battle.state["version"]) < 23: battle.state.erase("cover_responses")
     battle.state.erase("command_remaining")
     battle.state.erase("shared_contacts")
     battle.state.erase("pending_reports")
@@ -95,6 +96,7 @@ func _run() -> void:
     check(same(memory,hidden_death.state["contacts"]["UKR"]), "Hidden death cannot reveal an outcome or erase last observation.")
     var legacy = fixture()
     legacy.state["version"] = 15
+    if int(legacy.state["version"]) < 23: legacy.state.erase("cover_responses")
     legacy.state.erase("acquisition")
     legacy.state.erase("command_remaining")
     legacy.state.erase("shared_contacts")
@@ -126,6 +128,7 @@ func _run() -> void:
     game.battle_export_directory = directory
     game._play_demo()
     game.tactical_simulation.state["version"] = 16
+    if int(game.tactical_simulation.state["version"]) < 23: game.tactical_simulation.state.erase("cover_responses")
     game.tactical_simulation.state.erase("command_remaining")
     game.tactical_simulation.state.erase("shared_contacts")
     game.tactical_simulation.state.erase("pending_reports")

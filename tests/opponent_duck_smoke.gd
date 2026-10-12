@@ -12,6 +12,8 @@ func same(a: Variant,b: Variant) -> bool: return JSON.parse_string(JSON.stringif
 func fixture(hidden: bool = true) -> RefCounted:
     var sim = Battle.new()
     sim.setup(PAYLOAD)
+    sim.state["version"] = 22 # Preserve the original duck-only fixture.
+    if int(sim.state["version"]) < 23: sim.state.erase("cover_responses")
     for squad in sim.state["squads"]:
         squad["ammo"] = 0
         if squad["id"] not in ["UKR_S2","RU_S1","RU_S2"]:squad["alive"] = 0
@@ -100,6 +102,7 @@ func _run() -> void:
     check(dead.posture("RU_S1") == "crouch","Eliminated squad keeps last posture; no automatic dead-rig pose updates.")
     var legacy = fixture(false)
     legacy.state["version"] = 21
+    if int(legacy.state["version"]) < 23: legacy.state.erase("cover_responses")
     legacy.squad_by_id("RU_S1")["suppression"] = 0.6
     stationary(legacy)
     legacy.step()
@@ -107,6 +110,7 @@ func _run() -> void:
     var current = fixture(false)
     var old = fixture(false)
     old.state["version"] = 21
+    if int(old.state["version"]) < 23: old.state.erase("cover_responses")
     finish(current)
     finish(old)
     var normalized: Dictionary = current.state.duplicate(true)

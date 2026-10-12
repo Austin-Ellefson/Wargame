@@ -13,6 +13,7 @@ func fixture(id: String = "UKR_S1") -> RefCounted:
     var sim = Battle.new()
     sim.setup(PAYLOAD)
     sim.state["version"] = 21
+    if int(sim.state["version"]) < 23: sim.state.erase("cover_responses")
     for squad in sim.state["squads"]:
         squad["ammo"] = 0
         if squad["id"] not in [id,"RU_S1","RU_S2"]: squad["alive"] = 0
@@ -161,6 +162,7 @@ func _run() -> void:
     var current = fixture()
     var legacy = fixture()
     legacy.state["version"] = 20
+    if int(legacy.state["version"]) < 23: legacy.state.erase("cover_responses")
     legacy.state.erase("area_fire")
     check(Battle.validate(legacy.state,PAYLOAD) and not legacy.order_area_fire("UKR_S1",Vector2(298,210)),"V20 retains original fields and cannot receive new orders.")
     for battle in [current,legacy]:

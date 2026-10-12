@@ -12,6 +12,7 @@ func fixture(id: String) -> RefCounted:
     var battle = Battle.new()
     battle.setup(PAYLOAD)
     battle.state["version"] = 15
+    if int(battle.state["version"]) < 23: battle.state.erase("cover_responses")
     battle.state.erase("acquisition")
     battle.state.erase("command_remaining")
     battle.state.erase("shared_contacts")
@@ -81,6 +82,7 @@ func _run() -> void:
         check(int(squad["alive"]) >= 0 and int(squad["alive"]) <= int(squad["initial"]), "Simultaneous attacks must never fabricate or over-subtract personnel.")
     var legacy = fixture("UKR_S2")
     legacy.state["version"] = 14
+    if int(legacy.state["version"]) < 23: legacy.state.erase("cover_responses")
     legacy.state.erase("weapon_roles")
     check(Battle.validate(legacy.state,PAYLOAD) and legacy.weapon_role("UKR_S2") == "rifle", "V14 support-numbered squads retain original rifle behavior and field contract.")
     legacy.execute()
@@ -109,6 +111,7 @@ func _run() -> void:
     game.battle_export_directory = directory
     game._play_demo()
     game.tactical_simulation.state["version"] = 15
+    if int(game.tactical_simulation.state["version"]) < 23: game.tactical_simulation.state.erase("cover_responses")
     game.tactical_simulation.state.erase("acquisition")
     game.tactical_simulation.state.erase("command_remaining")
     game.tactical_simulation.state.erase("shared_contacts")

@@ -6,10 +6,10 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/opponent-duck-under-fire` descendant includes route previews,
+The newer `codex/opponent-nearby-cover` descendant includes route previews,
 camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
 queued waypoints, timed pauses, local-contact reactions and cover-weighted red routes. The milestone
-branch above remains frozen. Fresh battles use tactical rules v22, including selected-squad visibility and delayed shared reports. See the five-step
+branch above remains frozen. Fresh battles use tactical rules v23, including selected-squad visibility and delayed shared reports. See the five-step
 batch test guide in [FIVE_STEP_TACTICAL_PROGRESS.md](FIVE_STEP_TACTICAL_PROGRESS.md).
 
 ## Complete game loop
@@ -689,3 +689,27 @@ pressure and losses stay hidden. Save/restart retains the current posture and
 pressure, with identical subsequent ticks/results. Start a fresh integrated demo
 for v22; old pending battles keep their rules. Prototype thresholds have no
 measured Combat Mission fidelity or Windows validation.
+
+
+## Nearby cover under sustained fire (v23)
+
+The `codex/opponent-nearby-cover` descendant adds a local red cover response.
+Six consecutive execution seconds at 30% or more recovered suppression trigger a
+search for reachable woods within 32 m (at most 40 m of actual routed travel).
+Selection uses only the squad's own pressure and local terrain. Blue movement
+remains manual, and received fire does not identify a concealed attacker.
+
+Red retains its original route while moving toward cover and holds the selected
+point until pressure fades below 15%. It then rejoins the saved route through
+terrain navigation. Pinning, HUNT, explicit waits and pending command response
+remain stronger than the detour; a locally engageable target no longer strands
+that detour in the open. Normal firing and ducking continue. Breaking overrides
+the response with standing withdrawal. The detour survives intervals and restart.
+
+Only actually acquired red figures show this movement. There is no enemy intent
+marker or disclosure of live enemy pressure/losses. Use AREA FIRE near observed
+opposition to apply pressure, then stop firing to see recovery; heavy fire can pin
+squads before they reach cover. Already covered squads do not relocate, and no
+nearby reachable woods means no detour. Start a fresh demo for tactical v23.
+This remains abstract squad behavior, without threat-direction scoring, coordinated
+maneuver, occupied-cover separation or Windows/Combat Mission fidelity validation.

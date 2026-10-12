@@ -12,6 +12,7 @@ func fixture() -> RefCounted:
     var sim = Battle.new()
     sim.setup(PAYLOAD)
     sim.state["version"] = 19
+    if int(sim.state["version"]) < 23: sim.state.erase("cover_responses")
     sim.state.erase("facing_orders")
     sim.state.erase("area_fire")
     for squad in sim.state["squads"]:
@@ -111,6 +112,7 @@ func _run() -> void:
     var current = fixture()
     var legacy = fixture()
     legacy.state["version"] = 18
+    if int(legacy.state["version"]) < 23: legacy.state.erase("cover_responses")
     legacy.state.erase("observer_contacts")
     legacy.state.erase("facing_orders")
     legacy.state.erase("area_fire")
