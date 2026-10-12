@@ -399,8 +399,9 @@ V1–V22 retain their existing fields and rules, with no silent migration.
 
 After recovery, morale and ducking, red requires six consecutive executed seconds
 at at least 30% suppression before choosing nearby woods. A single deterministic
-local terrain search selects the shortest reachable path, within 32 m straight
-line and 40 m routed distance, breaking ties in y/x grid order. Already covered
+local terrain search ranks reachable cover-weighted paths by travel length,
+within 32 m straight line and 40 m routed distance, breaking ties in y/x grid
+order. Already covered
 squads, unreachable/distant woods and queues without rejoin budget receive no new
 detour. A failed search waits for pressure below 30% before rearming. No enemy
 position, contact/report or random sample enters destination selection.

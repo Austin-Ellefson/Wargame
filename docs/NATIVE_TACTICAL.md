@@ -6,10 +6,10 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/opponent-duck-under-fire` descendant includes route previews,
+The newer `codex/opponent-nearby-cover` descendant includes route previews,
 camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
 queued waypoints, timed pauses, local-contact reactions and cover-weighted red routes. The milestone
-branch above remains frozen. Fresh battles use tactical rules v22, including selected-squad visibility and delayed shared reports. See the five-step
+branch above remains frozen. Fresh battles use tactical rules v23, including selected-squad visibility and delayed shared reports. See the five-step
 batch test guide in [FIVE_STEP_TACTICAL_PROGRESS.md](FIVE_STEP_TACTICAL_PROGRESS.md).
 
 ## Complete game loop
@@ -691,7 +691,7 @@ for v22; old pending battles keep their rules. Prototype thresholds have no
 measured Combat Mission fidelity or Windows validation.
 
 
-## Nearby cover under sustained fire (v23 candidate)
+## Nearby cover under sustained fire (v23)
 
 The `codex/opponent-nearby-cover` descendant adds a local red cover response.
 Six consecutive execution seconds at 30% or more recovered suppression trigger a

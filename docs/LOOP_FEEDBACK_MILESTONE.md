@@ -21,8 +21,9 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/opponent-duck-under-fire / PR #36
-- Post-milestone next task: validate codex/opponent-nearby-cover (in progress)
+- Latest validated post-milestone descendant: codex/opponent-nearby-cover / PR #37
+- Latest post-milestone code/evidence commit: e46e61c6504616792084cc7be65e1b396c039c9b
+- Post-milestone next task: separate/reserve nearby red cover destinations
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -1134,18 +1135,59 @@ is delivered as the scheduled task result in ChatGPT.
   using own suppression/local terrain rather than hidden attacker coordinates.
 
 
-## Nearby-cover response — in progress, 2026-10-11 (America/Chicago)
+## Nearby-cover response — validated 2026-10-12 (America/Chicago)
 
-- Branch codex/opponent-nearby-cover, explicit tested PR #36 base
-  eefad59a297764ec9504760f44d8fdda06a4ef0e. Base final CI38189836470 rechecked
-  successful; actual branches/open PRs unchanged, main still starter README.
-- Implemented tactical v23 local pressure timer/goal/path, retained route and
-  terrain-safe rejoin; priorities, legacy fields/rules and frozen builds preserved.
-  No hidden attacker lookup or extra RNG. See CAMPAIGN_SAVES.md for exact bounds.
-- Initial focused actual-fire/disk checks found real last-decimal suppression
-  divergence while moving through area falloff. Fixed v23 suppression writes at
-  millionth precision; strict every-tick equality now passes. All30 local Godot
-  checks and26 terrain tests passed; added interrupted-pressure/active-cancellation
-  regressions are being checked before publication. Rendered CI/artifacts pending.
-- Remaining: inspect actual acquired cover movement/arrival and completed report,
-  record code/CI evidence and mark this focused task ready. Windows unverified.
+- Ready for review: draft PR #37, codex/opponent-nearby-cover, explicitly based
+  on tested PR #36 head eefad59a297764ec9504760f44d8fdda06a4ef0e. Branches and
+  open PRs rechecked before resuming; no overlapping successor or merge found.
+  Main remains starter README. Frozen milestone and prior downloads preserved.
+- Gameplay 10c20b3cc4bd582fdd3c1b4c88b92af3dd7f136a; playback evidence
+  537349d58e0a8e7ffacbb1140427c65ec6a29396; inspected code/evidence head
+  e46e61c6504616792084cc7be65e1b396c039c9b. All30 local Godot4.5.1 checks,
+  26 terrain tests and diff check passed on the gameplay candidate. Focused
+  real-playback refinement passed locally; the later camera-angle refinement
+  used CI because the transient local Godot binary was no longer present.
+- Combined CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38190935425
+  passed; real-playback CI38191095762 also passed. Artifact11721683027 inspected:
+  correct movement/arrival and report, but the first camera hid most arriving
+  figures behind a tree. Adjusted only the test inspection angle toward open ground.
+- Final combined code CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/38265744976 passed
+  30 Godot checks, all seven rendered scripts and26 terrain tests on the same
+  candidate. Inspected artifact11754062886: actual00:12 support -18R shot cue,
+  252 blue rounds, acquired red detour;01:01 wooded arrival with0 rounds and
+  expired tracers. Decorative trees still occlude some figures; no hidden intent,
+  pressure or exact live enemy losses are disclosed. Real4x playback drives
+  these captures and matches an unrendered authoritative twin every tick.
+- Readable actual06:00 report: UKR wins, blue36 deployed/6 survived/30 lost,
+  red36/11/25, objective80/15s. Campaign morale caps57/56, supply-4/-3, red
+  retreat, once-only commit and unlocked campaign turns are shown. These
+  abstract v23 outcomes differ from v22; combat balance/fidelity is unvalidated.
+- V23 persists a six-tick own-pressure timer, local wooded goal and remaining
+  detour. Searches are bounded to32m radius/40m routed travel. Original queues
+  remain intact during the detour and rejoin through terrain navigation below15%
+  pressure. Pauses, command response, HUNT, pinning and standing withdrawal
+  retain priority; blue orders remain manual. No attacker lookup or extra RNG.
+- Regression covers concealed-source real fire, motion/arrival/recovery, partial
+  timing and interruption, blocked/remote/covered/full-queue fallbacks, active
+  death/break cancellation, retained multi-leg queues and gates,14 malformed
+  saves, v22 legacy/quiet full-result parity and every-tick actual campaign disk
+  continuation through the final outcome. Existing loop, lock, once-only loss,
+  save rollback, fire/visibility/animation and terrain checks remain passing.
+- First restart regression found long-decimal suppression divergence during
+  moving area-fire falloff. V23 rounds recovery/attack pressure writes to
+  millionths; exact disk comparisons pass. Old v1–v22 fields/rules are retained;
+  legacy fixtures remove the new field, and the duck-only fixture pins v22.
+  Campaign v2/result v1/export/GIS/Windows launchers are preserved. Successful
+  logs have no script errors; existing nonfatal driver/anchor/input warnings remain.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/opponent-nearby-cover
+  Godot4.5.1/project.godot/F5/fresh integrated demo for v23. Use AREA FIRE near
+  observed red squads close to woods; heavy pressure can pin them before arrival.
+  Stop firing and allow executed recovery time to resume their original route.
+- Limits: synthetic squad response, no occupied-cover spacing, threat-direction
+  scoring, coordinated maneuver or Windows/Combat Mission fidelity validation.
+  A failed search rearms only after pressure drops below30%. Daily cadence and
+  the original prepared milestone remain preserved without another announcement.
+- Next focused task: deterministic separation/reservation of nearby cover goals
+  among living red squads, using friendly state and terrain only. Keep this tested
+  download available, version changed behavior and preserve exact disk continuation.
