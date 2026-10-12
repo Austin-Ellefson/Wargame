@@ -260,14 +260,12 @@ func _run() -> void:
     unrendered.restore(visible.state)
     var captured_arrival := false
     for tick in range(75):
-        var status_before: Dictionary = view._status_snapshot()
         for running in [visible,unrendered]:
             if running.state["phase"] == "planning": running.execute()
-            running.step()
-        view._refresh()
-        view._show_shot_events(visible.consume_events())
-        view._show_combat_changes(status_before)
-        view._animate_soldiers(0.05)
+        unrendered.step()
+        # Exercise the real 4x playback path, including cue expiry. Arrival must
+        # not show accumulated, expired volleys from earlier test ticks.
+        view._process(0.25)
         check(same(visible.state,unrendered.state),"Rendered movement/shot/cover observation cannot alter authoritative state.")
         if tick == 11:
             check(visible.seeking_cover("RU_S1") and view.actors["RU_S1"].visible and not view.shot_cues.is_empty(),"Actually acquired cover movement accompanies a real support volley.")
@@ -275,6 +273,7 @@ func _run() -> void:
         if not captured_arrival and visible.seeking_cover("RU_S1") and visible.state["cover_responses"]["RU_S1"]["path"].is_empty():
             captured_arrival = true
             check(view.actors["RU_S1"].visible and Battle.cover(Battle.position(visible.squad_by_id("RU_S1"))) > 0.2,"Acquired red infantry actually reaches wooded cover.")
+            check(visible.squad_by_id("UKR_S2")["ammo"] == 0 and view.shot_cues.is_empty(),"Arrival after fire ceases has no stale muzzle/tracer cues.")
             await capture_frame("nearby-cover-arrival-preview")
     check(captured_arrival,"Real-fire rendering captures arrival, not just a planning destination.")
     view.queue_free()
