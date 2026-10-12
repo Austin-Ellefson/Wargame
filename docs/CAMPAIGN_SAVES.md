@@ -384,3 +384,40 @@ Full real-fire campaign continuation compares every state/event and completed
 result. Quiet v22 battles reproduce all v21 fields/results except version.
 Campaign v2/result v1, locks, bounded once-only losses, save-write rollback,
 export/GIS fields and optional Windows launchers remain unchanged.
+
+
+## Nearby-cover response (tactical v23)
+
+Fresh engagements add `cover_responses`, exactly one record per known squad ID:
+`pressure_ticks` (integer 0–6), `goal` (empty or one bounded wooded point), and
+`path` (remaining bounded terrain waypoints, empty after arrival). Blue, dead and
+broken squads require zero ticks and empty goal/path. An active goal requires six
+ticks; its path must end at that goal and be at most 40 m from current position.
+An empty active path requires arrival. Missing/extra IDs or fields, malformed
+points/timers, blocked/open goals, orphan paths and excessive paths reject.
+V1–V22 retain their existing fields and rules, with no silent migration.
+
+After recovery, morale and ducking, red requires six consecutive executed seconds
+at at least 30% suppression before choosing nearby woods. A single deterministic
+local terrain search selects the shortest reachable path, within 32 m straight
+line and 40 m routed distance, breaking ties in y/x grid order. Already covered
+squads, unreachable/distant woods and queues without rejoin budget receive no new
+detour. A failed search waits for pressure below 30% before rearming. No enemy
+position, contact/report or random sample enters destination selection.
+
+The response path temporarily takes priority over the retained movement queue.
+It uses MOVE pace with existing posture, fatigue, morale and suppression modifiers.
+Pinning, HUNT, command response and explicit pauses still halt it; local automatic
+stop-and-engage yields to the cover move, with ordinary return fire retained.
+At arrival red holds until recovered pressure falls below 15%. Terrain navigation
+then reconnects to the original first queued point, retaining subsequent legs,
+mode and remaining waits. The 128-point queue budget is reserved before selection.
+Intervals do not replace active cover goals. Death or morale break clears the
+response immediately; automatic standing withdrawal keeps priority.
+
+Moving through an area-fire falloff exposed last-decimal JSON suppression drift.
+V23 rounds suppression writes to millionths after recovery and each received
+attack; older rules are untouched. Partial timers, motion, holding and recovery
+restore exactly, including every subsequent campaign tick, shot and full result.
+Campaign schema v2/result v1, battle locks, bounded once-only losses, rollback,
+export/GIS contracts and Windows launchers are unchanged. Drawing consumes no RNG.

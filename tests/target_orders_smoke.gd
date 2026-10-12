@@ -18,6 +18,7 @@ func _run() -> void:
     var battle = Battle.new()
     battle.setup(PAYLOAD)
     battle.state["version"] = 15
+    if int(battle.state["version"]) < 23: battle.state.erase("cover_responses")
     battle.state.erase("acquisition")
     battle.state.erase("command_remaining")
     battle.state.erase("shared_contacts")
@@ -59,6 +60,7 @@ func _run() -> void:
     var old = Battle.new()
     old.setup(PAYLOAD)
     old.state["version"] = 15
+    if int(old.state["version"]) < 23: old.state.erase("cover_responses")
     old.state.erase("acquisition")
     old.state.erase("command_remaining")
     old.state.erase("shared_contacts")
@@ -67,6 +69,7 @@ func _run() -> void:
     old.state.erase("facing_orders")
     old.state.erase("area_fire")
     old.state["version"] = 6
+    if int(old.state["version"]) < 23: old.state.erase("cover_responses")
     if int(old.state["version"]) < 15: old.state.erase("weapon_roles")
     if int(old.state["version"]) < 14: old.state.erase("postures")
     old.state.erase("morale_states")
@@ -84,6 +87,7 @@ func _run() -> void:
     game.battle_export_directory = directory
     game._play_demo()
     game.tactical_simulation.state["version"] = 15
+    if int(game.tactical_simulation.state["version"]) < 23: game.tactical_simulation.state.erase("cover_responses")
     game.tactical_simulation.state.erase("acquisition")
     game.tactical_simulation.state.erase("command_remaining")
     game.tactical_simulation.state.erase("shared_contacts")

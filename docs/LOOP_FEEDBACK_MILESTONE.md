@@ -21,8 +21,8 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/soldier-motion-fire-animation / PR #32
-- Post-milestone next task: observer-level contact memory
+- Latest validated post-milestone descendant: codex/opponent-duck-under-fire / PR #36
+- Post-milestone next task: validate codex/opponent-nearby-cover (in progress)
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -1132,3 +1132,20 @@ is delivered as the scheduled task result in ChatGPT.
   and original prepared milestone remain preserved; no repeated milestone check-in.
 - Next focused task: deterministic nearby-cover response to sustained pressure
   using own suppression/local terrain rather than hidden attacker coordinates.
+
+
+## Nearby-cover response — in progress, 2026-10-11 (America/Chicago)
+
+- Branch codex/opponent-nearby-cover, explicit tested PR #36 base
+  eefad59a297764ec9504760f44d8fdda06a4ef0e. Base final CI38189836470 rechecked
+  successful; actual branches/open PRs unchanged, main still starter README.
+- Implemented tactical v23 local pressure timer/goal/path, retained route and
+  terrain-safe rejoin; priorities, legacy fields/rules and frozen builds preserved.
+  No hidden attacker lookup or extra RNG. See CAMPAIGN_SAVES.md for exact bounds.
+- Initial focused actual-fire/disk checks found real last-decimal suppression
+  divergence while moving through area falloff. Fixed v23 suppression writes at
+  millionth precision; strict every-tick equality now passes. All30 local Godot
+  checks and26 terrain tests passed; added interrupted-pressure/active-cancellation
+  regressions are being checked before publication. Rendered CI/artifacts pending.
+- Remaining: inspect actual acquired cover movement/arrival and completed report,
+  record code/CI evidence and mark this focused task ready. Windows unverified.

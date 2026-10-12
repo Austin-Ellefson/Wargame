@@ -821,3 +821,20 @@ This setup change contains instructions only; these missing tools must be addres
   and original prepared milestone remain preserved; no repeated milestone check-in.
 - Next focused task: deterministic nearby-cover response to sustained pressure
   using own suppression/local terrain rather than hidden attacker coordinates.
+
+
+## Nearby-cover response — in progress, 2026-10-11 (America/Chicago)
+
+- Branch codex/opponent-nearby-cover, explicit tested PR #36 base
+  eefad59a297764ec9504760f44d8fdda06a4ef0e. Base final CI38189836470 rechecked
+  successful; actual branches/open PRs unchanged, main still starter README.
+- Implemented tactical v23 local pressure timer/goal/path, retained route and
+  terrain-safe rejoin; priorities, legacy fields/rules and frozen builds preserved.
+  No hidden attacker lookup or extra RNG. See CAMPAIGN_SAVES.md for exact bounds.
+- Initial focused actual-fire/disk checks found real last-decimal suppression
+  divergence while moving through area falloff. Fixed v23 suppression writes at
+  millionth precision; strict every-tick equality now passes. All30 local Godot
+  checks and26 terrain tests passed; added interrupted-pressure/active-cancellation
+  regressions are being checked before publication. Rendered CI/artifacts pending.
+- Remaining: inspect actual acquired cover movement/arrival and completed report,
+  record code/CI evidence and mark this focused task ready. Windows unverified.

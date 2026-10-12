@@ -10,6 +10,9 @@ const SQUAD_SIZE := 9
 const ROUNDS_PER_PERSON := 40
 const SPOT_RANGE := 280.0
 const WOODS_SPOT_RANGE := 120.0
+const COVER_PRESSURE_TICKS := 6
+const COVER_RADIUS := 32.0
+const COVER_PATH_LIMIT := 40.0
 const BUILDINGS := [Rect2(222, 152, 30, 30), Rect2(304, 326, 30, 30), Rect2(166, 346, 24, 24)]
 const WOODS := [Vector3(212, 290, 29), Vector3(298, 210, 30), Vector3(108, 130, 32)]
 
@@ -51,7 +54,7 @@ static func visible(a: Vector2, b: Vector2, observer_height: float = 1.6, target
     return true
 
 func setup(payload: Dictionary) -> void:
-    state = {"version": 22, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
+    state = {"version": 23, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
     state["contacts"] = {"UKR": {}, "RU": {}}
@@ -60,6 +63,7 @@ func setup(payload: Dictionary) -> void:
     state["observer_contacts"] = {}
     state["facing_orders"] = {}
     state["area_fire"] = {}
+    state["cover_responses"] = {}
     state["movement_modes"] = {}
     state["fire_modes"] = {}
     state["fire_targets"] = {}
@@ -75,6 +79,7 @@ func setup(payload: Dictionary) -> void:
         state["acquisition"][squad["id"]] = {}
         state["observer_contacts"][squad["id"]] = {}
         state["area_fire"][squad["id"]] = []
+        state["cover_responses"][squad["id"]] = {"pressure_ticks": 0, "goal": [], "path": []}
         state["facing_orders"][squad["id"]] = {"heading": 0 if squad["faction"] == "UKR" else 180, "width": 0}
         state["command_remaining"][squad["id"]] = 0
         state["fire_modes"][squad["id"]] = "auto"
@@ -177,6 +182,7 @@ func morale_state(id: String) -> String:
 
 func _retreat_route(squad: Dictionary) -> void:
     var id: String = squad["id"]
+    if int(state["version"]) >= 23: _clear_cover_response(id)
     state["orders"].erase(id)
     state["movement_modes"].erase(id)
     state["pause_remaining"][id] = 0
@@ -224,6 +230,86 @@ func _opponent_duck(squad: Dictionary) -> void:
         state["postures"][id] = "crouch"
     elif pressure < 150000:
         state["postures"][id] = "stand"
+
+func seeking_cover(id: String) -> bool:
+    return int(state["version"]) >= 23 and not state["cover_responses"][id]["goal"].is_empty()
+
+func _stable_pressure(value: float) -> float:
+    # Moving through area falloff produces long decimals. V23 rounds writes,
+    # so JSON disk checkpoints cannot perturb subsequent suppression ticks.
+    return roundi(value * 1000000.0) / 1000000.0 if int(state["version"]) >= 23 else value
+
+func _clear_cover_response(id: String) -> void:
+    state["cover_responses"][id] = {"pressure_ticks": 0, "goal": [], "path": []}
+
+func _terrain_path(origin: Vector2, target: Vector2) -> Array:
+    var points := cover_navigation.get_point_path(Vector2i(origin / CELL), Vector2i(target / CELL))
+    var path: Array = []
+    if points.is_empty(): return path
+    for index in range(1, points.size()): path.append([points[index].x, points[index].y])
+    if path.is_empty() or Vector2(path.back()[0], path.back()[1]) != target: path.append([target.x, target.y])
+    return path
+
+static func _path_length(origin: Vector2, path: Array) -> float:
+    var distance := 0.0
+    for point in path:
+        var next := Vector2(point[0], point[1])
+        distance += origin.distance_to(next)
+        origin = next
+    return distance
+
+func _resume_cover_route(squad: Dictionary) -> void:
+    var id: String = squad["id"]
+    var queued: Array = state["orders"].get(id, [])
+    if seeking_cover(id) and not queued.is_empty():
+        # Rejoin the untouched queue through terrain navigation, never by a
+        # straight shortcut across a building after the sideways cover move.
+        var join := _terrain_path(position(squad), Vector2(queued[0][0], queued[0][1]))
+        if join.is_empty() or join.size() + queued.size() - 1 > 128: return
+        join.append_array(queued.slice(1))
+        state["orders"][id] = join
+    _clear_cover_response(id)
+
+func _opponent_cover(squad: Dictionary) -> void:
+    if int(state["version"]) < 23: return
+    var id: String = squad["id"]
+    if squad["faction"] != "RU" or int(squad["alive"]) <= 0 or morale_state(id) == "broken":
+        _clear_cover_response(id)
+        return
+    var pressure := roundi(float(squad["suppression"]) * 1000000.0)
+    if pressure < 150000:
+        _resume_cover_route(squad)
+        return
+    var response: Dictionary = state["cover_responses"][id]
+    if seeking_cover(id): return
+    if pressure < 300000:
+        response["pressure_ticks"] = 0
+        return
+    if int(response["pressure_ticks"]) == COVER_PRESSURE_TICKS: return
+    response["pressure_ticks"] = int(response["pressure_ticks"]) + 1
+    if int(response["pressure_ticks"]) < COVER_PRESSURE_TICKS or cover(position(squad)) > 0.2: return
+    # A bounded local terrain search in fixed y/x order. No enemy positions,
+    # acquisition, remembered contacts, threat bearings or random samples.
+    var origin := position(squad)
+    var start := Vector2i(origin / CELL)
+    var best_length := INF
+    var best_path: Array = []
+    for y in range(maxi(0, start.y - 4), mini(64, start.y + 5)):
+        for x in range(maxi(0, start.x - 4), mini(64, start.x + 5)):
+            var cell := Vector2i(x, y)
+            var point := cover_navigation.get_point_position(cell)
+            if cover_navigation.is_point_solid(cell) or cover(point) <= 0.2 or origin.distance_to(point) > COVER_RADIUS: continue
+            var path := _terrain_path(origin, point)
+            if path.is_empty(): continue
+            var distance := _path_length(origin, path)
+            # Reserve enough of the existing 128-point budget for the later
+            # terrain-safe rejoin, retaining every original queued waypoint.
+            if distance > COVER_PATH_LIMIT or distance >= best_length or path.size() * 2 + state["orders"].get(id, []).size() + 2 > 128: continue
+            best_length = distance
+            best_path = path
+    if not best_path.is_empty():
+        response["goal"] = best_path.back().duplicate()
+        response["path"] = best_path
 
 func is_pinned(squad: Dictionary) -> bool:
     # V1 engagements retain their original rules when resumed. V2 pinning is
@@ -599,6 +685,10 @@ func execute() -> bool:
             if morale_state(squad["id"]) == "broken":
                 _retreat_route(squad)
                 continue
+            if seeking_cover(squad["id"]):
+                var goal: Array = state["cover_responses"][squad["id"]]["goal"]
+                reserved.append(Vector2(goal[0], goal[1]))
+                continue
             var destination := opponent_destination(squad, reserved)
             if order_move(squad["id"], destination, false):
                 reserved.append(destination)
@@ -651,9 +741,10 @@ func step() -> void:
     state["elapsed"] = int(state["elapsed"]) + 1
     state["remaining"] = int(state["remaining"]) - 1
     for squad in state["squads"]:
-        squad["suppression"] = maxf(0, float(squad["suppression"]) - 0.035)
+        squad["suppression"] = _stable_pressure(maxf(0, float(squad["suppression"]) - 0.035))
         _update_morale(squad)
         _opponent_duck(squad)
+        _opponent_cover(squad)
         if int(state["version"]) >= 17 and (not state["orders"].has(squad["id"]) or int(squad["alive"]) <= 0): state["command_remaining"][squad["id"]] = 0
         var responding := command_delay(squad["id"]) > 0
         if responding: state["command_remaining"][squad["id"]] = command_delay(squad["id"]) - 1
@@ -667,12 +758,13 @@ func step() -> void:
             if int(state["version"]) >= 8:
                 state["pause_remaining"][squad["id"]] = 0
             continue
-        var path: Array = state["orders"].get(squad["id"], [])
-        var base_speed: float = {"move": 2.4, "quick": 4.0, "hunt": 1.2}[movement_mode(squad["id"])] if not path.is_empty() else 0.0
-        var mode := movement_mode(squad["id"])
+        var covering := seeking_cover(squad["id"])
+        var path: Array = state["cover_responses"][squad["id"]]["path"] if covering else state["orders"].get(squad["id"], [])
+        var mode := "move" if covering else movement_mode(squad["id"])
+        var base_speed: float = {"move": 2.4, "quick": 4.0, "hunt": 1.2}[mode] if not path.is_empty() else 0.0
         var speed: float = float(base_speed) * (1.0 - 0.8 * float(squad["suppression"])) * (1.0 - 0.5 * fatigue(squad["id"])) * (0.75 if morale_state(squad["id"]) == "shaken" else 1.0)
         speed *= posture_speed(squad["id"])
-        if responding or waiting or is_pinned(squad) or hunt_paused(squad) or opponent_engaging(squad):
+        if responding or waiting or is_pinned(squad) or hunt_paused(squad) or (not covering and opponent_engaging(squad)):
             speed = 0.0
         var travelled := 0.0
         while speed > 0 and not path.is_empty():
@@ -694,7 +786,7 @@ func step() -> void:
             var cost: float = {"move": 0.001, "quick": 0.002, "hunt": 0.0005}.get(mode, 0.0)
             var change := travelled * cost if travelled > 0.0 else -0.003
             state["fatigue"][squad["id"]] = clampi(int(state["fatigue"][squad["id"]]) + roundi(change * 1000.0), 0, 1000)
-        if path.is_empty():
+        if path.is_empty() and not covering:
             state["orders"].erase(squad["id"])
             if int(state["version"]) >= 5:
                 state["movement_modes"].erase(squad["id"])
@@ -744,11 +836,14 @@ func step() -> void:
         var target := squad_by_id(attack["target"])
         var losses := mini(int(target["alive"]), int(attack["losses"]))
         target["alive"] = int(target["alive"]) - losses
-        target["suppression"] = minf(1, float(target["suppression"]) + float(attack["pressure"]))
+        target["suppression"] = _stable_pressure(minf(1, float(target["suppression"]) + float(attack["pressure"])))
         target["morale"] = maxi(0, int(target["morale"]) - losses * 3)
     if int(state["version"]) >= 17:
         for squad in state["squads"]:
             if int(squad["alive"]) <= 0: state["command_remaining"][squad["id"]] = 0
+    if int(state["version"]) >= 23:
+        for squad in state["squads"]:
+            if int(squad["alive"]) <= 0: _clear_cover_response(squad["id"])
     _update_observer_contacts()
     _update_contacts()
     _update_shared_reports()
@@ -818,10 +913,10 @@ func result() -> Dictionary:
         "elapsed": state["elapsed"], "objective": state["objective"].duplicate(true), "forces": forces}
 
 static func validate(saved: Variant, payload: Dictionary) -> bool:
-    if not saved is Dictionary or not _integer(saved.get("version"), 1, 22):
+    if not saved is Dictionary or not _integer(saved.get("version"), 1, 23):
         return false
     var version := int(saved["version"])
-    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12) + 2 * int(version >= 13) + int(version >= 14) + int(version >= 15) + int(version >= 16) + int(version >= 17) + 2 * int(version >= 18) + int(version >= 19) + int(version >= 20) + int(version >= 21)
+    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12) + 2 * int(version >= 13) + int(version >= 14) + int(version >= 15) + int(version >= 16) + int(version >= 17) + 2 * int(version >= 18) + int(version >= 19) + int(version >= 20) + int(version >= 21) + int(version >= 23)
     if saved.size() != field_count:
         return false
     for key in ["version", "battle_id", "phase", "elapsed", "remaining", "objective", "squads", "orders", "winner"]:
@@ -1018,6 +1113,25 @@ static func _validate_fields(saved: Dictionary, payload: Dictionary) -> bool:
             if not point is Array: return false
             if point.is_empty(): continue
             if not _point(point) or inside_building(Vector2(point[0],point[1]),0.5) or not saved["fire_targets"][id].is_empty() or saved["morale_states"][id] == "broken": return false
+    if int(saved["version"]) >= 23:
+        var responses = saved.get("cover_responses")
+        if not responses is Dictionary or responses.size() != known.size(): return false
+        for id in known:
+            var response = responses.get(id)
+            if not response is Dictionary or response.size() != 3 or not _integer(response.get("pressure_ticks"), 0, COVER_PRESSURE_TICKS) or not response.get("goal") is Array or not response.get("path") is Array: return false
+            var goal: Array = response["goal"]
+            var path: Array = response["path"]
+            if known[id]["faction"] != "RU" or int(known[id]["alive"]) <= 0 or saved["morale_states"][id] == "broken":
+                if response["pressure_ticks"] != 0 or not goal.is_empty() or not path.is_empty(): return false
+            if goal.is_empty():
+                if not path.is_empty(): return false
+                continue
+            if not _point(goal) or cover(Vector2(goal[0],goal[1])) <= 0.2 or inside_building(Vector2(goal[0],goal[1]),5.0) or response["pressure_ticks"] != COVER_PRESSURE_TICKS or path.size() > 12: return false
+            for point in path:
+                if not _point(point) or inside_building(Vector2(point[0],point[1]),5.0): return false
+            if path.is_empty():
+                if position(known[id]).distance_to(Vector2(goal[0],goal[1])) > 0.01: return false
+            elif Vector2(path.back()[0],path.back()[1]) != Vector2(goal[0],goal[1]) or _path_length(position(known[id]),path) > COVER_PATH_LIMIT + 0.01: return false
     var survivors := {"UKR": 0, "RU": 0}
     for squad in saved["squads"]:
         survivors[squad["faction"]] += int(squad["alive"])

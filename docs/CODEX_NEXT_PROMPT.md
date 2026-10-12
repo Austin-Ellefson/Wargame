@@ -1,9 +1,24 @@
-# Continue tested opponent duck response
+# Continue nearby-cover response validation
 
-Latest validated descendant codex/opponent-duck-under-fire, draft PR #36; explicit tested PR #35 base2a13dc407a268480718a0a8af20cab6bde8233af. Tested code 2e98be3b1765ddc5d6d81184d6cfd18d405c12a4; combined CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38189516298 passed all Godot/terrain plus six rendered scripts. All29 local Godot checks, 26 terrain tests and diff check passed. Actual acquired red crouch00:08/prone00:12 during real support volleys and readable completed report artifact11721271483 inspected. Read ledger for thresholds, binary-edge fix and adaptive area label; check final documentation-head CI before dependent work.
+Current focused work: codex/opponent-nearby-cover, based on tested PR #36 head
+eefad59a297764ec9504760f44d8fdda06a4ef0e. Reuse this branch/PR while unfinished;
+inspect actual remote heads, open PRs and leases before changing files. Main is
+still only the starter README. No merges, force pushes or deleted branches.
 
-Next focused task: deterministic nearby-cover response to sustained pressure, using own suppression and known local terrain rather than hidden attacker coordinates. Keep the step small; preserve automatic morale retreat/rally, routes/pauses/command response, local acquisition, bounded losses, RNG and exact disk continuation. Avoid adding unrelated equipment/GIS. Red currently ducks in place and retains its existing route; it does not choose new cover specifically in reaction to incoming pressure. Version changed combat/save behavior and test actual firing plus hidden-source isolation and complete outcomes.
+Tactical v23 adds a saved six-tick pressure timer and bounded local cover detour,
+retains original routes and reconnects through terrain navigation after recovery.
+No attacker lookup/RNG. Old v1–v22 rules and save fields remain intact. Fixed
+actual moving-area-fire JSON precision drift by rounding v23 pressure writes to
+millionths. Read CAMPAIGN_SAVES and NATIVE_TACTICAL for contracts/limits.
 
-V22 red standing crouches at30% recovered pressure, prone at55%, stays lower until below15%, then stands. Own pressure/current saved posture only, after recovery/morale before movement/acquisition. Derived millionth comparisons prevent threshold drift. Blue manual posture/dead units/standing withdrawal take priority. V1–V21 keep original rules; v22 uses v21 fields. Area-fire legacy fixture pins v21. Rendering remains transient outside saved state/RNG, and acquired live enemy counts stay nominal. Campaign v2/result v1 unchanged. Existing posture tradeoffs alter nonquiet v22 balance; no Combat Mission fidelity validation.
+Implementation and focused real-fire/disk regression are present. All30 local
+Godot checks and26 terrain tests passed; validate the latest test additions,
+publish a draft PR, require combined rendered CI and inspect moving/arrival shot
+captures plus a completed report before marking ready. Record exact commits,
+CI URLs/artifacts and limitations in AUTONOMOUS_DEVELOPMENT and the milestone
+ledger. Preserve frozen milestone download and do not repeat its check-in.
 
-Inspect actual branches/open PRs/instructions; honor leases and reuse unfinished focused PRs. Read AGENTS/AUTONOMOUS/LOOP_FEEDBACK_MILESTONE/NATIVE_TACTICAL/CAMPAIGN_SAVES and export/GIS contracts if changing them. Main remains starter README. Never merge/force-push/delete branches/settings or send external messages. Preserve frozen milestone and all ready downloads, exact disk continuation, battle locks/bounded once-only loss/results/save rollback and optional Windows launchers. Require meaningful combined Godot/terrain and actual rendered CI/artifact evidence. No supported Windows desktop connection was present; Windows remains user-dependent. Routine development stays daily; the original milestone check-in is already prepared and must not be repeated without a material fix.
+Read AGENTS, current queue/ledger, save and native docs before work. Preserve
+campaign locks, bounded once-only results/losses, rollback, deterministic restart,
+export/GIS and Windows launchers. No supported Windows desktop connection was
+available; Linux results do not establish Windows or combat-fidelity validation.

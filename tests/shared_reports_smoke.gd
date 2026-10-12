@@ -12,6 +12,7 @@ func fixture() -> RefCounted:
     var sim = Battle.new()
     sim.setup(PAYLOAD)
     sim.state["version"] = 18
+    if int(sim.state["version"]) < 23: sim.state.erase("cover_responses")
     sim.state.erase("observer_contacts")
     sim.state.erase("facing_orders")
     sim.state.erase("area_fire")
@@ -76,6 +77,7 @@ func _run() -> void:
     check(not firing.last_events.is_empty() and firing.last_events[0]["local_observers"].has("UKR_S1") and not firing.last_events[0]["local_observers"].has("UKR_S2"), "Real shot cue must snapshot local endpoint visibility per observer without report leakage.")
     var legacy = fixture()
     legacy.state["version"] = 17
+    if int(legacy.state["version"]) < 23: legacy.state.erase("cover_responses")
     legacy.state.erase("shared_contacts")
     legacy.state.erase("pending_reports")
     legacy.state.erase("observer_contacts")
@@ -104,6 +106,7 @@ func _run() -> void:
     var current = fixture()
     var baseline = fixture()
     baseline.state["version"] = 17
+    if int(baseline.state["version"]) < 23: baseline.state.erase("cover_responses")
     baseline.state.erase("shared_contacts")
     baseline.state.erase("pending_reports")
     baseline.state.erase("observer_contacts")

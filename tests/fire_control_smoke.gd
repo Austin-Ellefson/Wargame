@@ -15,6 +15,7 @@ func fixture() -> RefCounted:
     var battle = Battle.new()
     battle.setup(PAYLOAD)
     battle.state["version"] = 15
+    if int(battle.state["version"]) < 23: battle.state.erase("cover_responses")
     battle.state.erase("acquisition")
     battle.state.erase("command_remaining")
     battle.state.erase("shared_contacts")
@@ -67,6 +68,7 @@ func _run() -> void:
     for version in range(1, 6):
         var old = fixture()
         old.state["version"] = version
+        if int(old.state["version"]) < 23: old.state.erase("cover_responses")
         if int(old.state["version"]) < 15: old.state.erase("weapon_roles")
         if int(old.state["version"]) < 14: old.state.erase("postures")
         if version < 13: old.state.erase("morale_states")
@@ -95,6 +97,7 @@ func _run() -> void:
     game.battle_export_directory = directory
     game._play_demo()
     game.tactical_simulation.state["version"] = 15
+    if int(game.tactical_simulation.state["version"]) < 23: game.tactical_simulation.state.erase("cover_responses")
     game.tactical_simulation.state.erase("acquisition")
     game.tactical_simulation.state.erase("command_remaining")
     game.tactical_simulation.state.erase("shared_contacts")
