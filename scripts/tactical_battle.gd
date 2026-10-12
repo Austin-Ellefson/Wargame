@@ -51,7 +51,7 @@ static func visible(a: Vector2, b: Vector2, observer_height: float = 1.6, target
     return true
 
 func setup(payload: Dictionary) -> void:
-    state = {"version": 20, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
+    state = {"version": 21, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
     state["contacts"] = {"UKR": {}, "RU": {}}
@@ -59,6 +59,7 @@ func setup(payload: Dictionary) -> void:
     state["pending_reports"] = {"UKR": {}, "RU": {}}
     state["observer_contacts"] = {}
     state["facing_orders"] = {}
+    state["area_fire"] = {}
     state["movement_modes"] = {}
     state["fire_modes"] = {}
     state["fire_targets"] = {}
@@ -73,6 +74,7 @@ func setup(payload: Dictionary) -> void:
     for squad in state["squads"]:
         state["acquisition"][squad["id"]] = {}
         state["observer_contacts"][squad["id"]] = {}
+        state["area_fire"][squad["id"]] = []
         state["facing_orders"][squad["id"]] = {"heading": 0 if squad["faction"] == "UKR" else 180, "width": 0}
         state["command_remaining"][squad["id"]] = 0
         state["fire_modes"][squad["id"]] = "auto"
@@ -202,6 +204,7 @@ func _update_morale(squad: Dictionary) -> void:
     if suppression >= 0.65 and (int(squad["morale"]) <= 35 or (heavy_losses and int(squad["morale"]) <= 70)):
         state["morale_states"][id] = "broken"
         if int(state["version"]) >= 20: state["facing_orders"][id]["width"] = 0
+        if int(state["version"]) >= 21: state["area_fire"][id] = []
         state["rally_remaining"][id] = 30
         _retreat_route(squad)
     else:
@@ -400,6 +403,47 @@ func within_fire_arc(shooter: Dictionary, target: Dictionary) -> bool:
     var bearing := atan2(offset.x, -offset.y)
     return absf(wrapf(bearing - deg_to_rad(facing(shooter["id"])), -PI, PI)) <= deg_to_rad(width * 0.5) + 0.000001
 
+# Explicit ground coordinates, never an enemy ID or a hidden target lookup.
+# Suppression-only prototype: pressure falls to zero at 16m; no casualty RNG.
+func area_target(id: String) -> Array:
+    return state["area_fire"][id].duplicate() if int(state["version"]) >= 21 else []
+
+func can_area_fire(shooter: Dictionary, point: Vector2) -> bool:
+    var distance := position(shooter).distance_to(point)
+    return distance >= 1.0 and distance < 230.0 and not inside_building(point,0.5) and visible(position(shooter),point,posture_height(shooter["id"]),0.3) and within_fire_arc(shooter,{"position":[point.x,point.y]})
+
+func order_area_fire(id: String, point: Vector2, player: bool = true) -> bool:
+    var shooter := squad_by_id(id)
+    if int(state["version"]) < 21 or not _can_order_facing(shooter,player) or not _point([point.x,point.y]) or not can_area_fire(shooter,point): return false
+    state["area_fire"][id] = [point.x,point.y]
+    state["fire_targets"][id] = ""
+    return true
+
+func _area_point_visible(observer: Dictionary, point: Vector2) -> bool:
+    var factor: float = {"stand":1.0,"crouch":0.9,"prone":0.75}[posture(observer["id"])]
+    var limit := WOODS_SPOT_RANGE if cover(point) > 0.2 else SPOT_RANGE
+    return position(observer).distance_to(point) <= limit * factor and visible(position(observer),point,posture_height(observer["id"]),0.3)
+
+func _collect_area_fire(shooter: Dictionary, attacks: Array) -> void:
+    var coords := area_target(shooter["id"])
+    if coords.is_empty(): return
+    var point := Vector2(coords[0],coords[1])
+    if not can_area_fire(shooter,point): return
+    var rounds := rounds_per_volley(shooter)
+    shooter["ammo"] = int(shooter["ammo"]) - rounds
+    var witnesses: Array = []
+    for observer in state["squads"]:
+        if observer["faction"] == "UKR" and int(observer["alive"]) > 0 and (shooter["faction"] == "UKR" or (can_spot(observer,shooter) and _area_point_visible(observer,point))): witnesses.append(observer["id"])
+    # Event exposes ordered endpoint and real rounds only, never impacted enemy
+    # IDs, suppression or live coordinates. Rendering cannot learn hidden hits.
+    last_events.append({"type":"shot","area":true,"tick":state["elapsed"],"shooter":shooter["id"],"target":"","from":shooter["position"].duplicate(),"to":coords.duplicate(),"rounds":rounds,"losses":0,"weapon_role":weapon_role(shooter["id"]),"player_visible":not witnesses.is_empty(),"local_observers":witnesses})
+    for target in state["squads"]:
+        if target["faction"] == shooter["faction"] or int(target["alive"]) <= 0: continue
+        var separation := point.distance_to(position(target))
+        if separation < 16.0 and visible(point,position(target),0.3,posture_height(target["id"])):
+            var pressure := (0.04 + rounds * 0.008) * (1.0 - separation / 16.0)
+            attacks.append({"target":target["id"],"losses":0,"pressure":pressure})
+
 func can_engage(shooter: Dictionary, target: Dictionary) -> bool:
     return not shooter.is_empty() and not target.is_empty() and int(shooter["alive"]) > 0 and int(target["alive"]) > 0 and shooter["faction"] != target["faction"] and position(shooter).distance_to(position(target)) < 230.0 and squad_visible(shooter, target) and (not limited_visibility() or can_spot(shooter, target)) and within_fire_arc(shooter, target)
 
@@ -410,9 +454,17 @@ func order_target(id: String, target_id: String, player: bool = true) -> bool:
     if not target_id.is_empty() and not can_engage(squad, squad_by_id(target_id)):
         return false
     state["fire_targets"][id] = target_id
+    if int(state["version"]) >= 21: state["area_fire"][id] = []
     return true
 
 func target_status(id: String) -> String:
+    var area := area_target(id)
+    if not area.is_empty():
+        var shooter := squad_by_id(id)
+        if int(shooter["alive"]) <= 0: return "Area: eliminated"
+        if fire_mode(id) == "hold": return "Area: HOLD FIRE"
+        if int(shooter["ammo"]) <= 0: return "Area: empty"
+        return "Area: active" if can_area_fire(shooter,Vector2(area[0],area[1])) else "Area: waiting for LOS/range/arc"
     if int(state["version"]) < 7 or str(state["fire_targets"][id]).is_empty():
         return "Focus: none"
     var observer := squad_by_id(id)
@@ -643,6 +695,9 @@ func step() -> void:
             continue
         if int(shooter["alive"]) <= 0 or int(shooter["ammo"]) <= 0 or fire_mode(shooter["id"]) == "hold" or morale_state(shooter["id"]) == "broken":
             continue
+        if not area_target(shooter["id"]).is_empty():
+            _collect_area_fire(shooter,attacks)
+            continue
         var target := _nearest_target(shooter)
         if target.is_empty():
             continue
@@ -747,10 +802,10 @@ func result() -> Dictionary:
         "elapsed": state["elapsed"], "objective": state["objective"].duplicate(true), "forces": forces}
 
 static func validate(saved: Variant, payload: Dictionary) -> bool:
-    if not saved is Dictionary or not _integer(saved.get("version"), 1, 20):
+    if not saved is Dictionary or not _integer(saved.get("version"), 1, 21):
         return false
     var version := int(saved["version"])
-    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12) + 2 * int(version >= 13) + int(version >= 14) + int(version >= 15) + int(version >= 16) + int(version >= 17) + 2 * int(version >= 18) + int(version >= 19) + int(version >= 20)
+    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12) + 2 * int(version >= 13) + int(version >= 14) + int(version >= 15) + int(version >= 16) + int(version >= 17) + 2 * int(version >= 18) + int(version >= 19) + int(version >= 20) + int(version >= 21)
     if saved.size() != field_count:
         return false
     for key in ["version", "battle_id", "phase", "elapsed", "remaining", "objective", "squads", "orders", "winner"]:
@@ -939,6 +994,14 @@ static func _validate_fields(saved: Dictionary, payload: Dictionary) -> bool:
             var record = facings.get(id)
             if not record is Dictionary or record.size() != 2 or not _integer(record.get("heading"), 0, 359) or not _integer(record.get("width"), 0, 180) or int(record["width"]) not in [0, 90, 180]: return false
             if saved["morale_states"][id] == "broken" and int(record["width"]) != 0: return false
+    if int(saved["version"]) >= 21:
+        var areas = saved.get("area_fire")
+        if not areas is Dictionary or areas.size() != known.size(): return false
+        for id in known:
+            var point = areas.get(id)
+            if not point is Array: return false
+            if point.is_empty(): continue
+            if not _point(point) or inside_building(Vector2(point[0],point[1]),0.5) or not saved["fire_targets"][id].is_empty() or saved["morale_states"][id] == "broken": return false
     var survivors := {"UKR": 0, "RU": 0}
     for squad in saved["squads"]:
         survivors[squad["faction"]] += int(squad["alive"])

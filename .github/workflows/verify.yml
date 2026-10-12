@@ -52,6 +52,7 @@ jobs:
             ${{ runner.temp }}/shared-report-preview.png
             ${{ runner.temp }}/observer-memory-preview.png
             ${{ runner.temp }}/fire-arc-*-preview.png
+            ${{ runner.temp }}/area-fire-*-preview.png
             ${{ runner.temp }}/soldiers-*-motion-*.png
             ${{ runner.temp }}/soldiers-recoil-*.png
             ${{ runner.temp }}/soldiers-stand-preview.png

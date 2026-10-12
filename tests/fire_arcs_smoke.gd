@@ -12,6 +12,8 @@ func same(a: Variant,b: Variant) -> bool: return JSON.parse_string(JSON.stringif
 func fixture() -> RefCounted:
     var sim = Battle.new()
     sim.setup(PAYLOAD)
+    sim.state["version"] = 20
+    sim.state.erase("area_fire")
     for squad in sim.state["squads"]:
         squad["ammo"] = 0
         if squad["id"] not in ["UKR_S1","RU_S1","RU_S2"]: squad["alive"] = 0
@@ -120,6 +122,7 @@ func _run() -> void:
         var record: Dictionary = bad["facing_orders"]["UKR_S1"]
         match corruption:
             0: bad.erase("facing_orders")
+            0: bad.erase("area_fire")
             1: bad["facing_orders"].erase("RU_S1")
             2: bad["facing_orders"]["UNKNOWN"] = record.duplicate(true)
             3: record["heading"] = 360
@@ -137,6 +140,7 @@ func _run() -> void:
     var legacy = fixture()
     legacy.state["version"] = 19
     legacy.state.erase("facing_orders")
+    legacy.state.erase("area_fire")
     check(Battle.validate(legacy.state,PAYLOAD) and not legacy.order_arc("UKR_S1",90), "V19 retains old fields and unrestricted fire; orders do not migrate saves.")
     for battle in [current,legacy]:
         battle.squad_by_id("UKR_S1")["ammo"] = 360
@@ -145,6 +149,7 @@ func _run() -> void:
     var authoritative: Dictionary = current.state.duplicate(true)
     authoritative["version"] = 19
     authoritative.erase("facing_orders")
+    authoritative.erase("area_fire")
     check(same(authoritative,legacy.state) and same(current.result(),legacy.result()), "Default unrestricted v20 reproduces complete v19 combat fields/results exactly.")
     # Real campaign disk continuation with changed facing/arc and live firing.
     var game = load("res://scenes/main.tscn").instantiate()
@@ -201,7 +206,9 @@ func _run() -> void:
     check(not view.facing_armed and absi(gui.facing("UKR_S1") - 90) <= 1 and view.arc_preview.get_child_count() == 14 and "FACE" in view.facing_button.text, "Actual FACE and projected ground click persist bearing and show arc wedge.")
     var after: Dictionary = gui.state.duplicate(true)
     before.erase("facing_orders")
+    before.erase("area_fire")
     after.erase("facing_orders")
+    after.erase("area_fire")
     check(same(before,after), "Facing click changes only facing order; no route, timer, acquisition, memory or RNG change.")
     view._animate_soldiers(0.01)
     check(is_equal_approx(view.bodies["UKR_S1"][0].rotation.y,-deg_to_rad(gui.facing("UKR_S1"))), "Stationary living figures obey ordered facing.")

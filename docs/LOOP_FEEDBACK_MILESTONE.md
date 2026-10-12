@@ -1001,3 +1001,66 @@ is delivered as the scheduled task result in ChatGPT.
   future work must reacquire/fetch the remote branch before changing files.
 - Next focused task: ammunition-consuming area suppression at explicit ground points,
   without turning remembered reports into live knowledge or entity-target permissions.
+
+
+## Ground area suppression — in validation 2026-10-11
+
+- Branch codex/ground-area-suppression, tested PR #34 base
+  e285903d94a3a8b58635959f0ea5e33a84e2c2f5; final CI38175577819 success.
+- Reacquired working runtime and fresh isolated worktree; preserved unsynchronized
+  old worktree. Restored Godot4.5.1, pytest and terrain dependencies after reset.
+- v21 ground-point orders, real cadence/ammo, deterministic16m pressure-only effect,
+  safe actual cues and orange order preview. HOLD/arc/clear/posture/memory behavior
+  remains isolated. No hidden hit IDs or casual damage; area does not grant sight.
+- New regression covers real concealed pinning/expenditure, falloff/boundary,
+  actual old observation followed by a legal concealment/posture command, direct
+  target rejection, hidden enemy cues, mode replacement, query/render purity,
+  strict saves, complete v20 parity and every-tick actual campaign disk restart.
+- Initial endpoint array assertion fixed for int/float representation (event was
+  correct). Combined final checks, draft PR and actual rendered CI review pending.
+- Limits: synthetic squad pressure; no casualty/friendly effects/ballistics or
+  Windows/fidelity validation. No changes to campaign/result/export/GIS/launchers.
+- Next: improve opponent reactions to received suppression using local knowledge,
+  or a focused area-fire usability fix discovered in actual review.
+
+
+## Ground area suppression — validated 2026-10-11
+
+- Ready for review: draft PR #35, codex/ground-area-suppression, explicit tested
+  PR #34 base e285903d94a3a8b58635959f0ea5e33a84e2c2f5. No merges/force pushes.
+- Tested code 9445b35c8db8eeb826e9d81dacfea38b15b8e8fd; combined successful CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/38186131756
+  tactical-validation artifact11719174547 inspected. All28 local Godot checks,
+  26 terrain tests and diff check passed; CI adds five actual rendered scripts.
+- Fresh isolated worktree from actual remote; old unsynchronized worktree preserved.
+  Restored Godot4.5.1/pytest/terrain dependencies after runtime reset; tests ran.
+- v21 AREA FIRE + ground click stores a copied fixed point, spends real rounds at
+  existing rifle/support cadence and applies deterministic opposing suppression
+  within16m with linear falloff. No casualty RNG/friendly effect or hidden-hit IDs.
+  HOLD pauses without losing point; ARC/LOS/range withhold shots without fallback;
+  CLEAR FIRE or accepted preferred target removes it; morale withdrawal cancels it.
+- Inspected planning00:00 AREA FIRE marker at woods, blue360R/local0; actual00:03
+  real rifle -9R shot to selected ground, ammo351, local0/Memory0 and no hidden
+  actor/pressure feedback. Controls frozen, Area: active and CLEAR FIRE readable.
+  Existing1x actual recoil00:06/ammo342 and completed06:00 report also inspected:
+  blue36/6/30, red36/5/31, objectives89/159s and once-only campaign consequences.
+- Regression proves actual support volleys pin concealed opposition (198R after18s,
+  no casualties/contact), endpoint/falloff/exact16m edge, real last sight lost after
+  a legal posture command and stale memory preserved while direct targeting rejects,
+  hidden enemy area cues, hold/arc/mode replacement, query copies, 10 malformed
+  save cases, complete no-area v20 authoritative field/result equality, every-tick
+  actual campaign disk restart and real mouse/cue/preview purity against a twin.
+  Existing loop/locks/bounded once-only loss/results/save rollback remain passing.
+- Initial endpoint assertion compared int/float arrays strictly; fixed test using
+  normalized data. Event was correct. Successful checks have no script errors;
+  existing nonfatal driver/anchor/test-input warnings remain.
+- V1–V20 keep fields/rules; campaign v2/result v1/export/GIS/Windows launchers
+  unchanged. Simulation pressure is authoritative; cues/preview are transient and
+  consume no RNG. Frozen ready milestone and earlier downloads preserved.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/ground-area-suppression
+  Godot4.5.1/project.godot/F5/fresh integrated demo. AREA FIRE + reachable ground,
+  execute; HOLD FIRE pauses, AUTO resumes, CLEAR FIRE cancels. Respect saved arcs.
+- Limits: synthetic squad suppression, no area casualties/friendly effects, blast,
+  dispersion/ballistics/individual aim or Windows/Combat Mission fidelity proof.
+- Next focused task: opponent response to received suppression (duck/seek nearby
+  cover) using own pressure/local terrain rather than hidden attacker coordinates.

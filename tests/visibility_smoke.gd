@@ -34,6 +34,7 @@ func _run() -> void:
     battle.state.erase("pending_reports")
     battle.state.erase("observer_contacts")
     battle.state.erase("facing_orders")
+    battle.state.erase("area_fire")
     var blue: Dictionary = battle.squad_by_id("UKR_S1")
     var red: Dictionary = battle.squad_by_id("RU_S1")
     check(battle.state["version"] == 15 and battle.observed_contacts("UKR") == 0, "Fresh contacts must not start with omniscient enemy positions.")
@@ -104,6 +105,7 @@ func _run() -> void:
         legacy.state.erase("pending_reports")
         legacy.state.erase("observer_contacts")
         legacy.state.erase("facing_orders")
+        legacy.state.erase("area_fire")
         legacy.state["version"] = version
         if int(legacy.state["version"]) < 15: legacy.state.erase("weapon_roles")
         if int(legacy.state["version"]) < 14: legacy.state.erase("postures")
