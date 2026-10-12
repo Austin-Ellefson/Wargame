@@ -879,3 +879,20 @@ This setup change contains instructions only; these missing tools must be addres
 - Next focused task: deterministic separation/reservation of nearby cover goals
   among living red squads, using friendly state and terrain only. Keep this tested
   download available, version changed behavior and preserve exact disk continuation.
+
+
+## Friendly cover spacing — in validation 2026-10-12 (America/Chicago)
+
+- Task branch: codex/opponent-cover-spacing, explicit base PR #37 at
+  70d60f2f7b7960684c7977c912c29a5b50325818. Actual branches/open PRs inspected;
+  no unfinished overlapping task or merge found. Main remains the starter README.
+- V24 reserves a 12 m buffer around living friendly positions and active cover
+  goals, in fixed roster order. Uses the v23 fields; rejects overlapping v24
+  saved goals. Bounded crowded searches retain original queues; normal recovery,
+  death and withdrawal release goals. Old v1–v23 rules and frozen builds retained.
+- All31 local Godot4.5.1 checks,26 terrain tests and diff check pass. Missing
+  transient test dependencies were restored. Rendered CI validation is pending.
+  Do not treat this branch as the validated successor
+  until actual CI conclusions and execution/arrival/report artifacts are recorded.
+- No Windows desktop connection or combat-fidelity validation. Follow this task
+  rather than creating a duplicate cover-spacing branch.
