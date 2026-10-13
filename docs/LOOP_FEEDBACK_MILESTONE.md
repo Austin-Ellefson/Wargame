@@ -21,9 +21,9 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/opponent-nearby-cover / PR #37
-- Latest post-milestone code/evidence commit: e46e61c6504616792084cc7be65e1b396c039c9b
-- Post-milestone next task: separate/reserve nearby red cover destinations
+- Latest validated post-milestone descendant: codex/opponent-cover-spacing / PR #38
+- Latest post-milestone code/evidence commit: ee79493ca036a91125aa3a9a73af023d7348bc86
+- Post-milestone next task: bounded retry when crowded friendly cover becomes available
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -1193,18 +1193,57 @@ is delivered as the scheduled task result in ChatGPT.
   download available, version changed behavior and preserve exact disk continuation.
 
 
-## Friendly cover spacing — in validation 2026-10-12 (America/Chicago)
+## Friendly cover spacing — validated 2026-10-12 (America/Chicago)
 
-- Task branch: codex/opponent-cover-spacing, explicit base PR #37 at
-  70d60f2f7b7960684c7977c912c29a5b50325818. Actual branches/open PRs inspected;
-  no unfinished overlapping task or merge found. Main remains the starter README.
-- V24 reserves a 12 m buffer around living friendly positions and active cover
-  goals, in fixed roster order. Uses the v23 fields; rejects overlapping v24
-  saved goals. Bounded crowded searches retain original queues; normal recovery,
-  death and withdrawal release goals. Old v1–v23 rules and frozen builds retained.
-- All31 local Godot4.5.1 checks,26 terrain tests and diff check pass. Missing
-  transient test dependencies were restored. Rendered CI validation is pending.
-  Do not treat this branch as the validated successor
-  until actual CI conclusions and execution/arrival/report artifacts are recorded.
-- No Windows desktop connection or combat-fidelity validation. Follow this task
-  rather than creating a duplicate cover-spacing branch.
+- Ready for review: draft PR #38, codex/opponent-cover-spacing, explicitly based
+  on PR #37 at 70d60f2f7b7960684c7977c912c29a5b50325818. Rechecked branches,
+  open PRs and expected remote head before resuming the unfinished task; no
+  overlapping successor or merges found. Main still contains the starter README.
+- Tested code: ee79493ca036a91125aa3a9a73af023d7348bc86. All 31 local Godot
+  4.5.1 checks, 26 terrain tests and diff check passed after restoring missing
+  transient dependencies. Combined CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/38268504575 succeeded
+  on the same candidate, including all eight rendered scripts.
+- Inspected artifact 11755223640: actual 00:16 support tracer and -18R feedback,
+  216 rounds remaining, two acquired red squads moving toward separate woods
+  positions. At 00:57 they hold (324,204) and (324,220), 16 m apart; both contact
+  groups are visible, with some figures occluded by a decorative tree. Blue has
+  0 rounds and no expired tracers. Real 4x playback matches an unrendered twin
+  every tick; no enemy intent, live pressure or exact enemy loss labels are added.
+- The actual 06:00 report is readable: UKR wins, blue 36 deployed / 6 survived /
+  30 lost; red 36 / 11 / 25; objective 80 / 15 seconds. Campaign morale caps
+  57 / 56, supply -4 / -3, red withdrawal, once-only result and unlocked turns
+  remain visible. These abstract results do not establish combat fidelity.
+- V24 keeps new cover goals at least 12 m from other living friendly positions
+  and active goals. Validated roster order resolves concurrent choices; saved
+  goals reserve space before arrival with no separate cache or RNG. One survivor
+  and withdrawing squads still occupy their current position. Enemy positions
+  and reports never influence spacing. Exactly 12 m is accepted.
+- Same v23 fields, with v24 goal-pair validation; v1–v23 retain their rules,
+  including overlapping v23 goals. Crowded bounded searches preserve the original
+  route and rearm below 30% pressure. Recovery, death and break release goals.
+  Existing pauses, command response, HUNT, pinning, retreat/rally, acquisition,
+  route rejoin, battle locks, bounded once-only losses and rollback are preserved.
+- Regressions cover simultaneous choice and actual arrival; living/dead/enemy/
+  broken occupancy; exact spacing/save boundaries; no-space queue/pause retention;
+  bounded failure/rearming; released reservations; v23/quiet parity; and an actual
+  campaign disk checkpoint after real support volleys, matching every subsequent
+  state, event and complete result. Initial fixture-only convergence, withdrawal
+  and payload-property errors were corrected before the passing suite. Successful
+  artifact logs contain no script errors; existing nonfatal driver/anchor/input
+  harness warnings remain. Campaign v2/result v1/export/GIS/Windows launchers and
+  frozen milestone/prior downloads remain unchanged.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/opponent-cover-spacing
+  Godot 4.5.1: import project.godot, F5, start a fresh integrated demo for v24.
+  Old pending battles keep their saved rules. Suppress acquired red squads near
+  woods with AREA FIRE and allow executed time for the response; pinning can
+  delay arrival. Stop firing to allow recovery and original-route continuation.
+- Limits: destination spacing only, no individual collision avoidance. Paths can
+  cross, and later movement can enter another squad's reserved space. No threat-
+  direction scoring, coordinated maneuver or Windows/Combat Mission validation.
+  The original milestone check-in and daily cadence remain preserved.
+- Next focused task: a bounded retry for crowded-cover searches after friendly
+  space becomes available while pressure persists. Avoid per-frame pathfinding,
+  preserve occupied-goal separation/queues/gates and exact disk continuation,
+  and version any changed rules or save fields. First confirm the final
+  documentation-head CI recorded in the PR before creating a descendant.

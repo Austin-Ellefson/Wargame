@@ -1,21 +1,36 @@
-# Continue cover-spacing validation
+# Continue tested cover spacing
 
-In-progress focused task: codex/opponent-cover-spacing, based on tested PR #37
-head 70d60f2f7b7960684c7977c912c29a5b50325818. Reuse this branch/task PR;
-inspect current branch leases and open PRs before editing. The latest validated
-base remains codex/opponent-nearby-cover until combined checks finish.
+Latest validated descendant: codex/opponent-cover-spacing, draft PR #38, based
+on PR #37 head 70d60f2f7b7960684c7977c912c29a5b50325818. Tested code:
+ee79493ca036a91125aa3a9a73af023d7348bc86. Combined CI
+https://github.com/Austin-Ellefson/Wargame/actions/runs/38268504575 passed all
+31 Godot checks, eight rendered scripts and 26 terrain tests. Artifact 11755223640
+inspected: actual 00:16 support tracer/-18R with 216 rounds and two acquired cover
+moves; 00:57 arrival 16 m apart with 0 rounds and expired cues; readable completed
+06:00 two-sided report and campaign consequences. Some decorative tree occlusion
+remains. Check the final documentation-head CI in the PR before dependent work.
 
-V24 reserves nearby wooded goals at least12m from other living red squad centers
-and active goals. Same v23 fields; goal-pair validation; fixed roster ordering;
-no enemy input or RNG. Crowded searches retain original queues and rearm below30%
-pressure. Recovery, death and break release goals. This is destination spacing,
-not individual collision avoidance. Existing gates, route restoration and legacy
-rules remain. Full tests/rendered evidence and final status still need recording.
+Next focused task: bounded retry for crowded-cover searches after friendly space
+becomes available while pressure persists. V24 failed searches currently wait
+until pressure falls below 30% before rearming. Improve this in one small task,
+without per-frame pathfinding, hidden enemy information or extra simulation RNG.
+Keep reservations, existing original queues, explicit waits, command response,
+HUNT, pinning, retreat/rally, local acquisition and exact disk continuation.
+Version changed rules/save fields. Do not divert into vehicles/GIS/equipment.
 
-Read AGENTS.md, AUTONOMOUS_DEVELOPMENT.md, LOOP_FEEDBACK_MILESTONE.md,
-NATIVE_TACTICAL.md and CAMPAIGN_SAVES.md. Preserve frozen milestone/downloads,
-locks, once-only bounded results/losses, rollback, GIS/export and Windows launchers.
-Run all Godot checks and26 terrain tests together; inspect real execution,
-arrival and completed-report CI artifacts. No Windows/Combat Mission fidelity
-claim. Never merge, force-push, delete branches/settings or send external messages.
-The original milestone check-in and daily cadence remain preserved.
+V24 uses the v23 cover_responses fields and validates active goals at least 12 m
+apart. Candidate points also avoid other living red current positions. Fixed
+roster order resolves simultaneous choices. Recovery/death/break release goals;
+no occupancy cache is added. This is destination spacing, not collision avoidance:
+paths may cross and later movement can enter reserved space. V1–v23 retain their
+original fields/rules. Campaign v2/result v1 and frozen downloads are preserved.
+
+Inspect actual branches/open PRs and expected-head leases before work; reuse any
+unfinished focused task PR. Read AGENTS.md, AUTONOMOUS_DEVELOPMENT.md,
+LOOP_FEEDBACK_MILESTONE.md, NATIVE_TACTICAL.md and CAMPAIGN_SAVES.md, plus export/
+GIS contracts before changing them. Main remains a starter README. Never merge,
+force-push, delete branches/settings or send external messages. Run combined
+Godot/terrain tests and inspect actual execution/arrival/report CI artifacts.
+No supported Windows desktop connection is present; no Windows/Combat Mission
+fidelity claim. The original milestone check-in and daily cadence are preserved;
+do not repeat the announcement without a material fix to that frozen build.
