@@ -13,6 +13,7 @@ const WOODS_SPOT_RANGE := 120.0
 const COVER_PRESSURE_TICKS := 6
 const COVER_RADIUS := 32.0
 const COVER_PATH_LIMIT := 40.0
+const COVER_SEPARATION := 12.0
 const BUILDINGS := [Rect2(222, 152, 30, 30), Rect2(304, 326, 30, 30), Rect2(166, 346, 24, 24)]
 const WOODS := [Vector3(212, 290, 29), Vector3(298, 210, 30), Vector3(108, 130, 32)]
 
@@ -54,7 +55,7 @@ static func visible(a: Vector2, b: Vector2, observer_height: float = 1.6, target
     return true
 
 func setup(payload: Dictionary) -> void:
-    state = {"version": 23, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
+    state = {"version": 24, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
     state["contacts"] = {"UKR": {}, "RU": {}}
@@ -270,6 +271,19 @@ func _resume_cover_route(squad: Dictionary) -> void:
         state["orders"][id] = join
     _clear_cover_response(id)
 
+func _cover_goal_available(squad: Dictionary, point: Vector2) -> bool:
+    if int(state["version"]) < 24: return true
+    # Reserve a squad footprint using friendly state only. The validated roster
+    # order resolves simultaneous choices; persisted active goals reserve space
+    # before arrival. No cache, enemy lookup or random tie-break is needed.
+    for friendly in state["squads"]:
+        if friendly["id"] == squad["id"] or friendly["faction"] != squad["faction"] or int(friendly["alive"]) <= 0: continue
+        if point.distance_squared_to(position(friendly)) < COVER_SEPARATION * COVER_SEPARATION: return false
+        if seeking_cover(friendly["id"]):
+            var goal: Array = state["cover_responses"][friendly["id"]]["goal"]
+            if point.distance_squared_to(Vector2(goal[0], goal[1])) < COVER_SEPARATION * COVER_SEPARATION: return false
+    return true
+
 func _opponent_cover(squad: Dictionary) -> void:
     if int(state["version"]) < 23: return
     var id: String = squad["id"]
@@ -299,6 +313,7 @@ func _opponent_cover(squad: Dictionary) -> void:
             var cell := Vector2i(x, y)
             var point := cover_navigation.get_point_position(cell)
             if cover_navigation.is_point_solid(cell) or cover(point) <= 0.2 or origin.distance_to(point) > COVER_RADIUS: continue
+            if not _cover_goal_available(squad, point): continue
             var path := _terrain_path(origin, point)
             if path.is_empty(): continue
             var distance := _path_length(origin, path)
@@ -913,7 +928,7 @@ func result() -> Dictionary:
         "elapsed": state["elapsed"], "objective": state["objective"].duplicate(true), "forces": forces}
 
 static func validate(saved: Variant, payload: Dictionary) -> bool:
-    if not saved is Dictionary or not _integer(saved.get("version"), 1, 23):
+    if not saved is Dictionary or not _integer(saved.get("version"), 1, 24):
         return false
     var version := int(saved["version"])
     var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12) + 2 * int(version >= 13) + int(version >= 14) + int(version >= 15) + int(version >= 16) + int(version >= 17) + 2 * int(version >= 18) + int(version >= 19) + int(version >= 20) + int(version >= 21) + int(version >= 23)
@@ -1116,6 +1131,7 @@ static func _validate_fields(saved: Dictionary, payload: Dictionary) -> bool:
     if int(saved["version"]) >= 23:
         var responses = saved.get("cover_responses")
         if not responses is Dictionary or responses.size() != known.size(): return false
+        var reserved_goals: Array[Vector2] = []
         for id in known:
             var response = responses.get(id)
             if not response is Dictionary or response.size() != 3 or not _integer(response.get("pressure_ticks"), 0, COVER_PRESSURE_TICKS) or not response.get("goal") is Array or not response.get("path") is Array: return false
@@ -1127,6 +1143,11 @@ static func _validate_fields(saved: Dictionary, payload: Dictionary) -> bool:
                 if not path.is_empty(): return false
                 continue
             if not _point(goal) or cover(Vector2(goal[0],goal[1])) <= 0.2 or inside_building(Vector2(goal[0],goal[1]),5.0) or response["pressure_ticks"] != COVER_PRESSURE_TICKS or path.size() > 12: return false
+            if int(saved["version"]) >= 24:
+                var point := Vector2(goal[0], goal[1])
+                for reserved in reserved_goals:
+                    if point.distance_squared_to(reserved) < COVER_SEPARATION * COVER_SEPARATION: return false
+                reserved_goals.append(point)
             for point in path:
                 if not _point(point) or inside_building(Vector2(point[0],point[1]),5.0): return false
             if path.is_empty():

@@ -422,3 +422,24 @@ attack; older rules are untouched. Partial timers, motion, holding and recovery
 restore exactly, including every subsequent campaign tick, shot and full result.
 Campaign schema v2/result v1, battle locks, bounded once-only losses, rollback,
 export/GIS contracts and Windows launchers are unchanged. Drawing consumes no RNG.
+
+## Friendly cover reservations (tactical v24)
+
+V24 uses the v23 field shape, including `cover_responses`. Selection excludes
+points less than 12 m from another living friendly squad's current position or
+active cover goal. Exactly 12 m is allowed. Decisions run in the validated saved
+roster order; earlier choices reserve space before later squads choose. No
+separate cache, occupancy map, timer or random sample is introduced. The existing
+saved goal reserves space during travel, pauses, pinning and arrival until the
+normal recovery/death/break cleanup releases it. If every eligible point is
+occupied, the bounded search fails and retains the original queue; rearming
+still requires recovered pressure below 30%.
+
+V24 validation rejects active goal pairs closer than 12 m. It does not reject a
+living squad currently near another goal, because ordinary movement can legally
+enter that space after selection; this increment does not change movement into
+collision avoidance. V1–v23 retain their original fields and rules, including
+overlapping v23 goals. Campaign schema v2/result v1 and existing lock, bounded
+once-only loss, rollback, export/GIS and Windows launcher contracts are unchanged.
+Exact disk continuation covers simultaneous reservations driven by real fire,
+movement, release and complete results. Rendering consumes no simulation RNG.

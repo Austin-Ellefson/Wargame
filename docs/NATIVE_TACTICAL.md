@@ -713,3 +713,23 @@ squads before they reach cover. Already covered squads do not relocate, and no
 nearby reachable woods means no detour. Start a fresh demo for tactical v23.
 This remains abstract squad behavior, without threat-direction scoring, coordinated
 maneuver, occupied-cover separation or Windows/Combat Mission fidelity validation.
+
+## Friendly cover spacing (v24)
+
+Fresh battles on `codex/opponent-cover-spacing` keep new red cover destinations
+at least 12 m from other living red squad centers and their active cover goals.
+The fixed squad roster resolves simultaneous choices. A reserved goal counts
+while its squad is still moving or paused, so another squad chooses a different
+reachable point. A lone survivor and a withdrawing squad still occupy their
+current position; dead squads do not. Enemy positions and reports never reserve
+space or influence this decision.
+
+The existing 32 m search radius, 40 m route limit and original queued orders stay
+in effect. If no separated cover fits, red keeps its original orders; it retries
+only after pressure falls below 30% and then builds for six seconds again. Goals
+release on recovery, death or morale withdrawal. Already selected routes do not
+reshuffle every tick. The 12 m spacing is a prototype squad-center buffer, not
+individual collision avoidance: paths can cross and later movement can enter
+another squad's space. It does not provide coordinated maneuver or threat-direction
+scoring. Old v23 engagements retain their original unspaced behavior; start a
+fresh integrated demo for v24. Windows and combat fidelity remain unverified.
