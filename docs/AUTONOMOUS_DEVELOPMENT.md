@@ -936,17 +936,24 @@ This setup change contains instructions only; these missing tools must be addres
   and version any changed rules or save fields. First confirm the final
   documentation-head CI recorded in the PR before creating a descendant.
 
-## Crowded-cover retry — in validation 2026-10-13 (America/Chicago)
+## Crowded-cover retry — ready for review 2026-10-13 (America/Chicago)
 
-- Branch codex/crowded-cover-retry, explicit tested PR #38 base
-  95d7b2b434fc66329c87497c9c49bce803226948. Rechecked actual branches/open PRs
-  and successful final CI 38329838680; no overlap or merges found.
-- V25 adds a validated saved 0–12 second retry countdown, armed only by otherwise
-  usable friendly-occupied cover. No cooldown pathfinding or extra RNG. Pending
-  retries retain original queues/modes/waits across interval planning.
-- All 32 local Godot checks, 26 terrain tests and diff check pass. Rendered CI
-  validation remains in progress. The interval regression caught AI route replacement
-  during cooldown; fixed before proceeding. Missing local dependencies restored.
-- Preserve original milestone, prior downloads, legacy saves and campaign/GIS/
-  Windows contracts. No Windows/Combat Mission fidelity claim. Reuse this task
-  until CI conclusions and real execution/report artifacts are recorded.
+- Draft PR #39, codex/crowded-cover-retry, based on tested PR #38 head
+  95d7b2b434fc66329c87497c9c49bce803226948; no overlap or merges found.
+- V25 saves a 12-second congestion-only retry. Fixed the discovered interval
+  planning bug so the original queue/mode/wait survives a pending retry.
+  No intervening pathfinding, enemy lookup or extra RNG; old saves retain rules.
+- Code/evidence 40c2bbdbab98b1ed38403df404cc9a2934bef762: all 32 local Godot
+  checks, 26 terrain tests and diff check pass. Combined CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/38491663121 succeeded,
+  including nine rendered scripts. Artifact 11861614334 inspected: actual 00:12
+  support shot/-18R, 00:38 retried motion after friendly departure, expired cues
+  and readable 06:00 report. Full test/failure/evidence record is in the ledger.
+- Initial passing CI exposed oversized labels at the 80 m camera switch. The
+  fixture now uses the established 65 m inspection scale and waits for 4 m of
+  actual movement; the zoom defect itself is not fixed. Next: smooth world-label
+  and shot-cue sizing across close/overview zoom with execution/render purity tests.
+  A planning-only terrain LOS/range probe can follow; no vehicles/GIS diversion.
+- Campaign/save/export/GIS/Windows contracts and frozen downloads preserved.
+  No Windows/Combat Mission fidelity claim. Check PR #39's final documentation-head
+  CI before creating a descendant; do not duplicate this completed retry task.

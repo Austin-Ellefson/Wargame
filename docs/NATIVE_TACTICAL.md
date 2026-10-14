@@ -6,10 +6,10 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/opponent-nearby-cover` descendant includes route previews,
+The newer `codex/crowded-cover-retry` descendant includes route previews,
 camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
 queued waypoints, timed pauses, local-contact reactions and cover-weighted red routes. The milestone
-branch above remains frozen. Fresh battles use tactical rules v23, including selected-squad visibility and delayed shared reports. See the five-step
+branch above remains frozen. Fresh battles use tactical rules v25, including selected-squad visibility, delayed shared reports, spaced nearby cover and saved retries when friendlies block otherwise usable cover. See the five-step
 batch test guide in [FIVE_STEP_TACTICAL_PROGRESS.md](FIVE_STEP_TACTICAL_PROGRESS.md).
 
 ## Complete game loop
@@ -753,3 +753,9 @@ it. Active cover goals are never reshuffled by a retry. Enemy positions/reports
 and random samples play no part. Start a fresh demo for v25; older saves retain
 their original rules. This remains abstract destination selection, not individual
 collision avoidance or validated Windows/Combat Mission behavior.
+
+The v25 regression captures actual support fire at 4x playback and at least 4 m
+of later movement after a friendly frees cover. Its 65 m inspection camera uses
+the existing close-view label/cue scale. At the current 80 m switch, overview
+labels and cues jump in size and can obscure this close engagement; smoothing
+that presentation-only transition is a separate queued fix, not a resolved issue.

@@ -21,9 +21,9 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/opponent-cover-spacing / PR #38
-- Latest post-milestone code/evidence commit: ee79493ca036a91125aa3a9a73af023d7348bc86
-- Post-milestone next task: bounded retry when crowded friendly cover becomes available
+- Latest validated post-milestone descendant: codex/crowded-cover-retry / PR #39
+- Latest post-milestone code/evidence commit: 40c2bbdbab98b1ed38403df404cc9a2934bef762
+- Post-milestone next task: smooth close/overview world-label and shot-cue scaling
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -1248,17 +1248,59 @@ is delivered as the scheduled task result in ChatGPT.
   and version any changed rules or save fields. First confirm the final
   documentation-head CI recorded in the PR before creating a descendant.
 
-## Crowded-cover retry — in validation 2026-10-13 (America/Chicago)
+## Crowded-cover retry — validated 2026-10-13 (America/Chicago)
 
-- Branch codex/crowded-cover-retry, explicit tested PR #38 base
-  95d7b2b434fc66329c87497c9c49bce803226948. Rechecked actual branches/open PRs
-  and successful final CI 38329838680; no overlap or merges found.
-- V25 adds a validated saved 0–12 second retry countdown, armed only by otherwise
-  usable friendly-occupied cover. No cooldown pathfinding or extra RNG. Pending
-  retries retain original queues/modes/waits across interval planning.
-- All 32 local Godot checks, 26 terrain tests and diff check pass. Rendered CI
-  validation remains in progress. The interval regression caught AI route replacement
-  during cooldown; fixed before proceeding. Missing local dependencies restored.
-- Preserve original milestone, prior downloads, legacy saves and campaign/GIS/
-  Windows contracts. No Windows/Combat Mission fidelity claim. Reuse this task
-  until CI conclusions and real execution/report artifacts are recorded.
+- Ready for review: draft PR #39, codex/crowded-cover-retry, explicit tested
+  PR #38 base 95d7b2b434fc66329c87497c9c49bce803226948. Actual branches/open
+  PRs and successful final base CI 38329838680 were checked before work; no
+  overlap or merges found. Remote head leases were checked before publishing.
+- Gameplay code 14c33c2bda03c0a963ddc4f292e0cb48c57f1108; final code/evidence
+  40c2bbdbab98b1ed38403df404cc9a2934bef762. All 32 local Godot 4.5.1 checks,
+  26 terrain tests and diff check passed, including a complete repeat after the
+  capture refinement. Missing transient Godot/Python dependencies were restored.
+- Combined CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38491663121
+  succeeded on that same candidate: 32 normal checks, nine rendered scripts and
+  26 terrain tests. Artifact 11861614334 was downloaded and inspected. Actual
+  00:12 support fire shows -18R, 72 rounds remaining and a thin shot cue while
+  the acquired red squad waits. At 00:38 it has moved over 4 m toward freed
+  woods; the friendly blocker has moved from (324,212) to (292,212), blue has
+  zero rounds and old tracers have expired. Real 4x playback matches an unseen
+  authoritative twin every tick. Decorative trees/HUD still occlude some figures.
+- The actual 06:00 report is readable: UKR wins; blue 36 deployed / 6 survived /
+  30 lost, red 36 / 11 / 25; objective 80 / 15 seconds. Campaign morale caps
+  57 / 56, supply -4 / -3, red retreat, once-only commit and unlocked turns remain
+  shown. These abstract results are not realistic-combat validation.
+- V25 adds `retry_remaining` (integer 0–12) to each cover response. Only otherwise
+  terrain-reachable, in-budget cover blocked by friendly occupancy arms a retry.
+  Searches repeat every 12 executed seconds while pressure stays at least 30%;
+  intervening ticks do not pathfind. Planning/queries do not advance the timer.
+  Below 30% cancels/rearms normal pressure accumulation; death/break clears it.
+  Existing goals, separation, queues, movement gates and RNG remain intact.
+- The interval regression exposed ordinary AI planning replacing the original
+  HUNT queue during a pending retry. Fixed before dependent validation: original
+  queues/modes/waits now survive interval breaks. Regression covers exact cadence,
+  no cooldown pathfinding, partial-timer restart, actual arrival, movement gates,
+  non-congestion fallbacks, cleanup, hidden-enemy isolation, nine malformed saves,
+  v24 compatibility/quiet parity and every-tick real-fire campaign disk continuation
+  through matching events/results. V1–v24 keep their original fields and rules.
+- First CI https://github.com/Austin-Ellefson/Wargame/actions/runs/38491087067
+  passed, but artifact 11861183580 exposed the existing 80 m camera-distance
+  label/cue size jump, obscuring the close encounter. The final fixture uses the
+  established 65 m inspection scale and waits for at least 4 m of movement.
+  This improves evidence; it does not fix the zoom discontinuity. That visible
+  defect is documented as the next focused task. Successful logs contain no
+  script errors; existing nonfatal driver/anchor/input harness warnings remain.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/crowded-cover-retry
+  Godot 4.5.1: import project.godot, F5, fresh integrated demo for v25. Older
+  pending engagements retain their saved rules. Campaign v2/result v1, locks,
+  bounded once-only losses, rollback, export/GIS and Windows launchers are unchanged.
+- Limits: destination spacing, not individual collision avoidance; paths can
+  cross and later movement can enter reserved space. Retries may take up to
+  12 executed seconds after space frees. No threat-direction scoring, coordinated
+  maneuver or Windows/Combat Mission fidelity validation. The original frozen
+  milestone/check-in and prior downloads remain preserved without reannouncement.
+- Next focused task: presentation-only continuous label/cue sizing around the
+  80 m close/overview boundary. Test real camera zoom, actual 1x/4x/8x shots,
+  visibility and complete authoritative-state/RNG isolation; inspect new renders.
+  Then consider a planning-only terrain LOS/range probe without hidden-unit lookup.
+  Check the final documentation-head CI recorded in PR #39 before branching.
