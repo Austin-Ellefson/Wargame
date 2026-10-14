@@ -233,7 +233,8 @@ func _run() -> void:
     await process_frame
     view.set_process(false)
     view.camera_focus = Vector2(344,212)
-    view.camera_distance = 80
+    # Use the established close-inspection scale; overview labels jump at 80 m.
+    view.camera_distance = 65
     view.camera_pitch = deg_to_rad(50)
     view.camera_yaw = deg_to_rad(75)
     view._update_camera()
@@ -250,10 +251,10 @@ func _run() -> void:
             check(view.actors["RU_S1"].visible and not visible.seeking_cover("RU_S1"),"An acquired crowded squad receives actual support fire while retrying.")
             print("RETRY FIRE: tick=",visible.state["elapsed"]," rounds=",visible.squad_by_id("UKR_S2")["ammo"]," retry=",response(visible)["retry_remaining"])
             await capture_frame("cover-retry-fire-preview")
-        if not captured_retry and visible.seeking_cover("RU_S1") and Battle.position(visible.squad_by_id("RU_S1")) != ORIGIN:
+        if not captured_retry and visible.seeking_cover("RU_S1") and Battle.position(visible.squad_by_id("RU_S1")).distance_to(ORIGIN) >= 4.0:
             captured_retry = true
             check(response(visible)["retry_remaining"] == 0 and view.actors["RU_S1"].visible and visible.squad_by_id("UKR_S2")["ammo"] == 0 and view.shot_cues.is_empty(),"Freed cover causes acquired actual movement after ammunition/old cues expire.")
-            print("RETRY MOVE: tick=",visible.state["elapsed"]," goal=",response(visible)["goal"]," blocker=",Battle.position(visible.squad_by_id("RU_S2")))
+            print("RETRY MOVE: tick=",visible.state["elapsed"]," position=",Battle.position(visible.squad_by_id("RU_S1"))," goal=",response(visible)["goal"]," blocker=",Battle.position(visible.squad_by_id("RU_S2")))
             await capture_frame("cover-retry-move-preview")
     check(captured_fire and captured_retry,"Actual fire and friendly movement produce a visible retried cover move.")
     view.queue_free()
