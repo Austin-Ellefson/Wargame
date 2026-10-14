@@ -56,6 +56,7 @@ jobs:
             ${{ runner.temp }}/opponent-duck-*-preview.png
             ${{ runner.temp }}/nearby-cover-*-preview.png
             ${{ runner.temp }}/cover-spacing-*-preview.png
+            ${{ runner.temp }}/cover-retry-*-preview.png
             ${{ runner.temp }}/soldiers-*-motion-*.png
             ${{ runner.temp }}/soldiers-recoil-*.png
             ${{ runner.temp }}/soldiers-stand-preview.png

@@ -443,3 +443,26 @@ overlapping v23 goals. Campaign schema v2/result v1 and existing lock, bounded
 once-only loss, rollback, export/GIS and Windows launcher contracts are unchanged.
 Exact disk continuation covers simultaneous reservations driven by real fire,
 movement, release and complete results. Rendering consumes no simulation RNG.
+
+## Crowded-cover retry (tactical v25)
+
+Each v25 `cover_responses` record adds `retry_remaining`, an integer 0–12 in
+simulated seconds. A positive value requires six pressure ticks, an empty goal
+and path, and a living nonbroken red squad. Blue/dead/broken squads require zero.
+Missing, extra, fractional, nonnumeric, out-of-range or inconsistent retry data
+rejects before load. V1–v24 retain their original record shapes and behavior.
+
+Only a failed search with a reachable in-budget candidate blocked by friendly
+occupancy arms 12 seconds. The next search occurs on the twelfth subsequent
+execution tick, with no pathfinding during intervening ticks. Continued congestion
+rearms 12; success leaves zero and reserves the ordinary cover goal. Failure for
+other terrain/queue reasons leaves zero until the usual pressure rearm. Recovered
+pressure below 30% resets timer and pressure ticks; recovery/death/break cleanup
+clears it. The authoritative integer countdown, not wall time or transient cache,
+survives JSON disk checkpoints and interval transitions exactly.
+
+Interval execution preserves a pending retry's original queued route, mode and
+wait; its old destination (or current position if no route) remains reserved for
+ordinary opponent objective selection. Existing movement gates still apply.
+Campaign v2/result v1, locks, bounded once-only losses/results, rollback, exports,
+GIS and Windows launchers are unchanged. No additional simulation RNG is used.

@@ -13,6 +13,8 @@ func same(a: Variant, b: Variant) -> bool: return JSON.parse_string(JSON.stringi
 func fixture() -> RefCounted:
     var sim = Battle.new()
     sim.setup(PAYLOAD)
+    sim.state["version"] = 24 # Preserve the original no-retry spacing rules.
+    for response in sim.state["cover_responses"].values(): response.erase("retry_remaining")
     for squad in sim.state["squads"]:
         squad["ammo"] = 0
         if squad["id"] not in ["UKR_S2", "RU_S1", "RU_S2"]: squad["alive"] = 0
