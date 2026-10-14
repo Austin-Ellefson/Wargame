@@ -935,3 +935,18 @@ This setup change contains instructions only; these missing tools must be addres
   preserve occupied-goal separation/queues/gates and exact disk continuation,
   and version any changed rules or save fields. First confirm the final
   documentation-head CI recorded in the PR before creating a descendant.
+
+## Crowded-cover retry — in validation 2026-10-13 (America/Chicago)
+
+- Branch codex/crowded-cover-retry, explicit tested PR #38 base
+  95d7b2b434fc66329c87497c9c49bce803226948. Rechecked actual branches/open PRs
+  and successful final CI 38329838680; no overlap or merges found.
+- V25 adds a validated saved 0–12 second retry countdown, armed only by otherwise
+  usable friendly-occupied cover. No cooldown pathfinding or extra RNG. Pending
+  retries retain original queues/modes/waits across interval planning.
+- All 32 local Godot checks, 26 terrain tests and diff check pass. Rendered CI
+  validation remains in progress. The interval regression caught AI route replacement
+  during cooldown; fixed before proceeding. Missing local dependencies restored.
+- Preserve original milestone, prior downloads, legacy saves and campaign/GIS/
+  Windows contracts. No Windows/Combat Mission fidelity claim. Reuse this task
+  until CI conclusions and real execution/report artifacts are recorded.

@@ -733,3 +733,23 @@ individual collision avoidance: paths can cross and later movement can enter
 another squad's space. It does not provide coordinated maneuver or threat-direction
 scoring. Old v23 engagements retain their original unspaced behavior; start a
 fresh integrated demo for v24. Windows and combat fidelity remain unverified.
+
+## Retrying crowded cover (v25)
+
+If all otherwise usable nearby wooded destinations are occupied by friendlies,
+red waits 12 executed seconds before searching again while suppression stays at
+least 30%. Still-crowded searches repeat at that bounded cadence; an available
+point is reserved normally. The cooldown survives save/load and interval breaks.
+Planning, pause/playback controls and queries cannot advance its clock. A pending
+retry preserves the original route, movement mode and remaining explicit wait
+when the next execution interval starts. Pinning, HUNT, waits, command response
+and morale withdrawal still control whether the squad actually moves.
+
+This retry requires a terrain-reachable point inside the existing radius, route
+length and queue budget. Distant/unreachable woods, an already covered squad and
+a full movement queue do not arm it. Falling below 30% pressure cancels the timer
+and restarts the normal six-second pressure requirement. Death or breaking clears
+it. Active cover goals are never reshuffled by a retry. Enemy positions/reports
+and random samples play no part. Start a fresh demo for v25; older saves retain
+their original rules. This remains abstract destination selection, not individual
+collision avoidance or validated Windows/Combat Mission behavior.

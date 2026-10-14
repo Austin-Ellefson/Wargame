@@ -1,4 +1,13 @@
-# Continue tested cover spacing
+# Finish crowded-cover retry validation
+
+In-progress task: codex/crowded-cover-retry, based on PR #38 head
+95d7b2b434fc66329c87497c9c49bce803226948. Reuse this branch and its task PR;
+do not start another retry implementation. V25 adds a saved 12-second cooldown
+only when otherwise viable cover is blocked by friendly occupancy. Original
+queues/modes/waits now survive interval planning during the cooldown. The focused
+regression passes after exposing and fixing that interval replacement issue.
+Combined local/CI/rendered validation and final status are still in progress.
+The validated base and its evidence below remain the fallback until this passes.
 
 Latest validated descendant: codex/opponent-cover-spacing, draft PR #38, based
 on PR #37 head 70d60f2f7b7960684c7977c912c29a5b50325818. Tested code:
@@ -10,7 +19,7 @@ moves; 00:57 arrival 16 m apart with 0 rounds and expired cues; readable complet
 06:00 two-sided report and campaign consequences. Some decorative tree occlusion
 remains. Check the final documentation-head CI in the PR before dependent work.
 
-Next focused task: bounded retry for crowded-cover searches after friendly space
+Current focused task: bounded retry for crowded-cover searches after friendly space
 becomes available while pressure persists. V24 failed searches currently wait
 until pressure falls below 30% before rearming. Improve this in one small task,
 without per-frame pathfinding, hidden enemy information or extra simulation RNG.
