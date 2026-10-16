@@ -1327,8 +1327,8 @@ is delivered as the scheduled task result in ChatGPT.
 - New regression covers 24–950 m and FOV 30/52/70, both sides of 80 m, actual
   wheel/INSPECT/RESET/playback controls, same live cue nodes and expiration without
   resurrection. Real rifle shots at 1x/4x/8x match an unrendered twin each tick.
-  Complete separate combats at each playback speed compare every state and final
-  result. A hidden squad's changed position cannot move its remembered marker,
+  A complete separate combat cycles all three playback speeds and compares every
+  state and the final result. A hidden squad's changed position cannot move its remembered marker,
   reveal its live model/cues or update knowledge through camera operations.
 - Inspected execution captures: zoom-fire-1x/4x/8x-preview.png show actual
   00:03/00:06/00:09 volleys at 80 m, thin yellow shot cues, readable -9R HUD
