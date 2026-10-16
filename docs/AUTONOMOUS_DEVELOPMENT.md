@@ -957,3 +957,19 @@ This setup change contains instructions only; these missing tools must be addres
 - Campaign/save/export/GIS/Windows contracts and frozen downloads preserved.
   No Windows/Combat Mission fidelity claim. Check PR #39's final documentation-head
   CI before creating a descendant; do not duplicate this completed retry task.
+
+## Continuous combat zoom — in validation 2026-10-15 (America/Chicago)
+
+- Branch codex/continuous-combat-zoom; explicit tested PR #39 base
+  ad768942bff43b172b977b8c2ea6765e78bab5d9, final CI 38492211883 successful.
+  Branches/open PRs rechecked: no successor/overlap or merge; main still starter.
+- Replaces abrupt label/cue sizes with bounded continuous distance/FOV sizing.
+  Existing shot geometry resizes on camera input without resetting TTL/recoil.
+  Selected/remembered knowledge, physical shot endpoints and preview extents stay
+  unchanged. Tactical v25/campaign v2/result v1 and old save rules are unchanged.
+- Focused regression passes: actual wheel/inspect/reset, both sides of 80 m,
+  1x/4x/8x real shots, hidden report isolation and complete combat twin outcomes.
+  Combined checks and rendered execution/report inspection pending; do not claim
+  visual validation until artifacts are reviewed. Local dependencies restored.
+- Preserve frozen downloads. No Windows/CMBS/realistic-fidelity claim. Finish this
+  focused task before the queued planning-only terrain LOS/range probe.

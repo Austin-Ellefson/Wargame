@@ -356,6 +356,7 @@ func _map_input(event: InputEvent) -> void:
         return
     if event.button_index == MOUSE_BUTTON_WHEEL_UP or event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
         camera.fov = clampf(camera.fov + (-3 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 3), 30, 70)
+        _refresh_zoom_sizes()
         return
     if area_armed:
         if event.button_index == MOUSE_BUTTON_RIGHT:
@@ -411,6 +412,41 @@ func _update_camera() -> void:
     var horizontal := camera_distance * cos(camera_pitch)
     camera.position = focus + Vector3(sin(camera_yaw) * horizontal, camera_distance * sin(camera_pitch), cos(camera_yaw) * horizontal)
     camera.look_at(focus)
+    _refresh_zoom_sizes()
+
+func _zoom_size(close_size: float, overview_size: float) -> float:
+    # Wheel zoom changes FOV, not distance. Account for both while preserving
+    # the established 65 m close and default overview sizes, without an 80 m jump.
+    var projected_distance := camera_distance * tan(deg_to_rad(camera.fov * 0.5)) / tan(deg_to_rad(26))
+    var blend := clampf((projected_distance - 65.0) / (Vector2(520,394).length() - 65.0), 0.0, 1.0)
+    return lerpf(close_size, overview_size, blend)
+
+func _refresh_zoom_sizes() -> void:
+    # Resize existing presentation only. Do not replay shots, reset their TTL,
+    # rebuild knowledge, or change authoritative state when the camera moves.
+    for label in labels.values():
+        label.pixel_size = _zoom_size(0.035, 0.35)
+        label.position.y = _zoom_size(3.2, 14.0)
+    for label in contact_labels.values():
+        label.pixel_size = _zoom_size(0.05, 0.5)
+        label.position.y = _zoom_size(5.0, 30.0)
+    if area_preview != null:
+        for child in area_preview.get_children():
+            if child is Label3D:
+                child.pixel_size = _zoom_size(0.035, 0.35)
+                child.position.y = Battle.terrain_height(child.position.x, child.position.z) + _zoom_size(5.0, 14.0)
+    if arc_preview != null:
+        for child in arc_preview.get_children():
+            var mesh: BoxMesh = child.mesh
+            var thickness := _zoom_size(0.035, 0.65)
+            mesh.size = Vector3(thickness, thickness, mesh.size.z)
+    for cue in shot_cues:
+        var flash: SphereMesh = cue["node"].get_child(0).mesh
+        flash.radius = _zoom_size(0.18, 3.0)
+        flash.height = flash.radius * 2.0
+        var trail: BoxMesh = cue["node"].get_child(1).mesh
+        var thickness := _zoom_size(0.035, 0.9)
+        trail.size = Vector3(thickness, thickness, trail.size.z)
 
 func _reset_camera() -> void:
     camera_focus = Vector2(256, 256)
@@ -477,13 +513,14 @@ func _show_shot_events(events: Array) -> void:
         var cue := Node3D.new()
         world.add_child(cue)
         var flash := SphereMesh.new()
-        var cue_radius := 0.18 if camera_distance < 80 else 3.0
+        var cue_radius := _zoom_size(0.18, 3.0)
         flash.radius = cue_radius
         flash.height = cue_radius * 2.0
         var support: bool = event.get("weapon_role", "rifle") == "support"
         _mesh(flash, start_3d, _shot_material(Color("ffcc8a") if support else Color("fff2a8")), cue)
         var trail := BoxMesh.new()
-        trail.size = Vector3(0.035 if camera_distance < 80 else 0.9, 0.035 if camera_distance < 80 else 0.9, start_3d.distance_to(finish_3d))
+        var thickness := _zoom_size(0.035, 0.9)
+        trail.size = Vector3(thickness, thickness, start_3d.distance_to(finish_3d))
         var tracer := _mesh(trail, (start_3d + finish_3d) * 0.5, _shot_material(Color("ffb43b")), cue)
         tracer.look_at(finish_3d, Vector3.UP)
         shot_cues.append({"node": cue, "ttl": 0.42, "local_observers": event.get("local_observers", []).duplicate()})
@@ -645,9 +682,9 @@ func _refresh_area_preview() -> void:
     var label := Label3D.new()
     label.text = "AREA FIRE"
     label.font_size = 32
-    label.pixel_size = 0.035 if camera_distance < 80 else 0.35
+    label.pixel_size = _zoom_size(0.035, 0.35)
     label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-    label.position = Vector3(point.x,Battle.terrain_height(point.x,point.y)+(5.0 if camera_distance < 80 else 14.0),point.y)
+    label.position = Vector3(point.x,Battle.terrain_height(point.x,point.y)+_zoom_size(5.0,14.0),point.y)
     label.modulate = Color("ffc687")
     area_preview.add_child(label)
 
@@ -676,7 +713,7 @@ func _refresh_arc_preview() -> void:
         var start := Vector3(a.x, Battle.terrain_height(a.x,a.y) + 1.0, a.y)
         var end := Vector3(b.x, Battle.terrain_height(b.x,b.y) + 1.0, b.y)
         var line := BoxMesh.new()
-        var thickness := 0.035 if camera_distance < 80 else 0.65
+        var thickness := _zoom_size(0.035, 0.65)
         line.size = Vector3(thickness,thickness,start.distance_to(end))
         var instance := _mesh(line,(start+end)*0.5,_material(Color("69ead4"),true),arc_preview)
         instance.look_at(end,Vector3.UP)
@@ -856,8 +893,6 @@ func _refresh() -> void:
             body.pose(value, known_losses and index >= int(squad["alive"]))
             body.position.y = Battle.terrain_height(point.x + body.position.x, point.y + body.position.z) - Battle.terrain_height(point.x, point.y)
         actors[squad["id"]].visible = observed and (int(squad["alive"]) > 0 or known_losses)
-        labels[squad["id"]].position.y = 3.2 if camera_distance < 80 else 14.0
-        labels[squad["id"]].pixel_size = 0.035 if camera_distance < 80 else 0.35
         labels[squad["id"]].text = "%s %dP %dR SUP%d%s" % [str(squad["id"]).replace("_", " "), squad["alive"], squad["ammo"], int(float(squad["suppression"]) * 100), " *" if squad["id"] == selected else ""]
         if simulation.morale_state(squad["id"]) == "broken":
             labels[squad["id"]].text += "\nBROKEN"
@@ -871,4 +906,5 @@ func _refresh() -> void:
             var target := Vector2(path.back()[0], path.back()[1])
             markers[squad["id"]].position = Vector3(target.x, Battle.terrain_height(target.x, target.y) + 0.7, target.y)
 
+    _refresh_zoom_sizes()
     _animate_soldiers(0.0)

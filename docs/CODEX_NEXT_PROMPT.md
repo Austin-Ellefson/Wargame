@@ -1,4 +1,13 @@
-# Continue from validated crowded-cover retry
+# Finish continuous combat zoom validation
+
+In-progress task: codex/continuous-combat-zoom, based on tested PR #39 head
+ad768942bff43b172b977b8c2ea6765e78bab5d9 (final CI 38492211883 success).
+Reuse this focused task branch/PR. Continuous bounded distance/FOV sizing replaces
+the 80 m jump for squad/area/remembered labels, arcs, muzzle and tracer widths.
+Actual camera input resizes existing effects without replaying them or changing
+their lifetime. The new headless zoom regression passes; combined local and
+rendered CI/artifact validation is still pending. No save/rule version changes.
+The validated baseline and follow-up intent below remain the fallback.
 
 Latest validated descendant: codex/crowded-cover-retry, draft PR #39, explicitly
 based on PR #38 head 95d7b2b434fc66329c87497c9c49bce803226948. Tested code/evidence:
