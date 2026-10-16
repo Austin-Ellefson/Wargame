@@ -958,18 +958,25 @@ This setup change contains instructions only; these missing tools must be addres
   No Windows/Combat Mission fidelity claim. Check PR #39's final documentation-head
   CI before creating a descendant; do not duplicate this completed retry task.
 
-## Continuous combat zoom — in validation 2026-10-15 (America/Chicago)
+## Continuous combat zoom — ready for review 2026-10-15 (America/Chicago)
 
-- Branch codex/continuous-combat-zoom; explicit tested PR #39 base
-  ad768942bff43b172b977b8c2ea6765e78bab5d9, final CI 38492211883 successful.
-  Branches/open PRs rechecked: no successor/overlap or merge; main still starter.
-- Replaces abrupt label/cue sizes with bounded continuous distance/FOV sizing.
-  Existing shot geometry resizes on camera input without resetting TTL/recoil.
-  Selected/remembered knowledge, physical shot endpoints and preview extents stay
-  unchanged. Tactical v25/campaign v2/result v1 and old save rules are unchanged.
-- Focused regression passes: actual wheel/inspect/reset, both sides of 80 m,
-  1x/4x/8x real shots, hidden report isolation and complete combat twin outcomes.
-  Combined checks and rendered execution/report inspection pending; do not claim
-  visual validation until artifacts are reviewed. Local dependencies restored.
-- Preserve frozen downloads. No Windows/CMBS/realistic-fidelity claim. Finish this
-  focused task before the queued planning-only terrain LOS/range probe.
+- Draft PR #40, codex/continuous-combat-zoom, based on tested PR #39 head
+  ad768942bff43b172b977b8c2ea6765e78bab5d9; final base CI 38492211883 succeeded.
+  No overlapping successor or merges; expected-head leases honored.
+- Fixes abrupt 80 m label/shot-cue scaling with bounded distance/FOV sizing.
+  Actual wheel input resizes existing geometry without resetting lifetime/recoil,
+  changing endpoints/preview extents, updating hidden knowledge or consuming RNG.
+  Tactical v25/campaign v2/result v1 and old saved rules are unchanged.
+- Code/evidence 354432409976c937a0bec0881f33e6ecaca28ff5: all 33 local Godot
+  checks, 26 terrain tests and diff check passed. Combined CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/38831813254 succeeded,
+  including ten rendered scripts. Artifact 12018070598 inspected: actual
+  1x/4x/8x shots, real narrow/wide wheel zoom, hidden-contact memory and readable
+  completed reports. Complete real-combat state/results match an unrendered twin.
+  No failing checks; existing nonfatal driver/anchor/input warnings remain.
+- Download and detailed render evidence are in the milestone ledger. Frozen
+  downloads and original prepared check-in preserved. Distant/dense labels and
+  tree/HUD occlusion remain; no Windows/CMBS/realistic-fidelity claim.
+- Next: planning-only terrain LOS/range probe from selected friendly to explicit
+  ground, using existing terrain/posture and no hidden-unit queries or state/RNG
+  changes. Check PR #40 final documentation-head CI before creating a descendant.

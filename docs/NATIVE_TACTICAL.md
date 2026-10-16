@@ -6,7 +6,7 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/crowded-cover-retry` descendant includes route previews,
+The newer `codex/continuous-combat-zoom` descendant includes route previews,
 camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
 queued waypoints, timed pauses, local-contact reactions and cover-weighted red routes. The milestone
 branch above remains frozen. Fresh battles use tactical rules v25, including selected-squad visibility, delayed shared reports, spaced nearby cover and saved retries when friendlies block otherwise usable cover. See the five-step
@@ -756,9 +756,10 @@ collision avoidance or validated Windows/Combat Mission behavior.
 
 The v25 regression captures actual support fire at 4x playback and at least 4 m
 of later movement after a friendly frees cover. Its 65 m inspection camera uses
-the existing close-view label/cue scale. At the current 80 m switch, overview
-labels and cues jump in size and can obscure this close engagement; smoothing
-that presentation-only transition is a separate queued fix, not a resolved issue.
+the existing close-view label/cue scale. At the old 80 m switch, overview
+labels and cues jumped in size and obscured this close engagement. The following
+presentation increment fixes that transition on the newer descendant; the earlier
+retry fixture remains unchanged as evidence for the separate cover behavior.
 
 ## Continuous combat zoom — presentation increment
 

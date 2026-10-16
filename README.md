@@ -22,7 +22,7 @@ The prototype uses a 4x4 grid over a fictional test area in central Ukraine. For
 
 Clone this repository and import its root `project.godot` in Godot. Press **F5** to run.
 
-Download **[`codex/crowded-cover-retry`](https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/crowded-cover-retry)** for the latest tested descendant. It includes repeat battles and restart, firing/report feedback, limited visibility and delayed reports, infantry movement/fire/posture orders, fatigue and morale, low-poly animated soldier figures, and nearby-cover reactions. Fresh v25 battles retry friendly-crowded cover after 12 executed seconds while pressure persists; saved queues and retry clocks survive restart and interval breaks.
+Download **[`codex/continuous-combat-zoom`](https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/continuous-combat-zoom)** for the latest tested descendant. It includes repeat battles and restart, firing/report feedback, limited visibility and delayed reports, infantry movement/fire/posture orders, fatigue and morale, low-poly animated soldier figures, and nearby-cover reactions. Labels and live firing cues now resize gradually across camera distance and wheel zoom, without changing battle outcomes. Fresh v25 battles retain saved crowded-cover retries; existing pending saves receive the presentation fix without a rules migration.
 
 The original milestone remains preserved on `codex/completed-battle-report`. The stacked PRs remain unmerged. Import `project.godot`, then press **F5**; start a fresh integrated demo to use the latest rules. Existing pending battles keep their saved rules.
 
@@ -75,7 +75,7 @@ See [native battle behavior and limits](docs/NATIVE_TACTICAL.md).
 - The Python terrain bridge can prepare real OSM features, a projected elevation grid, and a CMAutoEditor elevation CSV. It does not create a CMBS scenario, launch the game, or import battle results.
 - Only the first same-sector opposing pair starts a battle. Crossing moves and larger battles need later rules.
 - Native battles currently use synthetic terrain and abstract infantry combat. OSM/DEM import, vehicles, detailed ballistics and deeper force behavior are later work. Windows validation and Combat Mission fidelity remain unverified.
-- World-label and shot-cue sizes currently jump at the 80 m camera-distance boundary. **INSPECT SQUAD** uses the smaller close-view scale; continuous zoom scaling is queued for correction.
+- World labels and shot cues now scale continuously between close and overview sizes. Labels can still overlap in dense groups, and decorative terrain/HUD can obscure figures; this does not add per-label collision avoidance.
 - Contact, tactical interval boundaries and applied results autosave. Startup still opens the initial scenario until **LOAD**. An unfinished battle locks campaign turns and movement.
 
 ## Validation
