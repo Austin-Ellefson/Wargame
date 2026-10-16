@@ -21,9 +21,9 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/crowded-cover-retry / PR #39
-- Latest post-milestone code/evidence commit: 40c2bbdbab98b1ed38403df404cc9a2934bef762
-- Post-milestone next task: smooth close/overview world-label and shot-cue scaling
+- Latest validated post-milestone descendant: codex/continuous-combat-zoom / PR #40
+- Latest post-milestone code/evidence commit: 354432409976c937a0bec0881f33e6ecaca28ff5
+- Post-milestone next task: planning-only terrain line-of-sight/range probe
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -1304,3 +1304,57 @@ is delivered as the scheduled task result in ChatGPT.
   visibility and complete authoritative-state/RNG isolation; inspect new renders.
   Then consider a planning-only terrain LOS/range probe without hidden-unit lookup.
   Check the final documentation-head CI recorded in PR #39 before branching.
+
+## Continuous combat zoom — validated 2026-10-15 (America/Chicago)
+
+- Ready for review: draft PR #40, codex/continuous-combat-zoom, explicit tested
+  PR #39 base ad768942bff43b172b977b8c2ea6765e78bab5d9. Final base CI
+  38492211883 succeeded. Branches/open PRs and expected remote heads rechecked:
+  no overlap or merges; main still starter. No branch was merged or force-pushed.
+- Code/evidence: 354432409976c937a0bec0881f33e6ecaca28ff5. All 33 local Godot
+  4.5.1 checks, 26 terrain tests and diff check passed after restoring transient
+  dependencies. Combined CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/38831813254 succeeded
+  on that same candidate, including all ten rendered scripts. Artifact
+  12018070598 was downloaded and inspected. No failing checks this run; logs
+  contain no script errors. Existing nonfatal driver/anchor/input warnings remain.
+- Removed the 80 m size jump. Squad/AREA FIRE/remembered labels and heights,
+  arc thickness and muzzle/tracer widths use bounded continuous distance/FOV
+  sizing. The mouse wheel changes FOV, so it now refreshes existing geometry
+  immediately. Default 52-degree close/overview endpoints are preserved. Zoom
+  never replays a shot, resets its 0.42-second lifetime/recoil, moves endpoints,
+  changes 16 m area/230 m arc extents, advances combat or consumes RNG.
+- New regression covers 24–950 m and FOV 30/52/70, both sides of 80 m, actual
+  wheel/INSPECT/RESET/playback controls, same live cue nodes and expiration without
+  resurrection. Real rifle shots at 1x/4x/8x match an unrendered twin each tick.
+  A complete separate combat cycles all three playback speeds and compares every
+  state and the final result. A hidden squad's changed position cannot move its remembered marker,
+  reveal its live model/cues or update knowledge through camera operations.
+- Inspected execution captures: zoom-fire-1x/4x/8x-preview.png show actual
+  00:03/00:06/00:09 volleys at 80 m, thin yellow shot cues, readable -9R HUD
+  feedback and 351/342/333 rounds remaining. Narrow/wide captures show the same
+  active 4x shot at FOV 30/70 after real wheel input; no oversized label jump.
+  World text is small at the wide view; the roster/HUD remains readable. The
+  memory capture shows a six-second-old report with no live hidden enemy model.
+- The new real-combat report is readable at 03:27: red wins, blue 36 deployed /
+  0 surviving / 36 lost, red 36 / 25 / 11, objective 0 / 126 seconds; morale
+  caps 53 / 71, supply -2 / -5, blue eliminated/no retreat. The existing 06:00
+  report still shows blue 36 / 6 / 30 and red 36 / 11 / 25, objective 80 / 15,
+  morale caps 57 / 56, supply -4 / -3 and red withdrawal. Both show once-only
+  application and unlocked campaign turns. These abstract outcomes are not
+  realistic-combat validation.
+- Tactical v25/campaign v2/result v1, deterministic restart, locks, bounded
+  once-only losses, rollback, export/GIS and optional Windows launchers unchanged.
+  No save migration. Frozen milestone/check-in, prior downloads and daily cadence
+  preserved. Local rendering unavailable without Xvfb; rendered evidence is CI.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/continuous-combat-zoom
+  Godot 4.5.1: import project.godot, F5. Enter a battle, INSPECT a squad, wheel
+  zoom during actual fire and cycle 1x/4x/8x. The presentation fix also works for
+  existing pending saves without changing their saved rules.
+- Limits: focus-distance sizing, not per-anchor screen-space sizing or label
+  collision avoidance; dense/distant text and decorative tree/HUD occlusion
+  remain. No Windows, CMBS editor or Combat Mission fidelity validation.
+- Next focused task: planning-only terrain LOS/range probe from the selected
+  friendly to an explicit ground point, using existing terrain/posture queries,
+  no hidden-unit lookup and no state/RNG changes. First check final documentation-
+  head CI recorded in PR #40. Do not duplicate this completed zoom task.

@@ -466,3 +466,13 @@ wait; its old destination (or current position if no route) remains reserved for
 ordinary opponent objective selection. Existing movement gates still apply.
 Campaign v2/result v1, locks, bounded once-only losses/results, rollback, exports,
 GIS and Windows launchers are unchanged. No additional simulation RNG is used.
+
+## Continuous combat zoom — no save change
+
+Distance/FOV-derived label/cue sizing and resizing existing transient shots are
+presentation-only. Tactical v25, campaign v2, result v1 and all older saved rules
+stay unchanged. Camera input cannot advance elapsed time, acquisition, retries,
+knowledge, ammunition or losses. Shot lifetimes and endpoints are unaffected;
+neither the sizes nor the camera are added to campaign snapshots. Full combat
+state/result comparisons against an unrendered twin cover changing zoom at every
+tick. Existing disk restart/lock/once-only/rollback/export/GIS checks remain required.

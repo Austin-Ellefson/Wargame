@@ -6,7 +6,7 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/crowded-cover-retry` descendant includes route previews,
+The newer `codex/continuous-combat-zoom` descendant includes route previews,
 camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
 queued waypoints, timed pauses, local-contact reactions and cover-weighted red routes. The milestone
 branch above remains frozen. Fresh battles use tactical rules v25, including selected-squad visibility, delayed shared reports, spaced nearby cover and saved retries when friendlies block otherwise usable cover. See the five-step
@@ -756,6 +756,28 @@ collision avoidance or validated Windows/Combat Mission behavior.
 
 The v25 regression captures actual support fire at 4x playback and at least 4 m
 of later movement after a friendly frees cover. Its 65 m inspection camera uses
-the existing close-view label/cue scale. At the current 80 m switch, overview
-labels and cues jump in size and can obscure this close engagement; smoothing
-that presentation-only transition is a separate queued fix, not a resolved issue.
+the existing close-view label/cue scale. At the old 80 m switch, overview
+labels and cues jumped in size and obscured this close engagement. The following
+presentation increment fixes that transition on the newer descendant; the earlier
+retry fixture remains unchanged as evidence for the separate cover behavior.
+
+## Continuous combat zoom — presentation increment
+
+The `codex/continuous-combat-zoom` descendant removes the abrupt 80 m size switch.
+Squad/AREA FIRE/remembered-contact labels and their heights, fire-arc line widths,
+and squad muzzle/tracer widths interpolate continuously using camera distance
+and field of view. Sizing stays between the existing close-inspection and default
+overview values. The ordinary 65 m close scale and default 52-degree overview
+remain unchanged; extremely close/wide views clamp rather than growing without bound.
+
+Mouse-wheel zoom still changes field of view between 30 and 70 degrees. It now
+resizes existing labels and active shot geometry immediately, including during
+planning. INSPECT/RESET and pan/orbit retain their controls. Zoom never creates a
+shot, resets its 0.42-second lifetime or recoil, changes its endpoints/length, or
+advances the simulation. The 16 m area and 230 m arc extents remain physical map
+distances; only their text/line presentation changes. Remembered labels stay at
+the observed location and do not reveal the hidden squad's current position.
+
+No tactical rules, save fields, RNG, animation cadence or report contents change.
+This is readability work, not a new combat model. It does not add label collision
+avoidance or eliminate decorative tree/HUD occlusion. Windows remains unvalidated.
