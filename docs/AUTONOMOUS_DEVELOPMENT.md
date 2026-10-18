@@ -992,8 +992,10 @@ This setup change contains instructions only; these missing tools must be addres
   No authority, RNG, save version, GIS/export or Windows-launcher changes.
 - Focused regression passed actual input, hill/posture/building bounds, hidden
   position independence, RNG/state purity, disk reopen and full twin combat.
-  Missing transient Godot/Python dependencies restored. Combined checks and CI
-  rendered clear/blocked/posture/fire/report inspection pending; do not promote yet.
+  Missing transient Godot/Python dependencies restored. First candidate 47cb27c
+  passed all 34 local checks, 26 terrain tests and CI 39084314965 (11 renders).
+  Artifact 12120580472 exposed thin probe-line raster gaps; only its display
+  width is refined. Combined checks and render reinspection pending; do not promote.
 - Preserve frozen downloads. No Windows or combat-fidelity claim. Next separate
   task after validation: clearly hypothetical terrain LOS from the final queued
   waypoint, with no actual movement, hidden-target lookup or changed orders.

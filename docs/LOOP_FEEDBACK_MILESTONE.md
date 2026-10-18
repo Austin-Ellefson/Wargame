@@ -1369,7 +1369,11 @@ is delivered as the scheduled task result in ChatGPT.
   or claims spotting/fire permission. Cursor cancels safely on right/Escape/button,
   alternate cursor, selection, execution and reopen; zoom retains the fixed point.
 - Focused actual-input/geometry/purity/disk-reopen/full-combat regression passed.
-  Combined suite, PR/CI and actual rendered planning/firing/report review pending.
+  First candidate 47cb27c21831f90ffbe523d4ae18a07286c14c70 passed all 34 local
+  Godot checks and 26 terrain tests, and combined CI 39084314965 (11 renders).
+  Artifact 12120580472 inspected: readable probe/fire/report, but the thin probe
+  line had raster gaps that could look like an obstruction marker. Increased
+  only the probe's presentation width; full revalidation/render inspection pending.
   Do not claim readiness from headless checks. Dependencies restored for this run.
 - Tactical v25/campaign v2/result v1, old rules, locks/once-only losses/rollback,
   GIS/export/Windows launchers and original milestone downloads remain unchanged.

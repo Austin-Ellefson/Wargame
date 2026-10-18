@@ -4,8 +4,10 @@ In-progress task: codex/terrain-los-probe, based on tested PR #40 head
 06c93d89d4a57d5368507710950a6abbb56103d6 (final CI 38832781656 success).
 Reuse this focused branch/PR. The planning-only terrain LOS/range cursor is
 implemented; focused input/geometry/hidden-information/RNG/disk-reopen/full-combat
-regression passes. Combined local suite, rendered CI and artifact inspection remain
-pending. Never promote from a planning screenshot or headless test alone. No save
+regression passes. First candidate 47cb27c passed 34 local checks, 26 terrain tests
+and combined CI 39084314965. Artifact 12120580472 exposed probe-line raster gaps;
+only its width is refined and full revalidation/render inspection remain pending.
+Never promote from a planning screenshot or headless test alone. No save
 version or simulation rule changes. The prior validated baseline follows.
 
 # Continue from validated continuous combat zoom

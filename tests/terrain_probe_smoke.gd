@@ -72,8 +72,11 @@ func _run() -> void:
     await capture("los-clear-preview")
     var point_before: Vector2 = view.los_point
     var length_before: float = view.los_preview.get_child(0).mesh.size.z
+    var width_before: float = view.los_preview.get_child(0).mesh.size.x
+    check(is_equal_approx(width_before,view._zoom_size(0.14,2.6)), "Probe uses its own readable overlay width rather than a subpixel shot/arc width.")
     click(screen(view,Vector2(240,245)),MOUSE_BUTTON_WHEEL_DOWN)
     await process_frame
+    check(view.los_preview.get_child(0).mesh.size.x > width_before, "Actual wider-FOV wheel input increases probe width without rebuilding the query.")
     var motion := InputEventMouseMotion.new()
     motion.position = Vector2(700,460)
     motion.relative = Vector2(8,-5)

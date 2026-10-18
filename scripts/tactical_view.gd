@@ -406,7 +406,9 @@ func _refresh_los_probe() -> void:
     var material := _material(Color("9ef0ad") if clear_path else Color("ff9f91"), true)
     material.no_depth_test = true
     var line := BoxMesh.new()
-    var width := _zoom_size(0.035, 0.65)
+    # Keep the inspection overlay above subpixel widths at ordinary zoom levels;
+    # raster gaps must not look like the point where terrain blocks the query.
+    var width := _zoom_size(0.14, 2.6)
     line.size = Vector3(width, width, start.distance_to(end))
     var instance := _mesh(line, (start + end) * 0.5, material, los_preview)
     instance.look_at(end, Vector3.UP)
@@ -534,7 +536,7 @@ func _refresh_zoom_sizes() -> void:
     if los_preview != null:
         for child in los_preview.get_children():
             if child.mesh is BoxMesh:
-                var width := _zoom_size(0.035, 0.65)
+                var width := _zoom_size(0.14, 2.6)
                 child.mesh.size = Vector3(width, width, child.mesh.size.z)
             elif child.mesh is SphereMesh:
                 child.mesh.radius = _zoom_size(0.3, 2.5)
