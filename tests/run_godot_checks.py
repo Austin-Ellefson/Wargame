@@ -22,7 +22,7 @@ def main():
     logs.mkdir(parents=True, exist_ok=True)
     checks = [("editor", ["--headless", "--editor", "--quit"])]
     for name in ["campaign_smoke", "campaign_save_smoke", "tactical_smoke",
-                 "repeatable_loop_smoke", "suppression_smoke", "visibility_smoke", "contact_memory_smoke", "movement_orders_smoke", "fire_control_smoke", "target_orders_smoke", "timed_pause_smoke", "opponent_reaction_smoke", "cover_routing_smoke", "covered_goals_smoke", "fatigue_smoke", "morale_smoke", "posture_smoke", "weapon_roles_smoke", "acquisition_smoke", "command_response_smoke", "shared_reports_smoke", "observer_memory_smoke", "fire_arcs_smoke", "area_fire_smoke", "opponent_duck_smoke", "nearby_cover_smoke", "cover_spacing_smoke", "cover_retry_smoke", "soldier_visual_smoke", "soldier_animation_smoke", "combat_zoom_smoke", "tactical_view_smoke"]:
+                 "repeatable_loop_smoke", "suppression_smoke", "visibility_smoke", "contact_memory_smoke", "movement_orders_smoke", "fire_control_smoke", "target_orders_smoke", "timed_pause_smoke", "opponent_reaction_smoke", "cover_routing_smoke", "covered_goals_smoke", "fatigue_smoke", "morale_smoke", "posture_smoke", "weapon_roles_smoke", "acquisition_smoke", "command_response_smoke", "shared_reports_smoke", "observer_memory_smoke", "fire_arcs_smoke", "area_fire_smoke", "opponent_duck_smoke", "nearby_cover_smoke", "cover_spacing_smoke", "cover_retry_smoke", "soldier_visual_smoke", "soldier_animation_smoke", "combat_zoom_smoke", "terrain_probe_smoke", "tactical_view_smoke"]:
         checks.append((name, ["--headless", "--script", f"res://tests/{name}.gd"]))
     if args.render_check:
         if args.capture:
@@ -75,6 +75,9 @@ def main():
         zoom_command = soldier_command.copy()
         zoom_command[zoom_command.index("res://tests/soldier_visual_smoke.gd")] = "res://tests/combat_zoom_smoke.gd"
         checks.append(("combat_zoom_render", zoom_command))
+        probe_command = soldier_command.copy()
+        probe_command[probe_command.index("res://tests/soldier_visual_smoke.gd")] = "res://tests/terrain_probe_smoke.gd"
+        checks.append(("terrain_probe_render", probe_command))
     for name, flags in checks:
         result = subprocess.run([args.godot, "--path", str(root), *flags], cwd=root,
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,

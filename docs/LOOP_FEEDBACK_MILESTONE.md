@@ -1358,3 +1358,19 @@ is delivered as the scheduled task result in ChatGPT.
   friendly to an explicit ground point, using existing terrain/posture queries,
   no hidden-unit lookup and no state/RNG changes. First check final documentation-
   head CI recorded in PR #40. Do not duplicate this completed zoom task.
+
+## Planning terrain probe — in validation 2026-10-17 (America/Chicago)
+
+- Branch codex/terrain-los-probe; explicit tested PR #40 base
+  06c93d89d4a57d5368507710950a6abbb56103d6, final CI 38832781656 successful.
+  Actual branches/open PRs checked: no successor, overlap or merge. Main starter.
+- Measures sampled terrain/building LOS from current friendly posture height to
+  explicit ground +0.30 m and horizontal distance. Never resolves a contact/target
+  or claims spotting/fire permission. Cursor cancels safely on right/Escape/button,
+  alternate cursor, selection, execution and reopen; zoom retains the fixed point.
+- Focused actual-input/geometry/purity/disk-reopen/full-combat regression passed.
+  Combined suite, PR/CI and actual rendered planning/firing/report review pending.
+  Do not claim readiness from headless checks. Dependencies restored for this run.
+- Tactical v25/campaign v2/result v1, old rules, locks/once-only losses/rollback,
+  GIS/export/Windows launchers and original milestone downloads remain unchanged.
+  Next after validation: hypothetical final-waypoint terrain LOS preview only.

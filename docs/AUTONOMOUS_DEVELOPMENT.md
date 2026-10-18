@@ -980,3 +980,20 @@ This setup change contains instructions only; these missing tools must be addres
 - Next: planning-only terrain LOS/range probe from selected friendly to explicit
   ground, using existing terrain/posture and no hidden-unit queries or state/RNG
   changes. Check PR #40 final documentation-head CI before creating a descendant.
+
+## Planning terrain probe — in validation 2026-10-17 (America/Chicago)
+
+- Branch codex/terrain-los-probe, explicit tested PR #40 base
+  06c93d89d4a57d5368507710950a6abbb56103d6, final CI 38832781656 successful.
+  Actual branches/open PRs checked: no successor, overlap or merges; main starter.
+- Planning-only button/cursor measures current friendly posture-to-ground terrain
+  LOS and horizontal range. Explicit terrain-only text, fixed low endpoint,
+  green/red status line, cancellation/selection/execution cleanup; no enemy query.
+  No authority, RNG, save version, GIS/export or Windows-launcher changes.
+- Focused regression passed actual input, hill/posture/building bounds, hidden
+  position independence, RNG/state purity, disk reopen and full twin combat.
+  Missing transient Godot/Python dependencies restored. Combined checks and CI
+  rendered clear/blocked/posture/fire/report inspection pending; do not promote yet.
+- Preserve frozen downloads. No Windows or combat-fidelity claim. Next separate
+  task after validation: clearly hypothetical terrain LOS from the final queued
+  waypoint, with no actual movement, hidden-target lookup or changed orders.

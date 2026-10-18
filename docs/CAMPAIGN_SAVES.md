@@ -476,3 +476,13 @@ knowledge, ammunition or losses. Shot lifetimes and endpoints are unaffected;
 neither the sizes nor the camera are added to campaign snapshots. Full combat
 state/result comparisons against an unrendered twin cover changing zoom at every
 tick. Existing disk restart/lock/once-only/rollback/export/GIS checks remain required.
+
+## Planning terrain probe — no save change
+
+The LOS cursor, explicit ground point, status line and range text are transient
+view state. They are not campaign/tactical snapshot fields and reset on reopening
+or execution. Querying terrain cannot alter orders, acquisition/knowledge, clocks,
+ammunition, losses or RNG. Tactical v25/campaign v2/result v1 and legacy saved
+rules stay unchanged; no migration is introduced. Regression saves/reloads the
+authoritative state with the probe visible, verifies clean reopened UI and compares
+every tick and complete combat result against an unrendered twin.
