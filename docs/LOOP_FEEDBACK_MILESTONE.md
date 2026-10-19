@@ -21,9 +21,9 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/continuous-combat-zoom / PR #40
-- Latest post-milestone code/evidence commit: 354432409976c937a0bec0881f33e6ecaca28ff5
-- Post-milestone next task: planning-only terrain line-of-sight/range probe
+- Latest validated post-milestone descendant: codex/terrain-los-probe / PR #41
+- Latest post-milestone code/evidence commit: 1f26c2137f27d1a1b31d5b53f1132ea725635b0d
+- Post-milestone next task: hypothetical terrain LOS from the final queued waypoint
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -1359,22 +1359,58 @@ is delivered as the scheduled task result in ChatGPT.
   no hidden-unit lookup and no state/RNG changes. First check final documentation-
   head CI recorded in PR #40. Do not duplicate this completed zoom task.
 
-## Planning terrain probe — in validation 2026-10-17 (America/Chicago)
+## Planning terrain probe — validated 2026-10-18 (America/Chicago)
 
-- Branch codex/terrain-los-probe; explicit tested PR #40 base
+- Ready for review: draft PR #41, codex/terrain-los-probe; explicit tested PR #40 base
   06c93d89d4a57d5368507710950a6abbb56103d6, final CI 38832781656 successful.
-  Actual branches/open PRs checked: no successor, overlap or merge. Main starter.
+  Begun October 17; the existing task was resumed October 18. Actual branches/open
+  PRs and expected-head leases rechecked: no successor, overlap or merge. Main
+  remains starter; no branch was merged, deleted or force-pushed.
 - Measures sampled terrain/building LOS from current friendly posture height to
   explicit ground +0.30 m and horizontal distance. Never resolves a contact/target
   or claims spotting/fire permission. Cursor cancels safely on right/Escape/button,
   alternate cursor, selection, execution and reopen; zoom retains the fixed point.
-- Focused actual-input/geometry/purity/disk-reopen/full-combat regression passed.
-  First candidate 47cb27c21831f90ffbe523d4ae18a07286c14c70 passed all 34 local
-  Godot checks and 26 terrain tests, and combined CI 39084314965 (11 renders).
-  Artifact 12120580472 inspected: readable probe/fire/report, but the thin probe
-  line had raster gaps that could look like an obstruction marker. Increased
-  only the probe's presentation width; full revalidation/render inspection pending.
-  Do not claim readiness from headless checks. Dependencies restored for this run.
+- Code/evidence: 1f26c2137f27d1a1b31d5b53f1132ea725635b0d. All 34 local Godot
+  4.5.1 checks, 26 terrain tests and diff check passed after restoring transient
+  dependencies. Combined CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/39084668828 succeeded on
+  that same candidate, including all 11 rendered scripts. Artifact 12120660690
+  downloaded and inspected; 44 PASS-bearing logs plus editor, no script errors.
+  Existing nonfatal driver/anchor/input harness warnings remain.
+- New regression covers real button, Shift-click ground, wheel/pan, Escape,
+  cancellation and roster input; exact range and invalid endpoints; buildings
+  and posture-dependent hill LOS; existing queued/pause/area-order retention;
+  hidden-position/global-RNG isolation; valid tactical snapshot disk reopen;
+  and actual execution clearing with every-tick/full-result equality to an
+  unrendered twin. Existing suite retains campaign restart, locks, loss bounds,
+  failed-save rollback, stale/duplicate rejection and two-contact continuation.
+- Planning fixtures show CLEAR at 60.3 m, building BLOCKED at 80.7 m and PRONE
+  eyes 0.35 m BLOCKED at 140.0 m; standing clears the same hill segment. These
+  are seeded terrain/position fixtures, not evidence of simulated movement.
+  Labels are readable; green/red whole-segment lines remain continuous in the
+  inspected views. Initial passing CI 39084314965 at 47cb27c, artifact 12120580472,
+  exposed thin raster gaps; only the probe overlay was widened and revalidated.
+- los-execution-preview.png shows real 00:03 shots at 4x, S1/S3 -9R, S1 SUP+18,
+  current 351 rounds and 17% suppression, with the probe hidden/disabled.
+  Existing 1x/4x/8x firing captures remain readable. los-report-preview.png
+  shows red victory at 03:00: blue 36 deployed / 0 surviving / 36 lost, red
+  36 / 20 / 16; objective 0 / 91 seconds; morale caps 53 / 68, supply -2 / -4,
+  blue eliminated/no retreat. The existing 06:00 report still shows 36 / 6 / 30
+  versus 36 / 11 / 25, objective 80 / 15, and red withdrawal. Both expose the
+  apply button and explain once-only application and campaign unlock.
 - Tactical v25/campaign v2/result v1, old rules, locks/once-only losses/rollback,
   GIS/export/Windows launchers and original milestone downloads remain unchanged.
-  Next after validation: hypothetical final-waypoint terrain LOS preview only.
+  No simulation RNG, authoritative code or save-field change. No repeat milestone
+  announcement; its prepared check-in and restored daily cadence stay preserved.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/terrain-los-probe
+  Godot 4.5.1: import project.godot, F5. In planning select a living blue squad,
+  CHECK TERRAIN LOS, then ground; change posture or cancel with right-click/Esc.
+- Limits: existing sampled hills/buildings, not decorative tree meshes; fixed
+  ground +0.30 m endpoint and current squad center/posture, not target height or
+  future position. CLEAR does not establish spotting, fire permission or a hit.
+  The line does not locate the first obstruction. Windows, CMBS editor and
+  realistic combat fidelity remain unverified. Render evidence is Linux CI.
+- Next focused task: explicitly hypothetical terrain LOS from the final queued
+  waypoint, without moving the squad, querying hidden enemies or changing orders.
+  First check the final documentation-head CI recorded in PR #41; do not duplicate
+  the completed current-position probe or obscure the frozen milestone download.
