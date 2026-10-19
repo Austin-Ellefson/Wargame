@@ -6,7 +6,8 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/continuous-combat-zoom` descendant includes route previews,
+The newer `codex/terrain-los-probe` descendant includes a planning-only terrain
+LOS/range tool, smooth combat zoom, route previews,
 camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
 queued waypoints, timed pauses, local-contact reactions and cover-weighted red routes. The milestone
 branch above remains frozen. Fresh battles use tactical rules v25, including selected-squad visibility, delayed shared reports, spaced nearby cover and saved retries when friendlies block otherwise usable cover. See the five-step
@@ -781,3 +782,29 @@ the observed location and do not reveal the hidden squad's current position.
 No tactical rules, save fields, RNG, animation cadence or report contents change.
 This is readability work, not a new combat model. It does not add label collision
 avoidance or eliminate decorative tree/HUD occlusion. Windows remains unvalidated.
+
+## Planning terrain LOS and range probe
+
+On `codex/terrain-los-probe`, select a living blue squad during planning and click
+**CHECK TERRAIN LOS**, then left-click ground. The readout shows horizontal ground
+range and **TERRAIN CLEAR/BLOCKED**, from the squad's current posture eye height
+to an endpoint 0.30 m above the clicked ground. Click another point to compare;
+right-click, Escape or the same button cancels without issuing a movement order.
+FACE, AREA FIRE, squad selection, execution and reopening also clear the probe.
+Posture changes recalculate the same point. Camera pan/zoom preserve its location.
+
+This uses the simulation's existing sampled hills/building LOS, not decorative
+tree meshes. A ground endpoint inside a building is blocked. Woods still affect
+spotting separately. The whole line is green/red and drawn over terrain so its
+status remains visible; it does not identify the first obstruction. Shorter than
+1 m, nonfinite and off-map endpoints are rejected; a missed ground pick clears
+the prior measurement. Range is not capped to weapon range.
+
+**Terrain clearance is not enemy detection, fire permission or hit probability.**
+The probe never queries a hidden enemy/remembered target, grants acquisition,
+changes orders or spends rounds. A CLEAR point may be outside firing range or
+arc; HOLD FIRE, ammunition, acquisition, concealment and target height still
+govern real shots. Results are for the current squad center and posture, not a
+future waypoint or an individual soldier. UI state is transient, outside saves
+and simulation RNG; tactical v25/campaign v2/result v1 are unchanged. Linux/render
+checks do not establish Windows validation or realistic combat fidelity.

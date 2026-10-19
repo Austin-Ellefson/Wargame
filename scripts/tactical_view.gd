@@ -24,6 +24,13 @@ var arc_button: Button
 var area_button: Button
 var area_armed := false
 var area_preview: Node3D
+var los_button: Button
+var los_armed := false
+var los_observer := ""
+var los_point := Vector2(-1, -1)
+var los_panel: Panel
+var los_label: Label
+var los_preview: Node3D
 var facing_armed := false
 var arc_preview: Node3D
 var world: Node3D
@@ -110,6 +117,15 @@ func _build_interface() -> void:
     _label(str(simulation.state["battle_id"]) + "  /  INFANTRY DETACHMENTS", Vector2(24, 36), 24)
     phase_label = _label("", Vector2(24, 70), 15)
     reset_camera_button = _button("RESET CAMERA", Rect2(776, 70, 168, 30), _reset_camera)
+    los_button = _button("CHECK TERRAIN LOS", Rect2(986, 70, 248, 30), func():
+        los_armed = not los_armed and _can_probe_terrain()
+        los_observer = selected if los_armed else ""
+        los_point = Vector2(-1, -1)
+        facing_armed = false
+        area_armed = false
+        _refresh())
+    los_button.add_theme_font_size_override("font_size", 13)
+    los_button.tooltip_text = "Planning only: click ground to measure terrain LOS from the selected squad's posture to a 0.3m ground endpoint. Not enemy detection or fire permission. Right-click, Escape or this button cancels. The whole status-colored line is drawn over terrain; it does not locate the first obstruction."
     _panel(Rect2(966, 112, 290, 572), Color("1a2b34"))
     var container := SubViewportContainer.new()
     container.position = Vector2(24, 112)
@@ -124,17 +140,23 @@ func _build_interface() -> void:
     container.gui_input.connect(_map_input)
     combat_panel = _panel(Rect2(36, 126, 500, 116), Color(0.04, 0.08, 0.1, 0.88))
     combat_label = _label("LIVE COMBAT\nWaiting for contact...", Vector2(50, 138), 13, 472)
+    los_panel = _panel(Rect2(36, 248, 550, 106), Color(0.04, 0.08, 0.1, 0.94))
+    los_label = _label("", Vector2(50, 260), 14, 522)
+    los_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    los_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
     completed_report_panel = _panel(Rect2(150, 145, 670, 450), Color(0.04, 0.08, 0.1, 0.96))
     completed_report_label = _label("", Vector2(180, 167), 16, 610)
     completed_report_panel.visible = false
     completed_report_label.visible = false
     area_button = _button("AREA FIRE",Rect2(244,70,118,36),func():
+        _clear_los_probe()
         area_armed = not area_armed
         facing_armed = false
         _refresh())
     area_button.add_theme_font_size_override("font_size",12)
     area_button.tooltip_text = "Left-click ground to suppress a 16m area using real rounds. No casualty/hit reports. CLEAR FIRE cancels the order; right-click cancels cursor. HOLD FIRE pauses it."
     facing_button = _button("FACE", Rect2(370, 70, 104, 36), func():
+        _clear_los_probe()
         facing_armed = not facing_armed
         area_armed = false
         _refresh())
@@ -149,6 +171,7 @@ func _build_interface() -> void:
     for index in range(4):
         var id := "UKR_S%d" % (index + 1)
         var button := _button("", Rect2(986, 208 + index * 34, 248, 32), func():
+            _clear_los_probe()
             selected = id
             facing_armed = false
             area_armed = false
@@ -338,6 +361,67 @@ func _build_world() -> void:
     world.add_child(arc_preview)
     order_preview = Node3D.new()
     world.add_child(order_preview)
+    los_preview = Node3D.new()
+    world.add_child(los_preview)
+
+func _can_probe_terrain() -> bool:
+    var squad: Dictionary = simulation.squad_by_id(selected)
+    return simulation.state["phase"] == "planning" and not squad.is_empty() and squad["faction"] == "UKR" and int(squad["alive"]) > 0
+
+func _terrain_probe(point: Vector2) -> Dictionary:
+    # Terrain-only query. Never ask for a target, contact, acquisition or hit chance.
+    if not _can_probe_terrain() or not point.is_finite() or point.x < 0 or point.y < 0 or point.x > Battle.SIZE or point.y > Battle.SIZE:
+        return {}
+    var origin := Battle.position(simulation.squad_by_id(selected))
+    var distance := origin.distance_to(point)
+    if distance < 1.0: return {}
+    var eye: float = simulation.posture_height(selected)
+    return {"origin": origin, "point": point, "distance": distance, "eye": eye,
+        "clear": not Battle.inside_building(point) and Battle.visible(origin, point, eye, 0.3)}
+
+func _clear_los_probe() -> void:
+    los_armed = false
+    los_observer = ""
+    los_point = Vector2(-1, -1)
+
+func _refresh_los_probe() -> void:
+    los_button.disabled = not _can_probe_terrain()
+    if los_button.disabled or los_observer != selected: _clear_los_probe()
+    los_button.text = "LOS: CLICK GROUND" if los_armed else "CHECK TERRAIN LOS"
+    los_panel.visible = los_armed
+    los_label.visible = los_armed
+    for child in los_preview.get_children():
+        los_preview.remove_child(child)
+        child.queue_free()
+    if not los_armed: return
+    los_label.text = "TERRAIN PROBE — S%s\nLeft-click ground at least 1m away; right-click / Esc cancels.\nTerrain only: not spotting, fire permission or hit chance." % selected.right(1)
+    var probe := _terrain_probe(los_point)
+    if probe.is_empty(): return
+    var origin: Vector2 = probe["origin"]
+    var clear_path: bool = probe["clear"]
+    var status := "CLEAR" if clear_path else "BLOCKED"
+    los_label.text = "TERRAIN %s  |  GROUND RANGE %.1f m\nS%s %s eyes %.2fm -> ground endpoint 0.30m\nTerrain only: not spotting, fire permission or hit chance.\nClick another point; right-click / Esc cancels." % [status, probe["distance"], selected.right(1), simulation.posture(selected).to_upper(), probe["eye"]]
+    var start := Vector3(origin.x, Battle.terrain_height(origin.x, origin.y) + float(probe["eye"]), origin.y)
+    var end := Vector3(los_point.x, Battle.terrain_height(los_point.x, los_point.y) + 0.3, los_point.y)
+    var material := _material(Color("9ef0ad") if clear_path else Color("ff9f91"), true)
+    material.no_depth_test = true
+    var line := BoxMesh.new()
+    # Keep the inspection overlay above subpixel widths at ordinary zoom levels;
+    # raster gaps must not look like the point where terrain blocks the query.
+    var width := _zoom_size(0.14, 2.6)
+    line.size = Vector3(width, width, start.distance_to(end))
+    var instance := _mesh(line, (start + end) * 0.5, material, los_preview)
+    instance.look_at(end, Vector3.UP)
+    var marker := SphereMesh.new()
+    marker.radius = _zoom_size(0.3, 2.5)
+    marker.height = marker.radius * 2.0
+    _mesh(marker, end, material, los_preview)
+
+func _unhandled_key_input(event: InputEvent) -> void:
+    if los_armed and event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+        _clear_los_probe()
+        _refresh()
+        get_viewport().set_input_as_handled()
 
 func _map_input(event: InputEvent) -> void:
     if event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_MIDDLE:
@@ -357,6 +441,15 @@ func _map_input(event: InputEvent) -> void:
     if event.button_index == MOUSE_BUTTON_WHEEL_UP or event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
         camera.fov = clampf(camera.fov + (-3 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 3), 30, 70)
         _refresh_zoom_sizes()
+        return
+    if los_armed:
+        if event.button_index == MOUSE_BUTTON_RIGHT:
+            _clear_los_probe()
+            _refresh()
+        elif event.button_index == MOUSE_BUTTON_LEFT:
+            # The picked terrain coordinate, never a clicked actor/contact ID.
+            los_point = _ground_point(event.position)
+            _refresh_los_probe()
         return
     if area_armed:
         if event.button_index == MOUSE_BUTTON_RIGHT:
@@ -440,6 +533,14 @@ func _refresh_zoom_sizes() -> void:
             var mesh: BoxMesh = child.mesh
             var thickness := _zoom_size(0.035, 0.65)
             mesh.size = Vector3(thickness, thickness, mesh.size.z)
+    if los_preview != null:
+        for child in los_preview.get_children():
+            if child.mesh is BoxMesh:
+                var width := _zoom_size(0.14, 2.6)
+                child.mesh.size = Vector3(width, width, child.mesh.size.z)
+            elif child.mesh is SphereMesh:
+                child.mesh.radius = _zoom_size(0.3, 2.5)
+                child.mesh.height = child.mesh.radius * 2.0
     for cue in shot_cues:
         var flash: SphereMesh = cue["node"].get_child(0).mesh
         flash.radius = _zoom_size(0.18, 3.0)
@@ -773,6 +874,7 @@ func _battle_report(result: Dictionary) -> String:
 
 func _refresh() -> void:
     _age_shot_cues(0.0)
+    _refresh_los_probe()
     var state: Dictionary = simulation.state
     if state["phase"] != "planning":
         facing_armed = false

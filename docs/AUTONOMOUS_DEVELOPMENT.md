@@ -980,3 +980,27 @@ This setup change contains instructions only; these missing tools must be addres
 - Next: planning-only terrain LOS/range probe from selected friendly to explicit
   ground, using existing terrain/posture and no hidden-unit queries or state/RNG
   changes. Check PR #40 final documentation-head CI before creating a descendant.
+
+## Planning terrain probe — ready for review 2026-10-18 (America/Chicago)
+
+- Draft PR #41, codex/terrain-los-probe, explicit tested PR #40 base
+  06c93d89d4a57d5368507710950a6abbb56103d6, final CI 38832781656 successful.
+  Existing task reused; branches/open PRs and expected-head leases rechecked on
+  October 18: no successor, overlap or merges; main remains starter.
+- Planning-only button/cursor measures current friendly posture-to-ground terrain
+  LOS and horizontal range. Explicit terrain-only text, fixed low endpoint,
+  green/red status line, cancellation/selection/execution cleanup; no enemy query.
+  No authority, RNG, save version, GIS/export or Windows-launcher changes.
+- Focused regression passed actual input, hill/posture/building bounds, hidden
+  position independence, RNG/state purity, disk reopen and full twin combat.
+  Missing transient Godot/Python dependencies restored. Final code/evidence:
+  1f26c2137f27d1a1b31d5b53f1132ea725635b0d. All 34 local Godot checks, 26 terrain
+  tests and diff check passed. Combined CI 39084668828 succeeded (11 rendered
+  scripts). Artifact 12120660690 inspected: clear/building/prone measurements,
+  actual 00:03 firing and readable completed reports. Full evidence in the ledger.
+  First passing CI 39084314965 exposed thin probe-line raster gaps; the final
+  candidate thickens only this overlay and shows continuous status lines.
+- Preserve frozen downloads. No Windows or combat-fidelity claim. Check PR #41's
+  final documentation-head CI before branching; do not duplicate this task.
+  Next separate task: clearly hypothetical terrain LOS from the final queued
+  waypoint, with no actual movement, hidden-target lookup or changed orders.
