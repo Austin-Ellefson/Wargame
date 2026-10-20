@@ -808,3 +808,21 @@ govern real shots. Results are for the current squad center and posture, not a
 future waypoint or an individual soldier. UI state is transient, outside saves
 and simulation RNG; tactical v25/campaign v2/result v1 are unchanged. Linux/render
 checks do not establish Windows validation or realistic combat fidelity.
+
+## Hypothetical LOS from the final queued waypoint
+
+On `codex/waypoint-los-preview`, queue a movement route, open **CHECK TERRAIN
+LOS**, then click **ORIGIN: CURRENT POSITION — SWITCH** in the probe panel.
+The origin button now identifies the final queued coordinates as **HYPOTHETICAL**.
+Ground clicks measure from that destination using the selected squad's current
+posture, explicitly shown as an assumption. Switch back to compare the same
+endpoint from the actual squad position. Neither action issues movement or fire.
+
+The origin is derived from the current route on every refresh/query. Replacement
+or appended legs change it immediately; HOLD removes the line and shows **NO
+QUEUED DESTINATION**, never silently substituting the actual position. With no
+route, current-position probing still works. Cancellation, selection, execution
+and reopening reset the mode. Existing sampled terrain/building and low ground
+endpoint limits apply; the preview predicts neither arrival nor future spotting,
+fire eligibility, target positions or combat outcomes. It is not a ghost squad,
+path-safety assessment or individual soldier line of sight. No save fields change.

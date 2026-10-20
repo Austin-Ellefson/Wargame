@@ -1414,3 +1414,20 @@ is delivered as the scheduled task result in ChatGPT.
   waypoint, without moving the squad, querying hidden enemies or changing orders.
   First check the final documentation-head CI recorded in PR #41; do not duplicate
   the completed current-position probe or obscure the frozen milestone download.
+
+## Hypothetical waypoint LOS — in validation 2026-10-19 (America/Chicago)
+
+- Branch codex/waypoint-los-preview; tested PR #41 head
+  2c43483d177a78f50e1da9c2512c5ad42db8d630, final CI 39179526725 successful.
+  Remote branches/open PRs inspected: no successor, overlap or merge; main starter.
+- Adds a current/final-waypoint origin toggle inside the planning probe. The
+  hypothetical final coordinates and current-posture assumption are explicit.
+  Uses the live selected friendly route without moving a squad or looking up
+  hidden actors. Replacement/append updates the origin; HOLD removes stale geometry.
+- Focused input/geometry/hidden/RNG/state/disk-reopen/full-combat regression passed.
+  Combined local suite, draft PR/CI and rendered clear/blocked/posture/cleared/
+  actual-fire/completed-report review remain pending. No save/rules migration.
+- Original frozen milestone, locks, once-only losses, rollback, exports/GIS and
+  Windows launchers unchanged; no Windows/CMBS/Combat Mission fidelity claim.
+  Next after validation: optional selected-squad camera follow during execution,
+  with free navigation preserved and no authority/RNG changes.

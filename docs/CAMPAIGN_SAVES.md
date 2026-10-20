@@ -486,3 +486,13 @@ ammunition, losses or RNG. Tactical v25/campaign v2/result v1 and legacy saved
 rules stay unchanged; no migration is introduced. Regression saves/reloads the
 authoritative state with the probe visible, verifies clean reopened UI and compares
 every tick and complete combat result against an unrendered twin.
+
+## Hypothetical waypoint probe — no save change
+
+Current-position/final-waypoint mode is transient UI state and resets on reopening
+or execution. The hypothetical origin is read from the selected friendly's final
+saved route point, never written into its actual position or remembered contacts.
+Clearing the route removes the measurement. Tactical v25/campaign v2/result v1
+and older saves keep their rules; no new clock, RNG sample, order or save field.
+The regression validates and disk-round-trips the actual state while the preview
+is visible, then compares every execution tick and the complete result to a twin.

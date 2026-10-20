@@ -1,3 +1,14 @@
+# Finish hypothetical waypoint LOS validation
+
+In-progress focused branch: codex/waypoint-los-preview, based on tested PR #41
+head 2c43483d177a78f50e1da9c2512c5ad42db8d630 (final CI 39179526725 success).
+Reuse this unfinished task. Current/final-waypoint toggle, explicit hypothetical
+origin/current-posture assumption, live route refresh and missing-route cleanup
+are implemented. Focused actual-input, geometry, state/RNG/hidden-information,
+disk-reopen and full twin-combat regression passed. Combined tests and rendered
+CI/artifact inspection remain pending; do not promote from headless tests alone.
+No authoritative simulation or save schema change. Prior validated baseline:
+
 # Continue from the validated planning terrain probe
 
 Latest validated descendant: codex/terrain-los-probe, draft PR #41, explicitly

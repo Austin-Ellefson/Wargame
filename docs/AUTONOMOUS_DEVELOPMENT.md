@@ -1004,3 +1004,20 @@ This setup change contains instructions only; these missing tools must be addres
   final documentation-head CI before branching; do not duplicate this task.
   Next separate task: clearly hypothetical terrain LOS from the final queued
   waypoint, with no actual movement, hidden-target lookup or changed orders.
+
+## Hypothetical waypoint LOS — in validation 2026-10-19 (America/Chicago)
+
+- Branch codex/waypoint-los-preview, explicit tested PR #41 base
+  2c43483d177a78f50e1da9c2512c5ad42db8d630. Final base CI 39179526725 succeeded;
+  branches/open PRs checked, no overlapping task or merges, main still starter.
+- Planning origin toggle compares actual position with the final saved route
+  point, labeled hypothetical with the current-posture assumption. Route changes
+  refresh it; route removal clears geometry instead of using a stale origin.
+- Focused regression passed actual HUNT/right/Shift-right/PAUSE/mode/camera/HOLD
+  inputs, geometry/posture/range, hidden-information/global-RNG/state isolation,
+  valid disk reopen, execution cleanup and every-tick/full-result twin equality.
+  Transient Godot/Python dependencies restored. Full checks/render inspection
+  pending; no readiness or Windows/realistic-combat claim yet.
+- Frozen downloads and tactical v25/campaign v2/result v1 contracts preserved.
+  After validation: a small selected-squad camera-follow control during execution,
+  keeping navigation optional and presentation independent of simulation/RNG.
