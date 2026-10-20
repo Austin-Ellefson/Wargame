@@ -25,7 +25,9 @@ var area_button: Button
 var area_armed := false
 var area_preview: Node3D
 var los_button: Button
+var los_origin_button: Button
 var los_armed := false
+var los_from_waypoint := false
 var los_observer := ""
 var los_point := Vector2(-1, -1)
 var los_panel: Panel
@@ -140,10 +142,16 @@ func _build_interface() -> void:
     container.gui_input.connect(_map_input)
     combat_panel = _panel(Rect2(36, 126, 500, 116), Color(0.04, 0.08, 0.1, 0.88))
     combat_label = _label("LIVE COMBAT\nWaiting for contact...", Vector2(50, 138), 13, 472)
-    los_panel = _panel(Rect2(36, 248, 550, 106), Color(0.04, 0.08, 0.1, 0.94))
-    los_label = _label("", Vector2(50, 260), 14, 522)
+    los_panel = _panel(Rect2(36, 248, 550, 140), Color(0.04, 0.08, 0.1, 0.94))
+    los_label = _label("", Vector2(50, 290), 14, 522)
     los_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
     los_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    los_origin_button = _button("ORIGIN: CURRENT POSITION", Rect2(50, 256, 522, 26), func():
+        if los_armed and (los_from_waypoint or _los_waypoint().x >= 0):
+            los_from_waypoint = not los_from_waypoint
+            _refresh_los_probe())
+    los_origin_button.add_theme_font_size_override("font_size", 13)
+    los_origin_button.tooltip_text = "Switch current position / hypothetical final queued waypoint. Assumes current posture at the destination; does not predict arrival, spotting or fire. No orders or squad positions change."
     completed_report_panel = _panel(Rect2(150, 145, 670, 450), Color(0.04, 0.08, 0.1, 0.96))
     completed_report_label = _label("", Vector2(180, 167), 16, 610)
     completed_report_panel.visible = false
@@ -368,11 +376,20 @@ func _can_probe_terrain() -> bool:
     var squad: Dictionary = simulation.squad_by_id(selected)
     return simulation.state["phase"] == "planning" and not squad.is_empty() and squad["faction"] == "UKR" and int(squad["alive"]) > 0
 
+func _los_waypoint() -> Vector2:
+    # Derive the origin from the live friendly route, never a cached/future actor.
+    if not _can_probe_terrain(): return Vector2(-1, -1)
+    var path: Array = simulation.state["orders"].get(selected, [])
+    if path.is_empty(): return Vector2(-1, -1)
+    return Vector2(path.back()[0], path.back()[1])
+
 func _terrain_probe(point: Vector2) -> Dictionary:
     # Terrain-only query. Never ask for a target, contact, acquisition or hit chance.
     if not _can_probe_terrain() or not point.is_finite() or point.x < 0 or point.y < 0 or point.x > Battle.SIZE or point.y > Battle.SIZE:
         return {}
-    var origin := Battle.position(simulation.squad_by_id(selected))
+    var origin := _los_waypoint() if los_from_waypoint else Battle.position(simulation.squad_by_id(selected))
+    if not origin.is_finite() or origin.x < 0 or origin.y < 0 or origin.x > Battle.SIZE or origin.y > Battle.SIZE:
+        return {}
     var distance := origin.distance_to(point)
     if distance < 1.0: return {}
     var eye: float = simulation.posture_height(selected)
@@ -381,6 +398,7 @@ func _terrain_probe(point: Vector2) -> Dictionary:
 
 func _clear_los_probe() -> void:
     los_armed = false
+    los_from_waypoint = false
     los_observer = ""
     los_point = Vector2(-1, -1)
 
@@ -390,17 +408,30 @@ func _refresh_los_probe() -> void:
     los_button.text = "LOS: CLICK GROUND" if los_armed else "CHECK TERRAIN LOS"
     los_panel.visible = los_armed
     los_label.visible = los_armed
+    los_origin_button.visible = los_armed
+    var waypoint := _los_waypoint()
+    los_origin_button.disabled = not los_from_waypoint and waypoint.x < 0
+    los_origin_button.text = "ORIGIN: CURRENT POSITION" + (" (NO QUEUED ROUTE)" if waypoint.x < 0 else " — SWITCH")
+    if los_from_waypoint:
+        los_origin_button.text = "ORIGIN: FINAL (%.1f, %.1f) — HYPOTHETICAL" % [waypoint.x, waypoint.y] if waypoint.x >= 0 else "ORIGIN: NO WAYPOINT — SWITCH TO CURRENT"
     for child in los_preview.get_children():
         los_preview.remove_child(child)
         child.queue_free()
     if not los_armed: return
+    if los_from_waypoint and waypoint.x < 0:
+        los_label.text = "NO QUEUED DESTINATION\nHypothetical preview unavailable; no current-position fallback.\nSwitch to CURRENT, or cancel and queue a route."
+        return
     los_label.text = "TERRAIN PROBE — S%s\nLeft-click ground at least 1m away; right-click / Esc cancels.\nTerrain only: not spotting, fire permission or hit chance." % selected.right(1)
+    if los_from_waypoint:
+        los_label.text = "HYPOTHETICAL TERRAIN PROBE — S%s\nAssumes current posture at final waypoint; click ground >=1m away.\nTerrain only: not spotting, fire permission or hit chance." % selected.right(1)
     var probe := _terrain_probe(los_point)
     if probe.is_empty(): return
     var origin: Vector2 = probe["origin"]
     var clear_path: bool = probe["clear"]
     var status := "CLEAR" if clear_path else "BLOCKED"
     los_label.text = "TERRAIN %s  |  GROUND RANGE %.1f m\nS%s %s eyes %.2fm -> ground endpoint 0.30m\nTerrain only: not spotting, fire permission or hit chance.\nClick another point; right-click / Esc cancels." % [status, probe["distance"], selected.right(1), simulation.posture(selected).to_upper(), probe["eye"]]
+    if los_from_waypoint:
+        los_label.text = "HYPOTHETICAL TERRAIN %s | RANGE %.1f m\nAssumes S%s %s eyes %.2fm -> ground endpoint 0.30m\nTerrain only: not spotting, fire permission or hit chance.\nClick another point; right-click / Esc cancels." % [status, probe["distance"], selected.right(1), simulation.posture(selected).to_upper(), probe["eye"]]
     var start := Vector3(origin.x, Battle.terrain_height(origin.x, origin.y) + float(probe["eye"]), origin.y)
     var end := Vector3(los_point.x, Battle.terrain_height(los_point.x, los_point.y) + 0.3, los_point.y)
     var material := _material(Color("9ef0ad") if clear_path else Color("ff9f91"), true)

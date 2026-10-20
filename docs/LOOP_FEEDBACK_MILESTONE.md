@@ -21,9 +21,9 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/terrain-los-probe / PR #41
-- Latest post-milestone code/evidence commit: 1f26c2137f27d1a1b31d5b53f1132ea725635b0d
-- Post-milestone next task: hypothetical terrain LOS from the final queued waypoint
+- Latest validated post-milestone descendant: codex/waypoint-los-preview / PR #42
+- Latest post-milestone code/evidence commit: cc8d0b8f1239c06494d069e2785e7189004d6512
+- Post-milestone next task: optional selected-squad camera follow during execution
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -1414,3 +1414,35 @@ is delivered as the scheduled task result in ChatGPT.
   waypoint, without moving the squad, querying hidden enemies or changing orders.
   First check the final documentation-head CI recorded in PR #41; do not duplicate
   the completed current-position probe or obscure the frozen milestone download.
+
+## Hypothetical waypoint LOS — validated 2026-10-19 (America/Chicago)
+
+- Branch codex/waypoint-los-preview / draft PR #42; tested PR #41 head
+  2c43483d177a78f50e1da9c2512c5ad42db8d630, final CI 39179526725 successful.
+  Remote branches/open PRs inspected: no successor, overlap or merge; main starter.
+- Adds a current/final-waypoint origin toggle inside the planning probe. The
+  hypothetical final coordinates and current-posture assumption are explicit.
+  Uses the live selected friendly route without moving a squad or looking up
+  hidden actors. Replacement/append updates the origin; HOLD removes stale geometry.
+- Code commit: cc8d0b8f1239c06494d069e2785e7189004d6512. Focused regression,
+  all 35 local Godot checks, 26 terrain tests and git diff --check passed.
+  Combined CI https://github.com/Austin-Ellefson/Wargame/actions/runs/39348395575
+  succeeded on that code: 35 Godot checks plus 12 rendered scripts and 26 terrain
+  tests. Artifact 12231763435 inspected; 47 logs, 46 PASS-bearing non-editor logs,
+  no script errors. Existing nonfatal anchor warnings remain. No save migration.
+- Reviewed all six waypoint captures: CLEAR 41.1 m from final (240.2, 244.0),
+  building BLOCKED 80.7 m from (200, 168), PRONE/0.35 m assumed-eye hill block,
+  NO QUEUED DESTINATION with no stale line, actual EXECUTION 00:03 shots with
+  rounds/suppression changes, and a readable FINISHED 03:00 report. That fixture
+  shows blue 36 deployed / 0 surviving / 36 lost, red 36 / 24 / 12, objective
+  0s / 92s and campaign consequences. Existing current-origin and 1x/4x/8x firing
+  captures were also inspected. Planning fixtures are geometry tests, not evidence
+  that units moved to hypothetical points or acquired unseen enemies.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/waypoint-los-preview
+  Import project.godot in Godot 4.5.1, press F5. Queue a route, CHECK TERRAIN LOS,
+  switch ORIGIN and click ground; compare current/final, change posture, then HOLD.
+  Check final documentation-head CI in PR #42 before dependent work.
+- Original frozen milestone, locks, once-only losses, rollback, exports/GIS and
+  Windows launchers unchanged; no Windows/CMBS/Combat Mission fidelity claim.
+  Next after validation: optional selected-squad camera follow during execution,
+  with free navigation preserved and no authority/RNG changes.

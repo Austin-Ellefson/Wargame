@@ -6,8 +6,9 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/terrain-los-probe` descendant includes a planning-only terrain
-LOS/range tool, smooth combat zoom, route previews,
+The newer `codex/waypoint-los-preview` descendant includes a planning-only terrain
+LOS/range tool with current-position and explicitly hypothetical final-waypoint
+origins, smooth combat zoom, route previews,
 camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
 queued waypoints, timed pauses, local-contact reactions and cover-weighted red routes. The milestone
 branch above remains frozen. Fresh battles use tactical rules v25, including selected-squad visibility, delayed shared reports, spaced nearby cover and saved retries when friendlies block otherwise usable cover. See the five-step
@@ -808,3 +809,21 @@ govern real shots. Results are for the current squad center and posture, not a
 future waypoint or an individual soldier. UI state is transient, outside saves
 and simulation RNG; tactical v25/campaign v2/result v1 are unchanged. Linux/render
 checks do not establish Windows validation or realistic combat fidelity.
+
+## Hypothetical LOS from the final queued waypoint
+
+On `codex/waypoint-los-preview`, queue a movement route, open **CHECK TERRAIN
+LOS**, then click **ORIGIN: CURRENT POSITION — SWITCH** in the probe panel.
+The origin button now identifies the final queued coordinates as **HYPOTHETICAL**.
+Ground clicks measure from that destination using the selected squad's current
+posture, explicitly shown as an assumption. Switch back to compare the same
+endpoint from the actual squad position. Neither action issues movement or fire.
+
+The origin is derived from the current route on every refresh/query. Replacement
+or appended legs change it immediately; HOLD removes the line and shows **NO
+QUEUED DESTINATION**, never silently substituting the actual position. With no
+route, current-position probing still works. Cancellation, selection, execution
+and reopening reset the mode. Existing sampled terrain/building and low ground
+endpoint limits apply; the preview predicts neither arrival nor future spotting,
+fire eligibility, target positions or combat outcomes. It is not a ghost squad,
+path-safety assessment or individual soldier line of sight. No save fields change.

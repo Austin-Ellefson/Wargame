@@ -1004,3 +1004,28 @@ This setup change contains instructions only; these missing tools must be addres
   final documentation-head CI before branching; do not duplicate this task.
   Next separate task: clearly hypothetical terrain LOS from the final queued
   waypoint, with no actual movement, hidden-target lookup or changed orders.
+
+## Hypothetical waypoint LOS — ready for review 2026-10-19 (America/Chicago)
+
+- Branch codex/waypoint-los-preview / draft PR #42, explicit tested PR #41 base
+  2c43483d177a78f50e1da9c2512c5ad42db8d630. Final base CI 39179526725 succeeded;
+  branches/open PRs checked, no overlapping task or merges, main still starter.
+- Planning origin toggle compares actual position with the final saved route
+  point, labeled hypothetical with the current-posture assumption. Route changes
+  refresh it; route removal clears geometry instead of using a stale origin.
+- Focused regression passed actual HUNT/right/Shift-right/PAUSE/mode/camera/HOLD
+  inputs, geometry/posture/range, hidden-information/global-RNG/state isolation,
+  valid disk reopen, execution cleanup and every-tick/full-result twin equality.
+  Transient Godot/Python dependencies restored; 35 local Godot checks and 26
+  terrain tests passed. Code cc8d0b8f1239c06494d069e2785e7189004d6512 passed
+  combined CI https://github.com/Austin-Ellefson/Wargame/actions/runs/39348395575
+  (35 Godot checks, 12 rendered scripts, 26 terrain tests). Artifact 12231763435
+  inspected: six waypoint planning/cleanup/real-fire/report captures, existing
+  current-origin probe and 1x/4x/8x shots; all logs checked, no script errors.
+  Final report shows both forces' deployed/surviving/lost personnel, objective
+  control and campaign consequences. Full details are in the milestone ledger.
+  Check final documentation-head CI recorded in PR #42 before dependent work;
+  do not duplicate this completed task. No Windows/realistic-combat claim.
+- Frozen downloads and tactical v25/campaign v2/result v1 contracts preserved.
+  After validation: a small selected-squad camera-follow control during execution,
+  keeping navigation optional and presentation independent of simulation/RNG.
