@@ -1,46 +1,40 @@
-# Finish hypothetical waypoint LOS validation
+# Continue from the validated hypothetical waypoint probe
 
-In-progress focused branch: codex/waypoint-los-preview, based on tested PR #41
-head 2c43483d177a78f50e1da9c2512c5ad42db8d630 (final CI 39179526725 success).
-Reuse this unfinished task. Current/final-waypoint toggle, explicit hypothetical
-origin/current-posture assumption, live route refresh and missing-route cleanup
-are implemented. Focused actual-input, geometry, state/RNG/hidden-information,
-disk-reopen and full twin-combat regression passed. Combined tests and rendered
-CI/artifact inspection remain pending; do not promote from headless tests alone.
-No authoritative simulation or save schema change. Prior validated baseline:
+Latest validated descendant: codex/waypoint-los-preview, draft PR #42, explicitly
+based on tested PR #41 head 2c43483d177a78f50e1da9c2512c5ad42db8d630. Tested code:
+cc8d0b8f1239c06494d069e2785e7189004d6512. Combined CI
+https://github.com/Austin-Ellefson/Wargame/actions/runs/39348395575 passed all
+35 Godot checks, 12 rendered scripts and 26 terrain tests. Artifact 12231763435
+inspected: current/hypothetical clear, building/prone block and removed-route
+measurements, actual 00:03 firing, existing 1x/4x/8x shots and readable completed
+two-sided reports with objective control and campaign consequences. Check final
+documentation-head CI in PR #42 before dependent work. Do not duplicate this task.
 
-# Continue from the validated planning terrain probe
+Next focused task: optional selected-squad camera follow during execution.
+Keep free pan/rotation/zoom available; manual navigation should disengage follow
+predictably, RESET CAMERA should restore the overview, and changing selection,
+elimination, completion or reopening must not retain stale targets. Follow only
+friendly actual positions, never hidden enemies or future waypoints. Reuse the
+existing camera/zoom pipeline, without consuming simulation RNG, replaying shot
+cues, changing event lifetimes, advancing ticks or adding save fields. Add actual
+input, lifecycle and deterministic twin/state regression coverage; capture real
+moving/firing execution and a completed report, not a planning-only demonstration.
+One focused PR on the tested descendant; investigate failed checks first.
 
-Latest validated descendant: codex/terrain-los-probe, draft PR #41, explicitly
-based on tested PR #40 head 06c93d89d4a57d5368507710950a6abbb56103d6. Tested code:
-1f26c2137f27d1a1b31d5b53f1132ea725635b0d. Combined CI
-https://github.com/Austin-Ellefson/Wargame/actions/runs/39084668828 passed all
-34 Godot checks, 11 rendered scripts and 26 terrain tests. Artifact 12120660690
-inspected: clear/building/prone ground measurements, actual 00:03 firing, existing
-1x/4x/8x shots and readable completed two-sided reports with campaign consequences.
-First passing CI exposed thin probe-line raster gaps; only that overlay width
-was refined and rerendered. Check final documentation-head CI in PR #41 before
-dependent work; do not duplicate this completed current-position probe.
-
-Next focused task: an explicitly hypothetical terrain LOS/range preview from
-the selected living friendly's final queued waypoint to an explicit ground point.
-Label the hypothetical origin and current-posture assumption clearly. Reuse
-terrain queries without moving the squad, altering orders or projecting spotting,
-fire permission, target positions or future outcomes. Handle absent/changed routes
-without retaining a stale origin. Keep the current-position mode available.
-No hidden-unit lookup, authority, save fields, RNG or execution-time query.
-Add real input, geometry, purity and disk-reopen regression coverage; preserve
-actual firing and report renders. One focused PR on the tested descendant only.
-
-The existing probe is planning-only, current squad center/posture to ground
-+0.30 m. The whole green/red segment reports terrain status, not the first
-obstruction. Range is horizontal and uncapped by weapons; invalid/off-map/under-1m
-points reject. Right/Esc/button, another cursor, selection, execution and reopen
-clear it. Posture recalculates; camera retains the point. No contact/acquisition,
-orders or ammunition change; every-tick/full-result comparisons match a twin.
-Existing sampled hills/buildings are not decorative tree-mesh raycasts. CLEAR
-does not establish spotting or a hit. Smooth zoom remains presentation-only;
-dense/distant labels and decorative tree/HUD occlusion remain limitations.
+The current planning-only probe compares actual squad center with the final
+queued route point using the current posture and a ground +0.30 m endpoint.
+The latter is labeled HYPOTHETICAL, not a relocated squad or future prediction.
+Replacement/append derives the new final point live; HOLD removes stale geometry
+and shows NO QUEUED DESTINATION without silently using the current position.
+Current-position mode remains available without a route. Right/Esc/button, another
+cursor, selection, execution and reopen clear the transient mode. Posture
+recalculates; camera retains the point. No contact/acquisition, order, ammunition,
+clock, RNG or save changes; disk reopen and every-tick/full-result twin tests pass.
+Range is horizontal, weapon-uncapped; invalid/off-map/under-1m endpoints reject.
+The whole colored line reports sampled hills/buildings, not the first obstruction
+or decorative tree mesh. CLEAR is not spotting, fire permission or hit probability.
+No arrival, future posture/target, path-safety or individual soldier prediction.
+Dense/distant labels and decorative tree/HUD occlusion remain limitations.
 
 Fresh battles remain tactical v25: crowded-cover retries save retry_remaining
 (0–12), preserve original queues/modes/waits across interval breaks, and keep
