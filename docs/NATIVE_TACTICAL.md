@@ -841,3 +841,7 @@ The camera reads only the selected friendly's current authoritative position. It
 does not look ahead to queued waypoints, target hidden enemies or alter the route,
 shot cues, recoil/lifetimes, playback cadence, simulation RNG or results. It is
 transient presentation, not a saved tactical order or an individual-soldier view.
+The actual-input regression follows a moving, firing squad, exercises every exit,
+round-trips authoritative execution state through disk, and matches every tick and
+the final result to an unfollowed twin. Linux CI's execution and completed-report
+captures were inspected; this does not establish Windows or realistic fidelity.

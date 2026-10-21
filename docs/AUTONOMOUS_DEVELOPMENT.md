@@ -1030,7 +1030,7 @@ This setup change contains instructions only; these missing tools must be addres
   After validation: a small selected-squad camera-follow control during execution,
   keeping navigation optional and presentation independent of simulation/RNG.
 
-## Selected-squad execution follow — in validation 2026-10-20 (America/Chicago)
+## Selected-squad execution follow — ready for review 2026-10-20 (America/Chicago)
 
 - Branch codex/execution-camera-follow, explicit tested PR #42 documentation head
   976361487f78d15545f5acc3095d5a942612387e; final base CI 39349051469 succeeded.
@@ -1039,10 +1039,14 @@ This setup change contains instructions only; these missing tools must be addres
 - Adds an execution-only FOLLOW S# control for the selected living friendly's
   actual position. Wheel zoom retains follow; pan/orbit, selection, INSPECT, RESET,
   elimination, completion and reopening stop it. No waypoint/enemy lookup.
-- Focused actual-input regression passes real motion/fire, follow updates, manual
+- Draft PR #43, code 9fa3eacdf2df47cc6ddee7187f06c520c721734f.
+  Focused actual-input regression passes real motion/fire, follow updates, manual
   controls, lifecycle cleanup, RNG/full-state purity, disk reopen and every-tick/
   full-result equality to an unfollowed twin. All 36 local Godot 4.5.1 checks,
-  26 terrain tests and diff check pass. Draft PR/CI and rendered execution/report
-  review remain pending. No save/rules migration.
+  26 terrain tests and diff check pass. CI 39525325026 succeeded with 13 rendered
+  scripts; artifact 12313326055 has 49 logs / 48 PASS-bearing non-editor logs and
+  inspected readable actual execution and completed-report captures.
 - Frozen milestone/prior downloads, locks, once-only losses, rollback, export/GIS
   and Windows launchers remain unchanged. No Windows/Combat Mission fidelity claim.
+- Next: presentation-only execution playback pause/resume, freezing ticks/RNG and
+  cue lifetime while retaining free camera controls and exact resumed twin parity.
