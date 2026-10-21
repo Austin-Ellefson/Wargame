@@ -1446,3 +1446,20 @@ is delivered as the scheduled task result in ChatGPT.
   Windows launchers unchanged; no Windows/CMBS/Combat Mission fidelity claim.
   Next after validation: optional selected-squad camera follow during execution,
   with free navigation preserved and no authority/RNG changes.
+
+## Selected-squad execution follow — in validation 2026-10-20 (America/Chicago)
+
+- Branch codex/execution-camera-follow; explicit tested PR #42 documentation head
+  976361487f78d15545f5acc3095d5a942612387e, final CI 39349051469 successful.
+  Remote branch/PR chain checked: no successor, overlap or merge; main starter.
+- Execution-only FOLLOW S# tracks the selected living blue squad's actual current
+  position. Wheel zoom stays usable. Pan/orbit, selection, INSPECT, RESET,
+  elimination, completion and reopen clear it; it never silently transfers.
+- Focused regression passes actual input, real movement/fire, camera lifecycle,
+  state/global-RNG purity, disk reopen, every-tick and complete-result twin parity.
+  All 36 local Godot 4.5.1 checks, 26 terrain tests and diff check pass. Draft
+  PR/CI and rendered actual execution/report review remain pending. No tactical/
+  campaign/result version or save-field change.
+- Frozen milestone and earlier downloads, locks, once-only losses, rollback,
+  exports/GIS and Windows launchers remain unchanged. No Windows/CMBS/realistic
+  fidelity claim. Next task will be selected only after rendered validation.

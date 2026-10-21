@@ -19,6 +19,8 @@ var camera_pitch := atan2(520.0, 394.0)
 var camera_distance := Vector2(520, 394).length()
 var inspect_button: Button
 var reset_camera_button: Button
+var follow_button: Button
+var follow_target := ""
 var facing_button: Button
 var arc_button: Button
 var area_button: Button
@@ -119,14 +121,17 @@ func _build_interface() -> void:
     _label(str(simulation.state["battle_id"]) + "  /  INFANTRY DETACHMENTS", Vector2(24, 36), 24)
     phase_label = _label("", Vector2(24, 70), 15)
     reset_camera_button = _button("RESET CAMERA", Rect2(776, 70, 168, 30), _reset_camera)
-    los_button = _button("CHECK TERRAIN LOS", Rect2(986, 70, 248, 30), func():
+    follow_button = _button("FOLLOW S1", Rect2(986, 70, 112, 30), _toggle_camera_follow)
+    follow_button.add_theme_font_size_override("font_size", 12)
+    follow_button.tooltip_text = "Execution only: keep the camera centered on the selected living friendly's actual position. Pan, rotate, selection, INSPECT, RESET, elimination, completion or reopening stops follow. Wheel zoom remains available."
+    los_button = _button("TERRAIN LOS", Rect2(1102, 70, 132, 30), func():
         los_armed = not los_armed and _can_probe_terrain()
         los_observer = selected if los_armed else ""
         los_point = Vector2(-1, -1)
         facing_armed = false
         area_armed = false
         _refresh())
-    los_button.add_theme_font_size_override("font_size", 13)
+    los_button.add_theme_font_size_override("font_size", 11)
     los_button.tooltip_text = "Planning only: click ground to measure terrain LOS from the selected squad's posture to a 0.3m ground endpoint. Not enemy detection or fire permission. Right-click, Escape or this button cancels. The whole status-colored line is drawn over terrain; it does not locate the first obstruction."
     _panel(Rect2(966, 112, 290, 572), Color("1a2b34"))
     var container := SubViewportContainer.new()
@@ -316,6 +321,7 @@ func _build_world() -> void:
     inspect_button = _button("INSPECT SQUAD", Rect2(594, 70, 170, 36), func():
         var squad: Dictionary = simulation.squad_by_id(selected)
         if not squad.is_empty():
+            follow_target = ""
             camera_focus = Battle.position(squad)
             camera_distance = 24.0
             camera_pitch = deg_to_rad(32)
@@ -456,6 +462,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 func _map_input(event: InputEvent) -> void:
     if event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_MIDDLE:
+        follow_target = ""
+        _refresh_follow_control()
         if event.shift_pressed:
             camera_yaw = wrapf(camera_yaw - event.relative.x * 0.008, -PI, PI)
             camera_pitch = clampf(camera_pitch + event.relative.y * 0.006, deg_to_rad(25), deg_to_rad(75))
@@ -581,6 +589,7 @@ func _refresh_zoom_sizes() -> void:
         trail.size = Vector3(thickness, thickness, trail.size.z)
 
 func _reset_camera() -> void:
+    follow_target = ""
     camera_focus = Vector2(256, 256)
     camera_yaw = 0
     camera_pitch = atan2(520.0, 394.0)
@@ -588,6 +597,29 @@ func _reset_camera() -> void:
     camera_distance = Vector2(520, 394).length()
     _update_camera()
     _refresh()
+
+func _can_follow_selected() -> bool:
+    if simulation == null or simulation.state["phase"] != "execution": return false
+    var squad: Dictionary = simulation.squad_by_id(selected)
+    return not squad.is_empty() and squad["faction"] == "UKR" and int(squad["alive"]) > 0
+
+func _refresh_follow_control() -> void:
+    if follow_target != selected or not _can_follow_selected():
+        follow_target = ""
+    follow_button.disabled = not _can_follow_selected()
+    follow_button.text = "FOLLOWING S%s" % selected.right(1) if not follow_target.is_empty() else "FOLLOW S%s" % selected.right(1)
+
+func _toggle_camera_follow() -> void:
+    follow_target = "" if follow_target == selected else (selected if _can_follow_selected() else "")
+    _refresh_follow_control()
+    _apply_camera_follow()
+
+func _apply_camera_follow() -> void:
+    if follow_target.is_empty(): return
+    # Read only the selected friendly's authoritative current position. A queued
+    # waypoint, remembered contact and hidden opposing actor are never candidates.
+    camera_focus = Battle.position(simulation.squad_by_id(follow_target))
+    _update_camera()
 
 func _ground_point(screen: Vector2) -> Vector2:
     var origin := camera.project_ray_origin(screen)
@@ -941,6 +973,7 @@ func _refresh() -> void:
         squad_buttons[id].disabled = squad.is_empty() or int(squad.get("alive", 0)) == 0
         squad_buttons[id].text = "S%s  %dP  %dR  SUP%d%%%s" % [str(id).right(1), int(squad.get("alive", 0)), int(squad.get("ammo", 0)), int(float(squad.get("suppression", 0)) * 100), "  <" if id == selected else ""]
     var selected_squad: Dictionary = simulation.squad_by_id(selected)
+    _refresh_follow_control()
     if not selected_squad.is_empty():
         selection_label.text = "S%s  |  %s\n%d rounds  /  Morale %d  /  SUP%d%%" % [selected.right(1), simulation.combat_status(selected_squad), selected_squad["ammo"], selected_squad["morale"], int(float(selected_squad["suppression"]) * 100)]
         if int(state["version"]) >= 12:
@@ -1039,5 +1072,6 @@ func _refresh() -> void:
             var target := Vector2(path.back()[0], path.back()[1])
             markers[squad["id"]].position = Vector3(target.x, Battle.terrain_height(target.x, target.y) + 0.7, target.y)
 
+    _apply_camera_follow()
     _refresh_zoom_sizes()
     _animate_soldiers(0.0)

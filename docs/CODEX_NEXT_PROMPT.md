@@ -1,3 +1,17 @@
+# Finish selected-squad camera-follow validation
+
+In-progress focused branch: codex/execution-camera-follow, based explicitly on
+tested PR #42 head 976361487f78d15545f5acc3095d5a942612387e (final CI
+39349051469 success). Reuse this unfinished task. An execution-only FOLLOW S#
+control tracks the selected living friendly's authoritative current position.
+Wheel zoom remains available; pan/orbit, selection, INSPECT, RESET, elimination,
+completion and reopening clear the transient target. Focused actual-input,
+moving/firing, disk-reopen and every-tick/full-result twin regression passes.
+All 36 local Godot 4.5.1 checks, 26 terrain tests and diff check pass. Draft PR,
+rendered CI/artifact inspection and final evidence documentation remain pending;
+do not promote from headless checks alone. No rules/save contract change.
+Prior validated baseline:
+
 # Continue from the validated hypothetical waypoint probe
 
 Latest validated descendant: codex/waypoint-los-preview, draft PR #42, explicitly

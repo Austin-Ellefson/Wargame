@@ -1029,3 +1029,20 @@ This setup change contains instructions only; these missing tools must be addres
 - Frozen downloads and tactical v25/campaign v2/result v1 contracts preserved.
   After validation: a small selected-squad camera-follow control during execution,
   keeping navigation optional and presentation independent of simulation/RNG.
+
+## Selected-squad execution follow — in validation 2026-10-20 (America/Chicago)
+
+- Branch codex/execution-camera-follow, explicit tested PR #42 documentation head
+  976361487f78d15545f5acc3095d5a942612387e; final base CI 39349051469 succeeded.
+  Branches/open PRs checked: no successor or overlapping follow task, no merges;
+  main remains the starter and the expected-head lease is reserved.
+- Adds an execution-only FOLLOW S# control for the selected living friendly's
+  actual position. Wheel zoom retains follow; pan/orbit, selection, INSPECT, RESET,
+  elimination, completion and reopening stop it. No waypoint/enemy lookup.
+- Focused actual-input regression passes real motion/fire, follow updates, manual
+  controls, lifecycle cleanup, RNG/full-state purity, disk reopen and every-tick/
+  full-result equality to an unfollowed twin. All 36 local Godot 4.5.1 checks,
+  26 terrain tests and diff check pass. Draft PR/CI and rendered execution/report
+  review remain pending. No save/rules migration.
+- Frozen milestone/prior downloads, locks, once-only losses, rollback, export/GIS
+  and Windows launchers remain unchanged. No Windows/Combat Mission fidelity claim.

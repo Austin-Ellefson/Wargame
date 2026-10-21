@@ -25,6 +25,7 @@ def main():
                  "repeatable_loop_smoke", "suppression_smoke", "visibility_smoke", "contact_memory_smoke", "movement_orders_smoke", "fire_control_smoke", "target_orders_smoke", "timed_pause_smoke", "opponent_reaction_smoke", "cover_routing_smoke", "covered_goals_smoke", "fatigue_smoke", "morale_smoke", "posture_smoke", "weapon_roles_smoke", "acquisition_smoke", "command_response_smoke", "shared_reports_smoke", "observer_memory_smoke", "fire_arcs_smoke", "area_fire_smoke", "opponent_duck_smoke", "nearby_cover_smoke", "cover_spacing_smoke", "cover_retry_smoke", "soldier_visual_smoke", "soldier_animation_smoke", "combat_zoom_smoke", "terrain_probe_smoke", "tactical_view_smoke"]:
         checks.append((name, ["--headless", "--script", f"res://tests/{name}.gd"]))
     checks.append(("waypoint_probe_smoke", ["--headless", "--script", "res://tests/waypoint_probe_smoke.gd"]))
+    checks.append(("camera_follow_smoke", ["--headless", "--script", "res://tests/camera_follow_smoke.gd"]))
     if args.render_check:
         if args.capture:
             args.capture = args.capture.resolve()
@@ -82,6 +83,9 @@ def main():
         waypoint_command = probe_command.copy()
         waypoint_command[waypoint_command.index("res://tests/terrain_probe_smoke.gd")] = "res://tests/waypoint_probe_smoke.gd"
         checks.append(("waypoint_probe_render", waypoint_command))
+        follow_command = waypoint_command.copy()
+        follow_command[follow_command.index("res://tests/waypoint_probe_smoke.gd")] = "res://tests/camera_follow_smoke.gd"
+        checks.append(("camera_follow_render", follow_command))
     for name, flags in checks:
         result = subprocess.run([args.godot, "--path", str(root), *flags], cwd=root,
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
