@@ -21,9 +21,9 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/waypoint-los-preview / PR #42
-- Latest post-milestone code/evidence commit: cc8d0b8f1239c06494d069e2785e7189004d6512
-- Post-milestone next task: optional selected-squad camera follow during execution
+- Latest validated post-milestone descendant: codex/execution-camera-follow / PR #43
+- Latest post-milestone code/evidence commit: 9fa3eacdf2df47cc6ddee7187f06c520c721734f
+- Post-milestone next task: presentation-only execution playback pause/resume
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -1446,3 +1446,33 @@ is delivered as the scheduled task result in ChatGPT.
   Windows launchers unchanged; no Windows/CMBS/Combat Mission fidelity claim.
   Next after validation: optional selected-squad camera follow during execution,
   with free navigation preserved and no authority/RNG changes.
+
+## Selected-squad execution follow — validated 2026-10-20 (America/Chicago)
+
+- Branch codex/execution-camera-follow; explicit tested PR #42 documentation head
+  976361487f78d15545f5acc3095d5a942612387e, final CI 39349051469 successful.
+  Remote branch/PR chain checked: no successor, overlap or merge; main starter.
+- Execution-only FOLLOW S# tracks the selected living blue squad's actual current
+  position. Wheel zoom stays usable. Pan/orbit, selection, INSPECT, RESET,
+  elimination, completion and reopen clear it; it never silently transfers.
+- Ready for review in draft PR #43. Code commit
+  9fa3eacdf2df47cc6ddee7187f06c520c721734f passes actual input, real movement/
+  fire, camera lifecycle, state/global-RNG purity, disk reopen, every-tick and
+  complete-result twin parity. All 36 local Godot 4.5.1 checks, 26 terrain tests
+  and diff check passed. Combined CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/39525325026 succeeded on
+  the same code, including all 13 rendered scripts.
+- Artifact 12313326055 inspected: 49 logs, 48 PASS-bearing non-editor logs and no
+  script errors. The 1280x720 execution capture visibly shows FOLLOWING S1 at
+  00:06, real shot lines and latest-volley/ammunition/suppression feedback while
+  the squad is moving. The readable 04:06 report shows blue 36 / 0 / 36 and red
+  36 / 16 / 20 deployed/surviving/lost, objective 0 / 159 seconds, and both
+  sides' campaign losses, morale caps and supply effects.
+- Frozen milestone and earlier downloads, locks, once-only losses, rollback,
+  exports/GIS and Windows launchers remain unchanged. No Windows/CMBS/realistic
+  fidelity claim. Download:
+  https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/execution-camera-follow
+- Next focused task: a presentation-only PAUSE/RESUME PLAYBACK control during
+  execution, distinct from movement-order pauses. It must preserve camera use,
+  freeze simulation ticks and cue lifetimes without consuming RNG, resume with
+  exact twin/result parity, and reset safely on completion/reopen.

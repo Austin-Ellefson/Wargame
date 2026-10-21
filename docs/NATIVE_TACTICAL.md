@@ -827,3 +827,21 @@ and reopening reset the mode. Existing sampled terrain/building and low ground
 endpoint limits apply; the preview predicts neither arrival nor future spotting,
 fire eligibility, target positions or combat outcomes. It is not a ghost squad,
 path-safety assessment or individual soldier line of sight. No save fields change.
+
+## Selected-squad execution camera follow
+
+On `codex/execution-camera-follow`, **FOLLOW S#** becomes available during
+execution for the selected living blue squad. It centers the existing camera on
+that squad's actual simulated position after each completed tick. Wheel zoom keeps
+following. Middle-drag pan, Shift-middle orbit, selecting another squad, INSPECT,
+RESET CAMERA, elimination, battle completion or reopening stops follow. Following
+never transfers silently to a new selection; press its button again explicitly.
+
+The camera reads only the selected friendly's current authoritative position. It
+does not look ahead to queued waypoints, target hidden enemies or alter the route,
+shot cues, recoil/lifetimes, playback cadence, simulation RNG or results. It is
+transient presentation, not a saved tactical order or an individual-soldier view.
+The actual-input regression follows a moving, firing squad, exercises every exit,
+round-trips authoritative execution state through disk, and matches every tick and
+the final result to an unfollowed twin. Linux CI's execution and completed-report
+captures were inspected; this does not establish Windows or realistic fidelity.

@@ -60,6 +60,7 @@ jobs:
             ${{ runner.temp }}/zoom-*-preview.png
             ${{ runner.temp }}/los-*-preview.png
             ${{ runner.temp }}/waypoint-*-preview.png
+            ${{ runner.temp }}/camera-follow-*-preview.png
             ${{ runner.temp }}/soldiers-*-motion-*.png
             ${{ runner.temp }}/soldiers-recoil-*.png
             ${{ runner.temp }}/soldiers-stand-preview.png

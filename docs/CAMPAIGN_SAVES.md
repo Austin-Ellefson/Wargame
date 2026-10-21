@@ -496,3 +496,13 @@ Clearing the route removes the measurement. Tactical v25/campaign v2/result v1
 and older saves keep their rules; no new clock, RNG sample, order or save field.
 The regression validates and disk-round-trips the actual state while the preview
 is visible, then compares every execution tick and the complete result to a twin.
+
+## Execution camera follow — no save change
+
+The selected friendly ID used by FOLLOW S# and the camera transform are transient
+view state. They are absent from tactical v25, campaign v2 and result v1. Reopening
+starts at the overview with follow off, including when authoritative execution is
+restored from disk. Follow reads actual friendly positions after completed ticks;
+it cannot advance a clock, alter orders/knowledge/ammunition/losses, consume RNG,
+replay a shot or extend a cue. Regression compares each tick and the full result
+with an unfollowed twin while exercising actual camera and selection inputs.

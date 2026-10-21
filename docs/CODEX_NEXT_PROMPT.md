@@ -1,4 +1,25 @@
-# Continue from the validated hypothetical waypoint probe
+# Continue from the validated execution camera follow
+
+Latest validated descendant: codex/execution-camera-follow, draft PR #43, based
+explicitly on tested PR #42 head 976361487f78d15545f5acc3095d5a942612387e.
+Code commit: 9fa3eacdf2df47cc6ddee7187f06c520c721734f. All 36 local
+Godot 4.5.1 checks, 26 terrain tests and diff check passed. Combined CI
+https://github.com/Austin-Ellefson/Wargame/actions/runs/39525325026 succeeded on
+that code with all 13 rendered scripts. Artifact 12313326055 was inspected: 49
+logs, 48 PASS-bearing non-editor logs, no script errors, actual followed movement/
+fire at 00:06, and a readable 04:06 two-sided report with objective and campaign
+effects. Check the final documentation-head CI in PR #43 before dependent work.
+
+Next focused task: add a presentation-only PAUSE/RESUME PLAYBACK control during
+execution. Keep it clearly distinct from the existing 15/30/60-second movement
+order pause. While playback is paused, camera pan/orbit/zoom/follow must remain
+usable but simulation ticks, RNG, shot-cue/recoil lifetime and authoritative state
+must not advance. Resume must preserve exact every-tick and completed-result twin
+parity; completion, return to planning and reopening must not retain a stale pause.
+Use actual button/input and disk-reopen coverage plus a real paused firing capture.
+Do not add a save field or change tactical/campaign/result versions.
+
+## Prior validated hypothetical waypoint probe
 
 Latest validated descendant: codex/waypoint-los-preview, draft PR #42, explicitly
 based on tested PR #41 head 2c43483d177a78f50e1da9c2512c5ad42db8d630. Tested code:
@@ -10,16 +31,9 @@ measurements, actual 00:03 firing, existing 1x/4x/8x shots and readable complete
 two-sided reports with objective control and campaign consequences. Check final
 documentation-head CI in PR #42 before dependent work. Do not duplicate this task.
 
-Next focused task: optional selected-squad camera follow during execution.
-Keep free pan/rotation/zoom available; manual navigation should disengage follow
-predictably, RESET CAMERA should restore the overview, and changing selection,
-elimination, completion or reopening must not retain stale targets. Follow only
-friendly actual positions, never hidden enemies or future waypoints. Reuse the
-existing camera/zoom pipeline, without consuming simulation RNG, replaying shot
-cues, changing event lifetimes, advancing ticks or adding save fields. Add actual
-input, lifecycle and deterministic twin/state regression coverage; capture real
-moving/firing execution and a completed report, not a planning-only demonstration.
-One focused PR on the tested descendant; investigate failed checks first.
+Its selected-squad camera-follow next task is complete in the validated descendant
+above. Do not duplicate it; preserve its transient friendly-only behavior and
+rendered evidence while implementing playback pause.
 
 The current planning-only probe compares actual squad center with the final
 queued route point using the current posture and a ground +0.30 m endpoint.

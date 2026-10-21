@@ -22,7 +22,7 @@ The prototype uses a 4x4 grid over a fictional test area in central Ukraine. For
 
 Clone this repository and import its root `project.godot` in Godot. Press **F5** to run.
 
-Download **[`codex/waypoint-los-preview`](https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/waypoint-los-preview)** for the latest tested descendant. It includes repeat battles and restart, firing/report feedback, limited visibility and delayed reports, infantry movement/fire/posture orders, fatigue and morale, low-poly animated soldier figures, nearby-cover reactions and smooth label/cue zoom. The planning terrain LOS/range tool now compares the actual squad position with its hypothetical final queued waypoint, explicitly assuming the current posture. It changes no orders and reveals no enemies. Fresh battles remain v25; existing pending saves receive the tool without a rules migration.
+Download **[`codex/execution-camera-follow`](https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/execution-camera-follow)** for the latest tested descendant. It includes repeat battles and restart, firing/report feedback, limited visibility and delayed reports, infantry movement/fire/posture orders, fatigue and morale, low-poly animated soldier figures, nearby-cover reactions and smooth label/cue zoom. The planning terrain LOS/range tool compares the actual squad position with its hypothetical final queued waypoint, and an optional execution camera follows the selected squad's actual movement. Neither changes orders or reveals hidden enemies. Fresh battles remain v25; existing pending saves receive these presentation tools without a rules migration.
 
 The original milestone remains preserved on `codex/completed-battle-report`. The stacked PRs remain unmerged. Import `project.godot`, then press **F5**; start a fresh integrated demo to use the latest rules. Existing pending battles keep their saved rules.
 
@@ -32,6 +32,7 @@ Click **PLAY INTEGRATED DEMO** in a new campaign. It executes the documented two
 
 - You command the blue detachment: up to four nine-person squads. Red follows objective routes and stops to engage its own locally visible firing contacts.
 - Middle-drag to pan, Shift + middle-drag to rotate, and use the wheel to zoom. **RESET CAMERA** restores the overview.
+- During execution, **FOLLOW S#** keeps the camera centered on the selected living blue squad's actual position. Wheel zoom remains available. Pan, rotate, change selection, INSPECT, RESET, elimination, completion or reopening disengages follow instead of transferring it silently.
 - Select a blue squad and **MOVE**, **QUICK** or **HUNT**, then right-click ground to replace its routed movement order. **Shift + right-click** appends a waypoint in the existing route mode. **HOLD POSITION** clears the route.
 - **AUTO / HOLD FIRE** controls firing, including return fire. **Shift + left-click** a contact to prefer it only when the selected squad can locally engage it; **CLEAR TARGET** returns to nearest eligible targets.
 - With a queued route, **PAUSE** cycles 0/15/30/60 simulated seconds before moving; firing continues. Remaining waits and routes survive restart. HUNT also pauses on local contacts or pressure.
