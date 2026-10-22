@@ -58,6 +58,8 @@ var report_label: Label
 var execute_button: Button
 var back_button: Button
 var speed_button: Button
+var playback_pause_button: Button
+var playback_paused := false
 var pause_button: Button
 var clear_target_button: Button
 var fire_buttons := {}
@@ -232,9 +234,13 @@ func _build_interface() -> void:
     pause_button.add_theme_font_size_override("font_size", 12)
     pause_button.tooltip_text = "Cycle 0/15/30/60 seconds. Delays movement only; firing continues."
     execute_button = _button("EXECUTE 60 SECONDS", Rect2(986, 540, 248, 32), _execute)
-    speed_button = _button("PLAYBACK 4x", Rect2(986, 578, 248, 28), func():
+    speed_button = _button("PLAYBACK 4x", Rect2(986, 578, 120, 28), func():
         speed = {1.0: 4.0, 4.0: 8.0, 8.0: 1.0}[speed]
         speed_button.text = "PLAYBACK %dx" % int(speed))
+    speed_button.add_theme_font_size_override("font_size", 12)
+    playback_pause_button = _button("PAUSE PLAYBACK", Rect2(1110, 578, 124, 28), _toggle_playback_pause)
+    playback_pause_button.add_theme_font_size_override("font_size", 10)
+    playback_pause_button.tooltip_text = "Execution viewing only. Freezes simulation ticks, firing-cue/recoil lifetimes and movement animation. Camera pan, orbit, zoom and FOLLOW remain available. This is separate from a squad's timed movement pause."
     back_button = _button("SAVE & CAMPAIGN", Rect2(986, 614, 248, 30), _back)
     report_label = _label("", Vector2(986, 650), 12, 244)
     _label("Left: select  /  Right: move  /  Wheel: zoom  /  Middle-drag: pan  /  Shift + middle-drag: rotate", Vector2(24, 691), 13)
@@ -634,13 +640,21 @@ func _ground_point(screen: Vector2) -> Vector2:
 
 func _execute() -> void:
     if simulation.execute():
+        playback_paused = false
         accumulator = 0
         checkpoint.emit()
         _refresh()
 
 func _process(delta: float) -> void:
-    _age_shot_cues(delta)
     if simulation == null: return
+    if simulation.state["phase"] != "execution":
+        playback_paused = false
+    # Playback pause is deliberately above every time-dependent presentation and
+    # authoritative operation. Camera input remains event-driven and available.
+    if playback_paused:
+        _refresh_playback_control()
+        return
+    _age_shot_cues(delta)
     # Age old cues before this frame creates new shot events, including slow frames.
     _animate_soldiers(delta)
     if simulation.state["phase"] != "execution": return
@@ -654,6 +668,17 @@ func _process(delta: float) -> void:
     _refresh()
     if simulation.state["phase"] != "execution":
         checkpoint.emit()
+
+func _toggle_playback_pause() -> void:
+    playback_paused = not playback_paused if simulation != null and simulation.state["phase"] == "execution" else false
+    _refresh()
+
+func _refresh_playback_control() -> void:
+    var executing: bool = simulation != null and simulation.state["phase"] == "execution"
+    if not executing:
+        playback_paused = false
+    playback_pause_button.disabled = not executing
+    playback_pause_button.text = "RESUME PLAYBACK" if playback_paused else "PAUSE PLAYBACK"
 
 func _show_shot_events(events: Array) -> void:
     for event in events:
@@ -939,6 +964,7 @@ func _refresh() -> void:
     _age_shot_cues(0.0)
     _refresh_los_probe()
     var state: Dictionary = simulation.state
+    _refresh_playback_control()
     if state["phase"] != "planning":
         facing_armed = false
         area_armed = false
@@ -960,6 +986,8 @@ func _refresh() -> void:
         phase_label.text = "%s  |  %02d:%02d  |  512 m" % [str(state["phase"]).to_upper(), int(state["elapsed"]) / 60, int(state["elapsed"]) % 60]
     if int(state["version"]) >= 21:
         phase_label.text = "%s | %02d:%02d" % [str(state["phase"]).to_upper(), int(state["elapsed"]) / 60, int(state["elapsed"]) % 60]
+    if playback_paused:
+        phase_label.text += " | PLAYBACK PAUSED"
     summary_label.text = "Blue %dP / Red %dP\nObjective: %ds / %ds" % [simulation.alive("UKR"), simulation.alive("RU"), state["objective"]["UKR"], state["objective"]["RU"]]
     if simulation.limited_visibility() and state["phase"] != "finished":
         summary_label.text = "Blue %dP / %d enemy contacts\nYour objective: %ds" % [simulation.alive("UKR"), _player_contact_count(), state["objective"]["UKR"]]
@@ -1041,6 +1069,8 @@ func _refresh() -> void:
     if facing_armed: report_label.text = "FACE: left-click ground.\nRight-click or FACE cancels."
     if not selected_squad.is_empty() and simulation.morale_state(selected) == "broken":
         report_label.text = "BROKEN: automatic withdrawal.\n30 quiet rear seconds to rally."
+    if playback_paused:
+        report_label.text = "Playback paused; battle time and firing cues are frozen.\nCamera and FOLLOW remain available."
     if state["phase"] == "finished":
         var result: Dictionary = simulation.result()
         completed_report_label.text = _battle_report(result)

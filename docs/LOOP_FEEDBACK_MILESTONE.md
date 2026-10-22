@@ -1476,3 +1476,20 @@ is delivered as the scheduled task result in ChatGPT.
   execution, distinct from movement-order pauses. It must preserve camera use,
   freeze simulation ticks and cue lifetimes without consuming RNG, resume with
   exact twin/result parity, and reset safely on completion/reopen.
+
+## Execution playback pause — in validation 2026-10-21 (America/Chicago)
+
+- Branch codex/execution-playback-pause, explicit tested PR #43 documentation
+  head b4014c325943566816132f37668d7993b1637f35. Branches/open PRs and main were
+  rechecked before work; no successor, overlap or merge was found.
+- Adds a separate PAUSE/RESUME PLAYBACK control during execution. The transient
+  view flag sits above simulation stepping, partial-time accumulation, shot-cue
+  aging, recoil and soldier animation. Camera pan/orbit/zoom/FOLLOW stay active.
+  The saved timed movement PAUSE remains a different planning order.
+- Focused regression uses actual buttons and a real moving/firing frame. It freezes
+  fractional time, cues, recoil and gait at 1x/4x/8x; exercises free camera and
+  FOLLOW; checks global RNG/state purity; resumes against an every-tick twin;
+  reopens an actual disk checkpoint; crosses a later planning interval; and
+  compares the complete result/report. Save versions and contracts are unchanged.
+- Local full checks, rendered CI evidence, artifact inspection, draft PR and final
+  validated ledger status remain pending. Do not promote this descendant yet.
