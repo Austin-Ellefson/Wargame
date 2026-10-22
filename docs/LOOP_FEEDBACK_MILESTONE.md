@@ -1476,3 +1476,45 @@ is delivered as the scheduled task result in ChatGPT.
   execution, distinct from movement-order pauses. It must preserve camera use,
   freeze simulation ticks and cue lifetimes without consuming RNG, resume with
   exact twin/result parity, and reset safely on completion/reopen.
+
+## Execution playback pause — validated 2026-10-21 (America/Chicago)
+
+- Ready for review: draft PR #44, codex/execution-playback-pause, explicitly based
+  on tested PR #43 documentation head b4014c325943566816132f37668d7993b1637f35.
+  Branches/open PRs and main were rechecked before work; no successor, overlap or
+  merge was found. No branch was merged, force-pushed or deleted.
+- Tested code cdd537ac2d8114388dccf7585735fcb28f2b9c31. All 37 local Godot
+  4.5.1 entries, 26 terrain tests and diff check passed after restoring transient
+  dependencies. Combined CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/39701348995 succeeded on
+  that code with all 14 rendered scripts.
+- Artifact 12393735033 was downloaded and inspected: 51 logs, 50 PASS-bearing
+  non-editor logs and no script errors. The 1280x720 actual 00:06 execution frame
+  visibly shows PLAYBACK PAUSED, RESUME PLAYBACK, FOLLOWING S1, 4x speed, live
+  rifle/support tracers, 342 S1 rounds and 25% suppression. The frozen latest
+  volley includes real ammunition and suppression changes rather than a planning
+  mock-up; 54 simulated seconds remain.
+- The readable actual 04:06 report shows RU victory: blue 36 deployed / 0 survived /
+  36 lost; red 36 / 16 / 20; objective 0 / 159 seconds; morale caps 53 / 65 and
+  supply -3 / -4, with blue eliminated/no withdrawal. It retains the once-only
+  apply explanation and campaign unlock consequence. These abstract results are
+  not realistic-combat validation.
+- The separate PAUSE/RESUME PLAYBACK control is transient view state. It freezes
+  authoritative steps, the fractional accumulator, cue lifetime, recoil and gait
+  at 1x/4x/8x while pan/orbit/zoom/speed/FOLLOW remain usable. The saved timed
+  movement PAUSE stays distinct. Planning, completion, later execution and reopen
+  clear the view pause; a partial second resumes exactly.
+- Regression uses actual buttons and disk I/O on a real moving/firing frame. It
+  proves global-RNG/state purity while paused, every resumed tick and the complete
+  result against an uninterrupted twin, interval cleanup and no fabricated cues
+  on reopen. Tactical v25/campaign v2/result v1, locks, once-only losses, rollback,
+  export/GIS contracts and Windows launchers remain unchanged; no save migration.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/execution-playback-pause
+  Godot 4.5.1: import project.godot, F5, start a fresh integrated demo, execute,
+  pause during fire, inspect freely, then resume. Linux CI does not establish
+  Windows, CMBS-editor or Combat Mission fidelity. Frozen milestone and earlier
+  downloads remain preserved without another milestone announcement.
+- Next focused task: a STEP +1 SECOND control available only while playback is
+  paused. It should execute exactly one normal authoritative tick, present its real
+  events/cues, remain paused afterward, handle interval/completion boundaries and
+  retain exact twin/disk/result parity without adding saved UI state.

@@ -26,6 +26,7 @@ def main():
         checks.append((name, ["--headless", "--script", f"res://tests/{name}.gd"]))
     checks.append(("waypoint_probe_smoke", ["--headless", "--script", "res://tests/waypoint_probe_smoke.gd"]))
     checks.append(("camera_follow_smoke", ["--headless", "--script", "res://tests/camera_follow_smoke.gd"]))
+    checks.append(("playback_pause_smoke", ["--headless", "--script", "res://tests/playback_pause_smoke.gd"]))
     if args.render_check:
         if args.capture:
             args.capture = args.capture.resolve()
@@ -86,6 +87,9 @@ def main():
         follow_command = waypoint_command.copy()
         follow_command[follow_command.index("res://tests/waypoint_probe_smoke.gd")] = "res://tests/camera_follow_smoke.gd"
         checks.append(("camera_follow_render", follow_command))
+        pause_command = follow_command.copy()
+        pause_command[pause_command.index("res://tests/camera_follow_smoke.gd")] = "res://tests/playback_pause_smoke.gd"
+        checks.append(("playback_pause_render", pause_command))
     for name, flags in checks:
         result = subprocess.run([args.godot, "--path", str(root), *flags], cwd=root,
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,

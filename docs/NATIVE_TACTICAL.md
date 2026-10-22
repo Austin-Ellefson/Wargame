@@ -845,3 +845,21 @@ The actual-input regression follows a moving, firing squad, exercises every exit
 round-trips authoritative execution state through disk, and matches every tick and
 the final result to an unfollowed twin. Linux CI's execution and completed-report
 captures were inspected; this does not establish Windows or realistic fidelity.
+
+## Execution playback pause
+
+On `codex/execution-playback-pause`, the execution row separates the playback
+speed selector from **PAUSE PLAYBACK / RESUME PLAYBACK**. This is transient view
+state, not the saved timed movement pause. While active, it freezes simulation
+steps, the fractional tick accumulator, shot-cue lifetime, soldier recoil and gait
+animation. Pan, Shift-middle orbit, wheel zoom, 1x/4x/8x selection and **FOLLOW
+S#** remain available because those inputs do not advance battle time.
+
+Planning, the end of a 60-second interval, battle completion and reopening clear
+the view pause; a later execution begins unpaused. No pause field is serialized,
+and tactical v25, campaign v2 and result v1 remain unchanged. The actual-input
+regression stops on a real moving/firing frame, freezes it at all three speeds,
+exercises the live camera, resumes a partial second against an authoritative twin,
+round-trips execution state through disk, and compares every later tick plus the
+complete result. Linux render evidence is not Windows or Combat Mission fidelity
+validation.
