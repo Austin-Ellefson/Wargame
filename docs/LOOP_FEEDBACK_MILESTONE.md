@@ -1519,7 +1519,7 @@ is delivered as the scheduled task result in ChatGPT.
   events/cues, remain paused afterward, handle interval/completion boundaries and
   retain exact twin/disk/result parity without adding saved UI state.
 
-## Paused one-second step — implementation candidate 2026-10-22 (America/Chicago)
+## Paused one-second step — validated 2026-10-22 (America/Chicago)
 
 - Branch `codex/playback-single-step`, reserved from validated PR #44 documentation
   head `7fbaf24a1372d6eb0d2124150aeb0c36df13efbb`. Branches, open PRs and main were
@@ -1533,16 +1533,36 @@ is delivered as the scheduled task result in ChatGPT.
   stepped authority but no transient pause, accumulator, cue or enablement. It is
   deliberate forward authority, not replay/rewind; tactical v25, campaign v2 and
   result v1 remain unchanged.
-- All 38 local Godot 4.5.1 entries, 26 terrain tests and `git diff --check` pass.
-  The focused actual-input regression steps real tick-three rifle fire into the
-  normal cue/ammunition panel, covers all speeds, disk, fractional resume, exactly
-  one second-60 checkpoint, every later tick and the full result against a twin.
-  Combined rendered CI and artifact inspection are pending; do not call this
-  candidate validated yet. Local Xvfb installation was unavailable in this host.
+- Tested code `c6f052004f23f8aae0adf43f38c3a11e9ee5b5aa`. All 38 local
+  Godot 4.5.1 entries, 26 terrain tests and `git diff --check` pass. Combined CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/39881384628 succeeded on
+  that code with all 15 rendered scripts. Artifact 12471235366 was downloaded and
+  inspected: 53 logs, 52 PASS-bearing non-editor logs, no script errors and 69
+  images. Existing nonfatal driver/anchor harness warnings remain.
+- The focused actual-input regression steps real tick-three rifle fire through the
+  normal cue/ammunition panel at all playback speeds, covers disk, fractional
+  resume, exactly one second-60 checkpoint, every later tick and the full result
+  against a twin. The inspected 00:04 frame visibly retains the real tracer after
+  a non-firing step, shows UKR S1 -9R / SUP+18, 351 rounds, 14% suppression,
+  paused 8x/RESUME/STEP controls and 56 seconds remaining. The two-line paused
+  help fits above the footer.
+- The inspected 00:45 report shows RU victory: blue 36 deployed / 0 surviving /
+  36 lost; red 36 / 8 / 28; objective 0 / 0 seconds; morale caps 73 / 79 and
+  supply -4 / -5, with blue eliminated/no withdrawal. It retains the once-only
+  apply explanation and campaign unlock. These abstract values are not evidence
+  of realistic combat fidelity.
 - Initial combined CI 39880714294 passed, but artifact 12470965886 exposed the
   paused help wrapping to four lines with its final line against the 720p footer.
-  The two-line copy fix is pending the same full suite and rendered inspection;
-  the first execution/report images are evidence only, not the final candidate.
+  The final candidate shortens only that copy; the complete suite and replacement
+  artifact above confirm the defect is fixed.
 - No Windows desktop connection is present. Windows, CMBS editor and realistic
   Combat Mission fidelity remain unverified. Frozen milestone downloads and the
   prior prepared check-in remain unchanged and are not reannounced.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/playback-single-step
+  Import `project.godot` in Godot 4.5.1 and press F5. Execute a tactical interval,
+  pause playback, then use STEP +1s; resume to continue from the preserved fraction.
+- Next focused task: a bounded, transient replay of the just-completed 60-second
+  interval using recorded presentation frames and witnessed events. It must never
+  resimulate combat, consume RNG, reveal hidden state or mutate the authoritative
+  planning snapshot; exiting review returns to exactly unchanged planning. Start
+  with interval-boundary planning only and no save migration.

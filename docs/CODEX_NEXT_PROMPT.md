@@ -1,24 +1,26 @@
-# Continue from the validated execution playback pause
+# Continue from the validated paused single-second step
 
-Latest validated descendant: codex/execution-playback-pause, draft PR #44, based
-explicitly on tested PR #43 head b4014c325943566816132f37668d7993b1637f35.
-Code commit: cdd537ac2d8114388dccf7585735fcb28f2b9c31. All 37 local
+Latest validated descendant: `codex/playback-single-step`, draft PR #45, based
+explicitly on tested PR #44 head `7fbaf24a1372d6eb0d2124150aeb0c36df13efbb`.
+Tested code: `c6f052004f23f8aae0adf43f38c3a11e9ee5b5aa`. All 38 local
 Godot 4.5.1 entries, 26 terrain tests and diff check passed. Combined CI
-https://github.com/Austin-Ellefson/Wargame/actions/runs/39701348995 succeeded on
-that code with all 14 rendered scripts. Artifact 12393735033 was inspected: 51
-logs, 50 PASS-bearing non-editor logs, no script errors, an actual paused 00:06
-firing frame with frozen tracers/recoil and readable controls, plus a complete
-04:06 two-sided report. Check the final documentation-head CI in PR #44 before
-dependent work.
+https://github.com/Austin-Ellefson/Wargame/actions/runs/39881384628 succeeded on
+that code with all 15 rendered scripts. Artifact 12471235366 was inspected: 53
+logs, 52 PASS-bearing non-editor logs, no script errors, a readable actual paused
+00:04 rifle-volley frame with STEP/RESUME controls, plus a complete 00:45 two-
+sided report. Check PR #45's final documentation-head CI before dependent work.
 
-Next focused task: add **STEP +1 SECOND** only while execution playback is paused.
-It must run exactly one normal authoritative simulation tick through the existing
-event/cue/combat-feedback path, then remain paused. It must not discard or double
-count a frozen fractional accumulator. Disable it while running/planning; interval
-or battle completion must use normal checkpoint/report cleanup. Cover actual
-button input, shots/cues, 1x/4x/8x independence, disk reopen and every-tick/full-
-result twin parity. Do not add saved UI state or change tactical/campaign/result
-versions. This advances the battle deliberately; it is not replay or rewind.
+Next focused task: add a bounded, transient **REVIEW LAST INTERVAL** slice at an
+ordinary execution-to-planning boundary. Record only presentation frames and
+events that were actually visible during the original 60-second execution; replay
+those records without calling `Battle.step()`, consuming RNG, querying current
+hidden actors or changing the authoritative planning snapshot. Begin with forward
+review of the just-completed interval and an explicit exit back to exactly unchanged
+planning. Reuse 1x/4x/8x, pause and STEP semantics only if they remain unambiguous;
+do not add rewind to authoritative combat. Reopening may discard this transient
+buffer, so no save migration is required. Test actual movement and witnessed shots,
+hidden-information isolation, boundary/checkpoint purity, exit state/RNG equality,
+disk reopen, and full-result parity. Capture rendered review and unchanged planning.
 
 ## Prior validated hypothetical waypoint probe
 
