@@ -1518,3 +1518,27 @@ is delivered as the scheduled task result in ChatGPT.
   paused. It should execute exactly one normal authoritative tick, present its real
   events/cues, remain paused afterward, handle interval/completion boundaries and
   retain exact twin/disk/result parity without adding saved UI state.
+
+## Paused one-second step — implementation candidate 2026-10-22 (America/Chicago)
+
+- Branch `codex/playback-single-step`, reserved from validated PR #44 documentation
+  head `7fbaf24a1372d6eb0d2124150aeb0c36df13efbb`. Branches, open PRs and main were
+  rechecked first: no successor, overlap or merge; main remains the starter.
+- **STEP +1s** is disabled in planning and running execution, enabled only while
+  playback is paused, and calls the same one-tick simulation/event/cue/combat-
+  feedback path as automatic playback. It stays paused after an ordinary tick,
+  preserves the frozen fractional accumulator and is independent of 1x/4x/8x.
+- At interval or battle completion it clears pause, disables itself and uses the
+  normal checkpoint/planning or readable completed-report path. Reopening retains
+  stepped authority but no transient pause, accumulator, cue or enablement. It is
+  deliberate forward authority, not replay/rewind; tactical v25, campaign v2 and
+  result v1 remain unchanged.
+- All 38 local Godot 4.5.1 entries, 26 terrain tests and `git diff --check` pass.
+  The focused actual-input regression steps real tick-three rifle fire into the
+  normal cue/ammunition panel, covers all speeds, disk, fractional resume, exactly
+  one second-60 checkpoint, every later tick and the full result against a twin.
+  Combined rendered CI and artifact inspection are pending; do not call this
+  candidate validated yet. Local Xvfb installation was unavailable in this host.
+- No Windows desktop connection is present. Windows, CMBS editor and realistic
+  Combat Mission fidelity remain unverified. Frozen milestone downloads and the
+  prior prepared check-in remain unchanged and are not reannounced.

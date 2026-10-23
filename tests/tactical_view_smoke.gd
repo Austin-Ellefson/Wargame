@@ -78,7 +78,7 @@ func _run() -> void:
     check(view.shot_cues.size() == hidden_before and view.observed_shot_events.is_empty(), "Unobserved shot events must not create cues or recorded visible endpoints.")
     var playback_state: Dictionary = game.tactical_simulation.state.duplicate(true)
     for expected_speed in [8.0,1.0,4.0]:
-        click(Vector2(1100,592), MOUSE_BUTTON_LEFT)
+        click(view.speed_button.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
         await process_frame
         check(view.speed == expected_speed and same(playback_state,game.tactical_simulation.state), "Actual playback input must cycle 4/8/1x without advancing planning or changing authoritative state.")
     var inspection_state: Dictionary = game.tactical_simulation.state.duplicate(true)

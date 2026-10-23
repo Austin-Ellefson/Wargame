@@ -59,6 +59,7 @@ var execute_button: Button
 var back_button: Button
 var speed_button: Button
 var playback_pause_button: Button
+var playback_step_button: Button
 var playback_paused := false
 var pause_button: Button
 var clear_target_button: Button
@@ -234,13 +235,16 @@ func _build_interface() -> void:
     pause_button.add_theme_font_size_override("font_size", 12)
     pause_button.tooltip_text = "Cycle 0/15/30/60 seconds. Delays movement only; firing continues."
     execute_button = _button("EXECUTE 60 SECONDS", Rect2(986, 540, 248, 32), _execute)
-    speed_button = _button("PLAYBACK 4x", Rect2(986, 578, 120, 28), func():
+    speed_button = _button("PLAYBACK 4x", Rect2(986, 578, 86, 28), func():
         speed = {1.0: 4.0, 4.0: 8.0, 8.0: 1.0}[speed]
         speed_button.text = "PLAYBACK %dx" % int(speed))
-    speed_button.add_theme_font_size_override("font_size", 12)
-    playback_pause_button = _button("PAUSE PLAYBACK", Rect2(1110, 578, 124, 28), _toggle_playback_pause)
-    playback_pause_button.add_theme_font_size_override("font_size", 10)
+    speed_button.add_theme_font_size_override("font_size", 10)
+    playback_pause_button = _button("PAUSE PLAYBACK", Rect2(1076, 578, 96, 28), _toggle_playback_pause)
+    playback_pause_button.add_theme_font_size_override("font_size", 9)
     playback_pause_button.tooltip_text = "Execution viewing only. Freezes simulation ticks, firing-cue/recoil lifetimes and movement animation. Camera pan, orbit, zoom and FOLLOW remain available. This is separate from a squad's timed movement pause."
+    playback_step_button = _button("STEP +1s", Rect2(1176, 578, 58, 28), _step_playback)
+    playback_step_button.add_theme_font_size_override("font_size", 9)
+    playback_step_button.tooltip_text = "Only while playback is paused: advance exactly one normal simulated second, show its real events, and remain paused. This is not replay or rewind."
     back_button = _button("SAVE & CAMPAIGN", Rect2(986, 614, 248, 30), _back)
     report_label = _label("", Vector2(986, 650), 12, 244)
     _label("Left: select  /  Right: move  /  Wheel: zoom  /  Middle-drag: pan  /  Shift + middle-drag: rotate", Vector2(24, 691), 13)
@@ -660,11 +664,26 @@ func _process(delta: float) -> void:
     if simulation.state["phase"] != "execution": return
     accumulator += delta * speed
     while accumulator >= 1.0 and simulation.state["phase"] == "execution":
-        var before := _status_snapshot()
-        simulation.step()
-        _show_shot_events(simulation.consume_events())
-        _show_combat_changes(before)
+        _advance_playback_tick()
         accumulator -= 1.0
+    _refresh()
+    if simulation.state["phase"] != "execution":
+        checkpoint.emit()
+
+func _advance_playback_tick() -> void:
+    var before := _status_snapshot()
+    simulation.step()
+    _show_shot_events(simulation.consume_events())
+    _show_combat_changes(before)
+
+func _step_playback() -> void:
+    if simulation == null or simulation.state["phase"] != "execution" or not playback_paused:
+        _refresh_playback_control()
+        return
+    # Deliberate stepping shares normal playback's authoritative and feedback
+    # path. The frozen fractional accumulator belongs to future resumed playback
+    # and is neither rounded away nor counted toward this explicit whole tick.
+    _advance_playback_tick()
     _refresh()
     if simulation.state["phase"] != "execution":
         checkpoint.emit()
@@ -679,6 +698,7 @@ func _refresh_playback_control() -> void:
         playback_paused = false
     playback_pause_button.disabled = not executing
     playback_pause_button.text = "RESUME PLAYBACK" if playback_paused else "PAUSE PLAYBACK"
+    playback_step_button.disabled = not executing or not playback_paused
 
 func _show_shot_events(events: Array) -> void:
     for event in events:
@@ -1070,7 +1090,7 @@ func _refresh() -> void:
     if not selected_squad.is_empty() and simulation.morale_state(selected) == "broken":
         report_label.text = "BROKEN: automatic withdrawal.\n30 quiet rear seconds to rally."
     if playback_paused:
-        report_label.text = "Playback paused; battle time and firing cues are frozen.\nCamera and FOLLOW remain available."
+        report_label.text = "Playback paused; battle time and firing cues are frozen.\nSTEP +1s advances one second; camera/FOLLOW stay live."
     if state["phase"] == "finished":
         var result: Dictionary = simulation.result()
         completed_report_label.text = _battle_report(result)

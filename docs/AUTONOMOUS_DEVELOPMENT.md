@@ -1050,3 +1050,22 @@ This setup change contains instructions only; these missing tools must be addres
   and Windows launchers remain unchanged. No Windows/Combat Mission fidelity claim.
 - Next: presentation-only execution playback pause/resume, freezing ticks/RNG and
   cue lifetime while retaining free camera controls and exact resumed twin parity.
+
+## Paused one-second step — implementation candidate 2026-10-22 (America/Chicago)
+
+- Branch `codex/playback-single-step`, explicitly based on validated PR #44 head
+  `7fbaf24a1372d6eb0d2124150aeb0c36df13efbb`; no overlapping successor or merge
+  was present when the remote lease was reserved.
+- Adds **STEP +1s** only while playback is paused. It shares the ordinary tick,
+  visible event/cue and combat-change path, remains paused during continued
+  execution and preserves the frozen partial accumulator. Interval/completion
+  boundaries retain normal checkpoint/report cleanup. It is forward simulation,
+  not replay or rewind; no saved field or rules version changes.
+- Focused actual-input coverage passes at 1x/4x/8x with real tick-three rifle fire,
+  cue/ammunition feedback, disk reopen, an exact second-60 boundary checkpoint,
+  every manually stepped tick and the complete result against a twin. All 38
+  local Godot 4.5.1 entries, 26 terrain tests and diff check pass. Rendered CI and
+  artifact inspection are still required before marking this descendant validated.
+- Preserve the frozen milestone and prior downloads. Windows/CMBS/Combat Mission
+  fidelity remains unverified. Do not build a dependent feature until this code
+  candidate's combined CI and rendered evidence pass.
