@@ -56,7 +56,7 @@ func _run() -> void:
     click(view.playback_pause_button.get_global_rect().get_center())
     await process_frame
     check(view.playback_paused and view.playback_pause_button.text == "RESUME PLAYBACK" and "PLAYBACK PAUSED" in view.phase_label.text, "Actual PAUSE PLAYBACK input visibly freezes execution.")
-    check("battle time and firing cues are frozen" in view.report_label.text and same(before,sim.state), "Paused status explains the viewing-only freeze without changing authority.")
+    check("Time/cues frozen" in view.report_label.text and same(before,sim.state), "Paused status explains the viewing-only freeze without changing authority.")
 
     # Exercise every supported playback rate while paused. Even deliberately large
     # frame deltas cannot advance time, cue TTL, recoil or locomotion phase.

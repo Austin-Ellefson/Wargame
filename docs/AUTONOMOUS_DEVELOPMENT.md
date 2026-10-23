@@ -1050,3 +1050,30 @@ This setup change contains instructions only; these missing tools must be addres
   and Windows launchers remain unchanged. No Windows/Combat Mission fidelity claim.
 - Next: presentation-only execution playback pause/resume, freezing ticks/RNG and
   cue lifetime while retaining free camera controls and exact resumed twin parity.
+
+## Paused one-second step — ready for review 2026-10-22 (America/Chicago)
+
+- Branch `codex/playback-single-step`, explicitly based on validated PR #44 head
+  `7fbaf24a1372d6eb0d2124150aeb0c36df13efbb`; no overlapping successor or merge
+  was present when the remote lease was reserved.
+- Adds **STEP +1s** only while playback is paused. It shares the ordinary tick,
+  visible event/cue and combat-change path, remains paused during continued
+  execution and preserves the frozen partial accumulator. Interval/completion
+  boundaries retain normal checkpoint/report cleanup. It is forward simulation,
+  not replay or rewind; no saved field or rules version changes.
+- Tested code `c6f052004f23f8aae0adf43f38c3a11e9ee5b5aa`. Focused actual-
+  input coverage passes at 1x/4x/8x with real tick-three rifle fire, cue/ammunition
+  feedback, disk reopen, an exact second-60 boundary checkpoint, every manually
+  stepped tick and the complete result against a twin. All 38 local Godot 4.5.1
+  entries, 26 terrain tests and diff check pass. Combined CI 39881384628 succeeded
+  with 15 rendered scripts; artifact 12471235366 was inspected (53 logs, 52 PASS-
+  bearing non-editor logs, no script errors, 69 images).
+- Initial passing CI 39880714294 exposed four-line paused help touching the 720p
+  footer. The final code shortens only that copy. Its inspected 00:04 frame shows
+  paused STEP/RESUME/speed controls, a real rifle tracer, -9R/SUP+18 feedback and
+  351 rounds; the help is now fully visible. The 00:45 report clearly shows both
+  forces, objective control and campaign consequences.
+- Preserve the frozen milestone and prior downloads. Windows/CMBS/Combat Mission
+  fidelity remains unverified. Next: a bounded, presentation-only replay of the
+  just-completed interval from recorded visible frames, never by resimulating or
+  exposing hidden information. Preserve unchanged planning authority/RNG on exit.

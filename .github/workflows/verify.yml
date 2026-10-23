@@ -62,6 +62,7 @@ jobs:
             ${{ runner.temp }}/waypoint-*-preview.png
             ${{ runner.temp }}/camera-follow-*-preview.png
             ${{ runner.temp }}/playback-pause-*-preview.png
+            ${{ runner.temp }}/playback-step-*-preview.png
             ${{ runner.temp }}/soldiers-*-motion-*.png
             ${{ runner.temp }}/soldiers-recoil-*.png
             ${{ runner.temp }}/soldiers-stand-preview.png

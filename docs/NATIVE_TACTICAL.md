@@ -863,3 +863,27 @@ exercises the live camera, resumes a partial second against an authoritative twi
 round-trips execution state through disk, and compares every later tick plus the
 complete result. Linux render evidence is not Windows or Combat Mission fidelity
 validation.
+
+## Paused single-second advance
+
+On `codex/playback-single-step`, **STEP +1s** is enabled only during an execution
+playback pause. One press invokes the same authoritative tick, shot-event, cue and
+combat-change path used by running playback, then stays paused if the battle is
+still executing. Playback speed does not change the size of the step. Existing
+shot/recoil lifetimes remain frozen in wall time while a non-firing step occurs;
+new real shots receive the ordinary cue and readable ammunition, casualty and
+suppression feedback.
+
+The partial automatic-playback accumulator is kept exactly. A manual step is a
+separate whole simulated second, so resuming later still waits only for the
+unaccumulated part of the next automatic second. Crossing an interval boundary or
+finishing the battle clears playback pause, disables STEP and follows the normal
+checkpoint/planning or completed-report path. Planning, running playback and a
+reopened execution keep STEP disabled until the user pauses again.
+
+This is deliberate forward simulation, not replay, rewind or a prediction. The
+control adds no serialized UI state and changes no combat rule, simulation RNG,
+save version or campaign result contract. Its regression covers actual button
+input at 1x/4x/8x, real stepped fire, fractional resume, disk reopen, interval and
+completion cleanup, and every-tick/full-result equality to an authoritative twin.
+Linux checks do not establish Windows or Combat Mission fidelity.
