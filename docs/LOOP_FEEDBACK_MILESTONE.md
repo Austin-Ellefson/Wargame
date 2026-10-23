@@ -1539,6 +1539,10 @@ is delivered as the scheduled task result in ChatGPT.
   one second-60 checkpoint, every later tick and the full result against a twin.
   Combined rendered CI and artifact inspection are pending; do not call this
   candidate validated yet. Local Xvfb installation was unavailable in this host.
+- Initial combined CI 39880714294 passed, but artifact 12470965886 exposed the
+  paused help wrapping to four lines with its final line against the 720p footer.
+  The two-line copy fix is pending the same full suite and rendered inspection;
+  the first execution/report images are evidence only, not the final candidate.
 - No Windows desktop connection is present. Windows, CMBS editor and realistic
   Combat Mission fidelity remain unverified. Frozen milestone downloads and the
   prior prepared check-in remain unchanged and are not reannounced.

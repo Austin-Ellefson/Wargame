@@ -1090,7 +1090,7 @@ func _refresh() -> void:
     if not selected_squad.is_empty() and simulation.morale_state(selected) == "broken":
         report_label.text = "BROKEN: automatic withdrawal.\n30 quiet rear seconds to rally."
     if playback_paused:
-        report_label.text = "Playback paused; battle time and firing cues are frozen.\nSTEP +1s advances one second; camera/FOLLOW stay live."
+        report_label.text = "Paused — STEP +1s advances 1s.\nTime/cues frozen; camera/FOLLOW live."
     if state["phase"] == "finished":
         var result: Dictionary = simulation.result()
         completed_report_label.text = _battle_report(result)

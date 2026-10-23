@@ -36,7 +36,7 @@ func _run() -> void:
     click(view.playback_pause_button.get_global_rect().get_center())
     await process_frame
     check(view.playback_paused and not view.playback_step_button.disabled and view.playback_step_button.text == "STEP +1s", "Actual PAUSE input enables the distinct one-second step control.")
-    check("STEP +1s advances one second" in view.report_label.text, "Paused help identifies STEP as deliberate battle-time advancement.")
+    check("STEP +1s advances 1s" in view.report_label.text, "Paused help identifies STEP as deliberate battle-time advancement.")
 
     var twin = Battle.new()
     twin.restore(sim.state)
