@@ -1118,11 +1118,11 @@ func _apply_interval_review_hud() -> void:
     var start_elapsed := int(interval_review_frames[0]["elapsed"])
     var total := int(interval_review_frames.back()["elapsed"]) - start_elapsed
     var offset := int(frame["elapsed"]) - start_elapsed
-    phase_label.text = "REVIEW • RECORDED PUBLIC VIEW | %02d:%02d / %02d:%02d" % [offset / 60, offset % 60, total / 60, total % 60]
+    phase_label.text = "REVIEW %02d:%02d/%02d:%02d" % [offset / 60, offset % 60, total / 60, total % 60]
     if review_paused and not review_complete:
-        phase_label.text += " | PAUSED"
+        phase_label.text += " PAUSED"
     elif review_complete:
-        phase_label.text += " | COMPLETE"
+        phase_label.text += " DONE"
     summary_label.text = frame["summary"]
     selection_label.text = frame["selection"]
     combat_panel.visible = true
@@ -1143,7 +1143,7 @@ func _apply_interval_review_hud() -> void:
     back_button.disabled = false
     back_button.text = "EXIT REVIEW TO PLANNING"
     back_button.add_theme_font_size_override("font_size", 12)
-    report_label.text = "Recorded only; combat stays frozen.\nEXIT restores unchanged planning."
+    report_label.text = "Public recording; combat stays frozen.\nEXIT restores unchanged planning."
     _refresh_playback_control()
 
 func _clear_order_preview() -> void:

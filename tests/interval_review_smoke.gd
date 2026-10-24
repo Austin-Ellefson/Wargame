@@ -59,9 +59,10 @@ func _run() -> void:
     var first_random := randi()
     click(view.interval_review_button.get_global_rect().get_center())
     await process_frame
-    check(view.reviewing_interval and view.review_index == 0 and not view.review_paused and "RECORDED PUBLIC VIEW" in view.phase_label.text, "Actual REVIEW input starts a clearly labeled forward playback at its first frame.")
+    check(view.reviewing_interval and view.review_index == 0 and not view.review_paused and view.phase_label.text.begins_with("REVIEW 00:00/01:00") and "Public recording" in view.report_label.text, "Actual REVIEW input starts a clearly labeled public forward playback at its first frame.")
     check(view.execute_button.disabled and view.back_button.text.contains("EXIT REVIEW") and same(planning_snapshot,sim.state), "Review freezes planning controls and provides an explicit unchanged-state exit.")
     check(view.report_label.get_global_rect().end.y < 691, "Two-line review guidance stays above the 720p footer.")
+    check(view.phase_label.get_global_rect().end.x < view.area_button.get_global_rect().position.x, "Compact review time/status stays clear of the top command row.")
     check(not view.actors["RU_S4"].visible and review_unit(view.interval_review_frames[0],"RU_S4").is_empty(), "The replay cannot display its current hidden actor.")
 
     click(view.playback_pause_button.get_global_rect().get_center())
