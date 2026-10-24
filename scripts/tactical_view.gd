@@ -1301,6 +1301,9 @@ func _refresh() -> void:
         _apply_interval_review_frame(false)
         return
     _age_shot_cues(0.0)
+    # Review disables every command/selection affordance. INSPECT otherwise has
+    # no phase-specific refresh rule, so restore its normal availability here.
+    inspect_button.disabled = false
     _refresh_los_probe()
     var state: Dictionary = simulation.state
     _refresh_playback_control()

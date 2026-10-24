@@ -115,7 +115,7 @@ func _run() -> void:
     await process_frame
     check(not view.reviewing_interval and view.interval_review_button.visible and sim.state["phase"] == "planning", "EXIT REVIEW returns to the ordinary planning UI and keeps the review available.")
     check(same(planning_snapshot,sim.state) and same(planning_events,sim.last_events) and review_checkpoints == checkpoints_before_exit, "Review exit restores the exact planning snapshot without a checkpoint or fabricated event.")
-    check(view.actors["UKR_S1"].position.x == Battle.position(sim.squad_by_id("UKR_S1")).x and view.execute_button.text == "EXECUTE 60 SECONDS", "Exit restores authoritative actor placement and planning controls.")
+    check(view.actors["UKR_S1"].position.x == Battle.position(sim.squad_by_id("UKR_S1")).x and view.execute_button.text == "EXECUTE 60 SECONDS" and not view.inspect_button.disabled, "Exit restores authoritative actor placement and every planning/inspection control.")
     await capture_frame("interval-review-planning-preview")
 
     click(view.interval_review_button.get_global_rect().get_center())
