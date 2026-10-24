@@ -887,3 +887,28 @@ save version or campaign result contract. Its regression covers actual button
 input at 1x/4x/8x, real stepped fire, fractional resume, disk reopen, interval and
 completion cleanup, and every-tick/full-result equality to an authoritative twin.
 Linux checks do not establish Windows or Combat Mission fidelity.
+
+## Last-interval review
+
+On `codex/review-last-interval`, an ordinary execution-to-planning boundary exposes
+**REVIEW LAST INTERVAL**. The view retains a bounded 61-frame presentation buffer:
+the public second-zero display and each of the 60 completed simulated seconds.
+Each frame contains only actors and labels that were visible then, the selected
+friendly HUD/sidebar text, displayed remembered-contact markers, and sanitized
+rendered shot endpoints/profile. It stores no hidden actor, target/shooter ID,
+hit roll, damage result, order, or complete simulation snapshot.
+
+Review runs forward at 1x/4x/8x and supports pause plus one-recorded-second STEP.
+Recorded actor positions interpolate between frames; witnessed fire recreates the
+same kind of emissive muzzle/tracer cue and the public latest-volley panel. Camera
+pan, orbit, zoom and reset remain presentation-only. Planning selection and every
+order/execute control stay disabled until **EXIT REVIEW TO PLANNING** restores the
+live authoritative view. Reaching the final frame stops at REVIEW COMPLETE; it
+does not spill into planning time or start another interval.
+
+The review path never calls `Battle.step()`, samples RNG, reads a current hidden
+actor, changes the planning snapshot/event queue, or emits a checkpoint. Starting
+a later interval replaces the buffer, battle completion discards it, and reopening
+has no buffer. Tactical v25, campaign v2, result v1, exports/GIS and Windows
+launchers are unchanged. This is a transient public playback aid, not saved replay,
+fog-of-war history, authoritative rewind, or evidence of Combat Mission fidelity.

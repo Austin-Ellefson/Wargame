@@ -506,3 +506,14 @@ restored from disk. Follow reads actual friendly positions after completed ticks
 it cannot advance a clock, alter orders/knowledge/ammunition/losses, consume RNG,
 replay a shot or extend a cue. Regression compares each tick and the full result
 with an unfollowed twin while exercising actual camera and selection inputs.
+
+## Last-interval review — no save change
+
+The 61 public presentation frames used by **REVIEW LAST INTERVAL**, its current
+frame, fractional playback time, pause/completion flags and recreated shot cues
+are intentionally absent from tactical v25 and campaign v2 snapshots. A later
+execution replaces the buffer; battle completion or reopening discards it. Review
+cannot call a simulation tick, issue an order, mutate the current planning state or
+emit a campaign checkpoint. Actual disk round-trip coverage confirms that only the
+authoritative boundary state survives, then every later tick and the completed
+result remain identical to an unreviewed twin. No migration is required.
