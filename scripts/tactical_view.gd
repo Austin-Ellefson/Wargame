@@ -61,6 +61,14 @@ var speed_button: Button
 var playback_pause_button: Button
 var playback_step_button: Button
 var playback_paused := false
+var interval_review_button: Button
+var interval_review_frames: Array = []
+var interval_review_recording := false
+var reviewing_interval := false
+var review_paused := false
+var review_complete := false
+var review_index := -1
+var review_accumulator := 0.0
 var pause_button: Button
 var clear_target_button: Button
 var fire_buttons := {}
@@ -235,9 +243,7 @@ func _build_interface() -> void:
     pause_button.add_theme_font_size_override("font_size", 12)
     pause_button.tooltip_text = "Cycle 0/15/30/60 seconds. Delays movement only; firing continues."
     execute_button = _button("EXECUTE 60 SECONDS", Rect2(986, 540, 248, 32), _execute)
-    speed_button = _button("PLAYBACK 4x", Rect2(986, 578, 86, 28), func():
-        speed = {1.0: 4.0, 4.0: 8.0, 8.0: 1.0}[speed]
-        speed_button.text = "PLAYBACK %dx" % int(speed))
+    speed_button = _button("PLAYBACK 4x", Rect2(986, 578, 86, 28), _cycle_playback_speed)
     speed_button.add_theme_font_size_override("font_size", 10)
     playback_pause_button = _button("PAUSE PLAYBACK", Rect2(1076, 578, 96, 28), _toggle_playback_pause)
     playback_pause_button.add_theme_font_size_override("font_size", 9)
@@ -245,6 +251,10 @@ func _build_interface() -> void:
     playback_step_button = _button("STEP +1s", Rect2(1176, 578, 58, 28), _step_playback)
     playback_step_button.add_theme_font_size_override("font_size", 9)
     playback_step_button.tooltip_text = "Only while playback is paused: advance exactly one normal simulated second, show its real events, and remain paused. This is not replay or rewind."
+    interval_review_button = _button("REVIEW LAST INTERVAL", Rect2(986, 578, 248, 28), _start_interval_review)
+    interval_review_button.add_theme_font_size_override("font_size", 11)
+    interval_review_button.tooltip_text = "Replay only the public frames and witnessed shots recorded during the just-completed interval. The planning state and battle RNG remain frozen."
+    interval_review_button.visible = false
     back_button = _button("SAVE & CAMPAIGN", Rect2(986, 614, 248, 30), _back)
     report_label = _label("", Vector2(986, 650), 12, 244)
     _label("Left: select  /  Right: move  /  Wheel: zoom  /  Middle-drag: pan  /  Shift + middle-drag: rotate", Vector2(24, 691), 13)
@@ -473,7 +483,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 func _map_input(event: InputEvent) -> void:
     if event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_MIDDLE:
         follow_target = ""
-        _refresh_follow_control()
+        if not reviewing_interval:
+            _refresh_follow_control()
         if event.shift_pressed:
             camera_yaw = wrapf(camera_yaw - event.relative.x * 0.008, -PI, PI)
             camera_pitch = clampf(camera_pitch + event.relative.y * 0.006, deg_to_rad(25), deg_to_rad(75))
@@ -490,6 +501,10 @@ func _map_input(event: InputEvent) -> void:
     if event.button_index == MOUSE_BUTTON_WHEEL_UP or event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
         camera.fov = clampf(camera.fov + (-3 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 3), 30, 70)
         _refresh_zoom_sizes()
+        return
+    # Review is a read-only presentation mode. Keep free camera navigation above,
+    # but never dispatch planning selection, targeting or order input below.
+    if reviewing_interval:
         return
     if los_armed:
         if event.button_index == MOUSE_BUTTON_RIGHT:
@@ -606,7 +621,10 @@ func _reset_camera() -> void:
     camera.fov = 52
     camera_distance = Vector2(520, 394).length()
     _update_camera()
-    _refresh()
+    if reviewing_interval:
+        _apply_interval_review_frame(false)
+    else:
+        _refresh()
 
 func _can_follow_selected() -> bool:
     if simulation == null or simulation.state["phase"] != "execution": return false
@@ -643,14 +661,24 @@ func _ground_point(screen: Vector2) -> Vector2:
     return Vector2(-1, -1)
 
 func _execute() -> void:
+    if reviewing_interval:
+        return
     if simulation.execute():
         playback_paused = false
         accumulator = 0
+        interval_review_frames.clear()
+        interval_review_recording = true
         checkpoint.emit()
         _refresh()
+        # The planning snapshot at second zero was genuinely visible. Retaining
+        # it makes a complete 60-second review without inventing a pre-roll state.
+        _capture_interval_review_frame([])
 
 func _process(delta: float) -> void:
     if simulation == null: return
+    if reviewing_interval:
+        _process_interval_review(delta)
+        return
     if simulation.state["phase"] != "execution":
         playback_paused = false
     # Playback pause is deliberately above every time-dependent presentation and
@@ -673,10 +701,22 @@ func _process(delta: float) -> void:
 func _advance_playback_tick() -> void:
     var before := _status_snapshot()
     simulation.step()
-    _show_shot_events(simulation.consume_events())
+    var public_shots: Array = _show_shot_events(simulation.consume_events())
     _show_combat_changes(before)
+    # Refresh first so the record contains exactly the public actors, labels and
+    # contact markers that this view displayed for the completed second.
+    _refresh()
+    if interval_review_recording:
+        _capture_interval_review_frame(public_shots)
+        if simulation.state["phase"] != "execution":
+            interval_review_recording = false
+            if simulation.state["phase"] != "planning":
+                interval_review_frames.clear()
 
 func _step_playback() -> void:
+    if reviewing_interval:
+        _step_interval_review()
+        return
     if simulation == null or simulation.state["phase"] != "execution" or not playback_paused:
         _refresh_playback_control()
         return
@@ -689,18 +729,45 @@ func _step_playback() -> void:
         checkpoint.emit()
 
 func _toggle_playback_pause() -> void:
+    if reviewing_interval:
+        if not review_complete:
+            review_paused = not review_paused
+            _refresh_playback_control()
+            _apply_interval_review_hud()
+        return
     playback_paused = not playback_paused if simulation != null and simulation.state["phase"] == "execution" else false
     _refresh()
 
+func _cycle_playback_speed() -> void:
+    speed = {1.0: 4.0, 4.0: 8.0, 8.0: 1.0}[speed]
+    speed_button.text = ("REVIEW %dx" if reviewing_interval else "PLAYBACK %dx") % int(speed)
+
 func _refresh_playback_control() -> void:
+    if reviewing_interval:
+        interval_review_button.visible = false
+        speed_button.visible = true
+        playback_pause_button.visible = true
+        playback_step_button.visible = true
+        speed_button.text = "REVIEW %dx" % int(speed)
+        playback_pause_button.text = "REVIEW COMPLETE" if review_complete else ("RESUME REVIEW" if review_paused else "PAUSE REVIEW")
+        playback_pause_button.disabled = review_complete
+        playback_step_button.disabled = not review_paused or review_complete or review_index >= interval_review_frames.size() - 1
+        return
     var executing: bool = simulation != null and simulation.state["phase"] == "execution"
     if not executing:
         playback_paused = false
+    var can_review: bool = simulation != null and simulation.state["phase"] == "planning" and interval_review_frames.size() >= 2
+    interval_review_button.visible = can_review
+    speed_button.visible = not can_review
+    playback_pause_button.visible = not can_review
+    playback_step_button.visible = not can_review
+    speed_button.text = "PLAYBACK %dx" % int(speed)
     playback_pause_button.disabled = not executing
     playback_pause_button.text = "RESUME PLAYBACK" if playback_paused else "PAUSE PLAYBACK"
     playback_step_button.disabled = not executing or not playback_paused
 
-func _show_shot_events(events: Array) -> void:
+func _show_shot_events(events: Array) -> Array:
+    var public_records: Array = []
     for event in events:
         if event.get("type") != "shot":
             continue
@@ -733,6 +800,11 @@ func _show_shot_events(events: Array) -> void:
         var tracer := _mesh(trail, (start_3d + finish_3d) * 0.5, _shot_material(Color("ffb43b")), cue)
         tracer.look_at(finish_3d, Vector3.UP)
         shot_cues.append({"node": cue, "ttl": 0.42, "local_observers": event.get("local_observers", []).duplicate()})
+        # Store only what was actually rendered. Deliberately omit target/shooter
+        # IDs, outcomes and all non-visible event fields from the review buffer.
+        public_records.append({"from": [start_3d.x, start_3d.y, start_3d.z],
+            "to": [finish_3d.x, finish_3d.y, finish_3d.z], "support": support})
+    return public_records
 
 func _record_motion(squad: Dictionary, observed: bool) -> void:
     var id: String = squad["id"]
@@ -827,11 +899,252 @@ func _shot_material(color: Color) -> StandardMaterial3D:
 func _age_shot_cues(delta: float) -> void:
     for index in range(shot_cues.size() - 1, -1, -1):
         shot_cues[index]["ttl"] = float(shot_cues[index]["ttl"]) - delta
-        if shot_cues[index]["ttl"] <= 0 or (int(simulation.state["version"]) >= 18 and selected not in shot_cues[index]["local_observers"]):
+        if shot_cues[index]["ttl"] <= 0 or (not shot_cues[index].get("review", false) and int(simulation.state["version"]) >= 18 and selected not in shot_cues[index]["local_observers"]):
             var node: Node = shot_cues[index]["node"]
             if is_instance_valid(node):
                 node.queue_free()
             shot_cues.remove_at(index)
+
+func _clear_shot_cues() -> void:
+    for cue in shot_cues:
+        var node: Node = cue["node"]
+        if is_instance_valid(node):
+            node.queue_free()
+    shot_cues.clear()
+    for group in bodies.values():
+        for body in group:
+            body.clear_shot()
+
+func _capture_interval_review_frame(public_shots: Array) -> void:
+    if not interval_review_recording:
+        return
+    var units: Array = []
+    for id in actors:
+        var actor: Node3D = actors[id]
+        if not actor.visible:
+            continue
+        var poses: Array = []
+        var rotations: Array = []
+        for body in bodies[id]:
+            poses.append(body.current_pose)
+            rotations.append(body.rotation.y)
+        units.append({"id": id, "position": [actor.position.x, actor.position.z],
+            "label": labels[id].text, "poses": poses, "rotations": rotations})
+    var contacts: Array = []
+    for id in contact_markers:
+        var marker: Node3D = contact_markers[id]
+        if marker.visible:
+            contacts.append({"id": id, "position": [marker.position.x, marker.position.z],
+                "label": contact_labels[id].text})
+    var sidebar := {}
+    for id in squad_buttons:
+        sidebar[id] = squad_buttons[id].text
+    interval_review_frames.append({"elapsed": int(simulation.state["elapsed"]),
+        "units": units, "contacts": contacts, "shots": public_shots.duplicate(true),
+        "summary": summary_label.text, "selection": selection_label.text,
+        "combat": combat_label.text, "sidebar": sidebar})
+    # A normal interval is 60 seconds plus its visible second-zero frame. Keep a
+    # hard cap even if a future caller accidentally records beyond that boundary.
+    if interval_review_frames.size() > 61:
+        interval_review_frames.pop_front()
+
+func _start_interval_review() -> void:
+    if simulation == null or simulation.state["phase"] != "planning" or interval_review_frames.size() < 2:
+        return
+    reviewing_interval = true
+    review_paused = false
+    review_complete = false
+    review_index = 0
+    review_accumulator = 0.0
+    follow_target = ""
+    facing_armed = false
+    area_armed = false
+    los_armed = false
+    _clear_shot_cues()
+    _apply_interval_review_frame(true)
+
+func _exit_interval_review() -> void:
+    if not reviewing_interval:
+        return
+    reviewing_interval = false
+    review_paused = false
+    review_complete = false
+    review_index = -1
+    review_accumulator = 0.0
+    _clear_shot_cues()
+    area_preview.visible = true
+    arc_preview.visible = true
+    order_preview.visible = true
+    los_preview.visible = true
+    _refresh()
+
+func _process_interval_review(delta: float) -> void:
+    if review_paused or review_complete:
+        _refresh_playback_control()
+        return
+    _age_shot_cues(delta)
+    for id in bodies:
+        if not actors[id].visible:
+            continue
+        for body in bodies[id]:
+            body.animate(delta, false, 0.0)
+    review_accumulator += delta * speed
+    while review_accumulator >= 1.0 and not review_complete:
+        if review_index >= interval_review_frames.size() - 1:
+            review_complete = true
+            review_paused = true
+            review_accumulator = 0.0
+            break
+        review_index += 1
+        review_accumulator -= 1.0
+        _apply_interval_review_frame(true)
+        if review_index >= interval_review_frames.size() - 1:
+            review_complete = true
+            review_paused = true
+            review_accumulator = 0.0
+    _interpolate_interval_review()
+    _refresh_playback_control()
+    _apply_interval_review_hud()
+
+func _step_interval_review() -> void:
+    if not reviewing_interval or not review_paused or review_complete or review_index >= interval_review_frames.size() - 1:
+        _refresh_playback_control()
+        return
+    review_index += 1
+    _apply_interval_review_frame(true)
+    if review_index >= interval_review_frames.size() - 1:
+        review_complete = true
+        review_paused = true
+    _refresh_playback_control()
+    _apply_interval_review_hud()
+
+func _interpolate_interval_review() -> void:
+    if review_index < 0 or review_index >= interval_review_frames.size() - 1:
+        return
+    var following := {}
+    for unit in interval_review_frames[review_index + 1]["units"]:
+        following[unit["id"]] = unit
+    var amount := clampf(review_accumulator, 0.0, 1.0)
+    for unit in interval_review_frames[review_index]["units"]:
+        var id: String = unit["id"]
+        if not following.has(id) or not actors[id].visible:
+            continue
+        var a := Vector2(float(unit["position"][0]), float(unit["position"][1]))
+        var b := Vector2(float(following[id]["position"][0]), float(following[id]["position"][1]))
+        var point := a.lerp(b, amount)
+        actors[id].position = Vector3(point.x, Battle.terrain_height(point.x, point.y), point.y)
+
+func _apply_interval_review_frame(show_shots: bool) -> void:
+    if review_index < 0 or review_index >= interval_review_frames.size():
+        return
+    var frame: Dictionary = interval_review_frames[review_index]
+    for id in actors:
+        actors[id].visible = false
+        markers[id].visible = false
+        for body in bodies[id]:
+            body.clear_shot()
+    for marker in contact_markers.values():
+        marker.visible = false
+    for unit in frame["units"]:
+        var id: String = unit["id"]
+        var point := Vector2(float(unit["position"][0]), float(unit["position"][1]))
+        actors[id].position = Vector3(point.x, Battle.terrain_height(point.x, point.y), point.y)
+        actors[id].visible = true
+        labels[id].text = unit["label"]
+        for index in range(bodies[id].size()):
+            var body: Node3D = bodies[id][index]
+            var pose: String = unit["poses"][index]
+            body.pose("stand" if pose == "casualty" else pose, pose == "casualty")
+            body.rotation.y = float(unit["rotations"][index])
+            body.position.y = Battle.terrain_height(point.x + body.position.x, point.y + body.position.z) - Battle.terrain_height(point.x, point.y)
+    for contact in frame["contacts"]:
+        var id: String = contact["id"]
+        if not contact_markers.has(id):
+            continue
+        var point := Vector2(float(contact["position"][0]), float(contact["position"][1]))
+        contact_markers[id].position = Vector3(point.x, Battle.terrain_height(point.x, point.y) + 0.6, point.y)
+        contact_markers[id].visible = true
+        contact_labels[id].text = contact["label"]
+    area_preview.visible = false
+    arc_preview.visible = false
+    order_preview.visible = false
+    los_preview.visible = false
+    if show_shots:
+        _show_interval_review_shots(frame["shots"])
+    _apply_interval_review_hud()
+    _refresh_zoom_sizes()
+
+func _show_interval_review_shots(records: Array) -> void:
+    for record in records:
+        var raw_start: Array = record["from"]
+        var raw_finish: Array = record["to"]
+        var start := Vector3(float(raw_start[0]), float(raw_start[1]), float(raw_start[2]))
+        var finish := Vector3(float(raw_finish[0]), float(raw_finish[1]), float(raw_finish[2]))
+        var cue := Node3D.new()
+        world.add_child(cue)
+        var flash := SphereMesh.new()
+        var cue_radius := _zoom_size(0.18, 3.0)
+        flash.radius = cue_radius
+        flash.height = cue_radius * 2.0
+        _mesh(flash, start, _shot_material(Color("ffcc8a") if record["support"] else Color("fff2a8")), cue)
+        var trail := BoxMesh.new()
+        var thickness := _zoom_size(0.035, 0.9)
+        trail.size = Vector3(thickness, thickness, start.distance_to(finish))
+        var tracer := _mesh(trail, (start + finish) * 0.5, _shot_material(Color("ffb43b")), cue)
+        tracer.look_at(finish, Vector3.UP)
+        shot_cues.append({"node": cue, "ttl": 0.42, "local_observers": [], "review": true})
+        # Recreate the already-observed muzzle flash on the nearest recorded
+        # visible actor only; no current simulator actor or hidden ID is queried.
+        var shooter := ""
+        var best := 18.0
+        for id in actors:
+            if not actors[id].visible:
+                continue
+            var distance := Vector2(actors[id].position.x, actors[id].position.z).distance_to(Vector2(start.x, start.z))
+            if distance < best:
+                best = distance
+                shooter = id
+        if not shooter.is_empty():
+            var heading := atan2(-(finish.x - start.x), -(finish.z - start.z))
+            for body in bodies[shooter]:
+                body.rotation.y = heading
+                body.fire([])
+                body.animate(0.0, false, 0.0)
+
+func _apply_interval_review_hud() -> void:
+    if not reviewing_interval or review_index < 0 or review_index >= interval_review_frames.size():
+        return
+    var frame: Dictionary = interval_review_frames[review_index]
+    var start_elapsed := int(interval_review_frames[0]["elapsed"])
+    var total := int(interval_review_frames.back()["elapsed"]) - start_elapsed
+    var offset := int(frame["elapsed"]) - start_elapsed
+    phase_label.text = "REVIEW %02d:%02d/%02d:%02d" % [offset / 60, offset % 60, total / 60, total % 60]
+    if review_paused and not review_complete:
+        phase_label.text += " PAUSED"
+    elif review_complete:
+        phase_label.text += " DONE"
+    summary_label.text = frame["summary"]
+    selection_label.text = frame["selection"]
+    combat_panel.visible = true
+    combat_label.visible = true
+    combat_label.text = frame["combat"]
+    completed_report_panel.visible = false
+    completed_report_label.visible = false
+    for id in squad_buttons:
+        squad_buttons[id].text = frame["sidebar"].get(id, squad_buttons[id].text)
+        squad_buttons[id].disabled = true
+    for button in movement_buttons.values(): button.disabled = true
+    for button in fire_buttons.values(): button.disabled = true
+    for button in posture_buttons.values(): button.disabled = true
+    for button in [inspect_button, follow_button, los_button, los_origin_button, facing_button,
+            arc_button, area_button, clear_target_button, hold_button, pause_button, execute_button]:
+        button.disabled = true
+    execute_button.text = "PLANNING FROZEN DURING REVIEW"
+    back_button.disabled = false
+    back_button.text = "EXIT REVIEW TO PLANNING"
+    back_button.add_theme_font_size_override("font_size", 12)
+    report_label.text = "Public recording; combat stays frozen.\nEXIT restores unchanged planning."
+    _refresh_playback_control()
 
 func _clear_order_preview() -> void:
     for child in order_preview.get_children():
@@ -960,6 +1273,9 @@ func _refresh_contact_markers() -> void:
             contact_labels[id].text = "? %s %ds" % ["LOCAL" if contact["source"] == "local" else "REPORT", int(simulation.state["elapsed"]) - int(contact["seen_at"])]
 
 func _back() -> void:
+    if reviewing_interval:
+        _exit_interval_review()
+        return
     if simulation.state["phase"] == "finished":
         commit_result.emit(simulation.result())
     elif simulation.state["phase"] == "planning":
@@ -981,7 +1297,13 @@ func _battle_report(result: Dictionary) -> String:
     return "BATTLE COMPLETE  •  %s\n%s  •  %02d:%02d elapsed\n\nFORCE             DEPLOYED     SURVIVING     LOST\nBLUE %-10s     %2d             %2d            %2d\nRED  %-10s     %2d             %2d            %2d\n\nOBJECTIVE CONTROL\nBlue %d seconds  •  Red %d seconds\n\nCAMPAIGN CONSEQUENCES ON APPLY\n%s: -%d personnel  •  morale cap %d  •  supply -%d\n%s: -%d personnel  •  morale cap %d  •  supply -%d\n%s\nResult commits once, autosaves, and unlocks campaign turns." % [str(result["winner"]).to_upper(), result["battle_id"], int(result["elapsed"]) / 60, int(result["elapsed"]) % 60, blue["id"], blue["deployed"], blue_survivors, blue["losses"], red["id"], red["deployed"], red_survivors, red["losses"], result["objective"]["UKR"], result["objective"]["RU"], blue["id"], blue["losses"], blue["morale"], _supply_cost(blue), red["id"], red["losses"], red["morale"], _supply_cost(red), retreat_text]
 
 func _refresh() -> void:
+    if reviewing_interval:
+        _apply_interval_review_frame(false)
+        return
     _age_shot_cues(0.0)
+    # Review disables every command/selection affordance. INSPECT otherwise has
+    # no phase-specific refresh rule, so restore its normal availability here.
+    inspect_button.disabled = false
     _refresh_los_probe()
     var state: Dictionary = simulation.state
     _refresh_playback_control()
@@ -1072,6 +1394,7 @@ func _refresh() -> void:
     execute_button.text = "%d SECONDS REMAINING" % state["remaining"] if state["phase"] == "execution" else "EXECUTE 60 SECONDS"
     back_button.disabled = state["phase"] == "execution"
     back_button.text = "APPLY & CAMPAIGN" if state["phase"] == "finished" else "SAVE & CAMPAIGN"
+    back_button.add_theme_font_size_override("font_size", 15)
     combat_panel.visible = state["phase"] != "finished"
     combat_label.visible = state["phase"] != "finished"
     completed_report_panel.visible = state["phase"] == "finished"

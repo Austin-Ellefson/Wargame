@@ -28,6 +28,7 @@ def main():
     checks.append(("camera_follow_smoke", ["--headless", "--script", "res://tests/camera_follow_smoke.gd"]))
     checks.append(("playback_pause_smoke", ["--headless", "--script", "res://tests/playback_pause_smoke.gd"]))
     checks.append(("playback_step_smoke", ["--headless", "--script", "res://tests/playback_step_smoke.gd"]))
+    checks.append(("interval_review_smoke", ["--headless", "--script", "res://tests/interval_review_smoke.gd"]))
     if args.render_check:
         if args.capture:
             args.capture = args.capture.resolve()
@@ -94,6 +95,9 @@ def main():
         step_command = pause_command.copy()
         step_command[step_command.index("res://tests/playback_pause_smoke.gd")] = "res://tests/playback_step_smoke.gd"
         checks.append(("playback_step_render", step_command))
+        review_command = step_command.copy()
+        review_command[review_command.index("res://tests/playback_step_smoke.gd")] = "res://tests/interval_review_smoke.gd"
+        checks.append(("interval_review_render", review_command))
     for name, flags in checks:
         result = subprocess.run([args.godot, "--path", str(root), *flags], cwd=root,
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
