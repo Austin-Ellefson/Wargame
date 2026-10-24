@@ -1077,3 +1077,29 @@ This setup change contains instructions only; these missing tools must be addres
   fidelity remains unverified. Next: a bounded, presentation-only replay of the
   just-completed interval from recorded visible frames, never by resimulating or
   exposing hidden information. Preserve unchanged planning authority/RNG on exit.
+
+## Public last-interval review — ready for review 2026-10-23 (America/Chicago)
+
+- Branch `codex/review-last-interval`, draft PR #46, explicitly based on tested
+  PR #45 head `f34d13c2d82e0746e0c4a16bd06454234805dc87`; remote branch/PR
+  state was checked first and no overlapping successor or merge was present.
+- Records a bounded second-zero plus 60-second public presentation buffer at an
+  ordinary interval boundary. It contains only displayed units/labels/contact
+  markers/HUD and sanitized witnessed-shot endpoints, never a full state or hidden
+  squad. Forward 1x/4x/8x, pause, one-second STEP, final-frame stop, free camera
+  and explicit unchanged-planning exit are available. Reopen/completion discard it.
+- Tested code `c8f65413efa871ba7646ab82be4793a0f282e810`. All 39 local Godot
+  4.5.1 entries, 26 terrain tests and diff check passed. Focused actual-input
+  regression covers 61 frames, real movement/24 witnessed shots, hidden-data
+  exclusion, state/events/checkpoint/RNG purity, full review bounds, disk discard
+  and exact every-tick/result twin parity.
+- Combined CI 40045022943 succeeded with all 16 rendered scripts. Artifact
+  12541201348 was inspected: 55 logs, 54 PASS-bearing non-editor logs, no script
+  errors and 71 images. The active 00:06 review visibly has a recorded tracer,
+  -9R/SUP+14 feedback, public contacts and readable controls. Exit visibly restores
+  planning, INSPECT, EXECUTE and REVIEW. Preliminary renders exposed and the final
+  code fixed a phase-banner overlap plus disabled-INSPECT lifecycle defect.
+- Tactical v25/campaign v2/result v1, saves, locks, bounded once-only losses,
+  rollback, export/GIS and Windows launchers remain unchanged. No Windows/CMBS or
+  realistic-combat validation is claimed. Next: non-authoritative PREVIOUS -1s and
+  RESTART REVIEW navigation using only the same sanitized transient frames.

@@ -1,26 +1,26 @@
-# Continue from the validated paused single-second step
+# Continue from the validated public last-interval review
 
-Latest validated descendant: `codex/playback-single-step`, draft PR #45, based
-explicitly on tested PR #44 head `7fbaf24a1372d6eb0d2124150aeb0c36df13efbb`.
-Tested code: `c6f052004f23f8aae0adf43f38c3a11e9ee5b5aa`. All 38 local
+Latest validated descendant: `codex/review-last-interval`, draft PR #46, based
+explicitly on tested PR #45 head `f34d13c2d82e0746e0c4a16bd06454234805dc87`.
+Tested code: `c8f65413efa871ba7646ab82be4793a0f282e810`. All 39 local
 Godot 4.5.1 entries, 26 terrain tests and diff check passed. Combined CI
-https://github.com/Austin-Ellefson/Wargame/actions/runs/39881384628 succeeded on
-that code with all 15 rendered scripts. Artifact 12471235366 was inspected: 53
-logs, 52 PASS-bearing non-editor logs, no script errors, a readable actual paused
-00:04 rifle-volley frame with STEP/RESUME controls, plus a complete 00:45 two-
-sided report. Check PR #45's final documentation-head CI before dependent work.
+https://github.com/Austin-Ellefson/Wargame/actions/runs/40045022943 succeeded on
+that code with all 16 rendered scripts. Artifact 12541201348 was inspected: 55
+logs, 54 PASS-bearing non-editor logs, no script errors and 71 images. The actual
+paused review frame shows recorded movement, a witnessed tracer, -9R/SUP+14 volley
+feedback, public contact labels and clear review controls at 00:06/01:00. The exit
+frame restores planning, INSPECT, EXECUTE and REVIEW LAST INTERVAL with no stale
+review overlay. Check PR #46's final documentation-head CI before dependent work.
 
-Next focused task: add a bounded, transient **REVIEW LAST INTERVAL** slice at an
-ordinary execution-to-planning boundary. Record only presentation frames and
-events that were actually visible during the original 60-second execution; replay
-those records without calling `Battle.step()`, consuming RNG, querying current
-hidden actors or changing the authoritative planning snapshot. Begin with forward
-review of the just-completed interval and an explicit exit back to exactly unchanged
-planning. Reuse 1x/4x/8x, pause and STEP semantics only if they remain unambiguous;
-do not add rewind to authoritative combat. Reopening may discard this transient
-buffer, so no save migration is required. Test actual movement and witnessed shots,
-hidden-information isolation, boundary/checkpoint purity, exit state/RNG equality,
-disk reopen, and full-result parity. Capture rendered review and unchanged planning.
+Next focused task: add bounded **PREVIOUS -1s** and **RESTART REVIEW** navigation
+inside this same public presentation buffer. These controls are non-authoritative
+review only, preferably available while paused; moving backward must clear stale
+transient cues and apply a recorded frame without synthesizing a new shot. Forward
+movement may display that frame's recorded events once. Never call `Battle.step()`,
+read current hidden actors, consume RNG, modify the planning snapshot/checkpoint,
+or serialize the buffer. Test start/end bounds, mixed forward/backward input at all
+speeds, shot-cue lifecycle, hidden-data exclusion, explicit exit, disk reopen and
+full-result twin parity. Capture a readable rewound action frame and restored plan.
 
 ## Prior validated hypothetical waypoint probe
 

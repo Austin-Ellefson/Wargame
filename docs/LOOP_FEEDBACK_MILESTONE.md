@@ -21,9 +21,9 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/execution-camera-follow / PR #43
-- Latest post-milestone code/evidence commit: 9fa3eacdf2df47cc6ddee7187f06c520c721734f
-- Post-milestone next task: presentation-only execution playback pause/resume
+- Latest validated post-milestone descendant: codex/review-last-interval / PR #46
+- Latest post-milestone code/evidence commit: c8f65413efa871ba7646ab82be4793a0f282e810
+- Post-milestone next task: public review PREVIOUS/RESTART navigation
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -1566,3 +1566,48 @@ is delivered as the scheduled task result in ChatGPT.
   resimulate combat, consume RNG, reveal hidden state or mutate the authoritative
   planning snapshot; exiting review returns to exactly unchanged planning. Start
   with interval-boundary planning only and no save migration.
+
+## Public last-interval review — validated 2026-10-23 (America/Chicago)
+
+- Branch `codex/review-last-interval`, draft PR #46, explicitly based on validated
+  PR #45 documentation head `f34d13c2d82e0746e0c4a16bd06454234805dc87`.
+  Branches/open PRs were rechecked before work; no successor, overlap or merge was
+  present, and main remains the starter. PR #46 is open, draft and mergeable.
+- An ordinary execution-to-planning boundary retains exactly 61 bounded public
+  presentation frames: visible second zero plus each of 60 completed seconds.
+  Frames contain displayed actors/poses/labels, public contact markers, friendly
+  HUD text and sanitized rendered shot endpoints/profile. A distinctive eliminated
+  unobserved squad ID/position is absent; shot records omit IDs, rolls and damage.
+- **REVIEW LAST INTERVAL** plays only those records forward at 1x/4x/8x. Review
+  pause and STEP move through recorded seconds, camera navigation stays live, the
+  final frame stops at DONE, and explicit EXIT restores the unchanged planning
+  view. Planning/inspection controls are frozen during review and fully restored.
+  Reopen and battle completion discard the buffer; a later interval replaces it.
+- Tested code `c8f65413efa871ba7646ab82be4793a0f282e810`. All 39 local
+  Godot 4.5.1 entries, 26 terrain tests and `git diff --check` passed. Focused
+  actual-input coverage records real movement plus 24 witnessed shots, checks
+  public-only shape/hidden exclusion, partial/paused/stepped/complete review,
+  exact state/event/checkpoint/global-RNG purity, disk discard, every later tick
+  and full-result parity against an unreviewed twin.
+- Combined code CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/40045022943 succeeded
+  with all 16 rendered scripts. Artifact 12541201348 was downloaded and inspected:
+  55 logs, 54 PASS-bearing non-editor logs, zero script errors and 71 PNGs. The
+  1280x720 active frame clearly shows `REVIEW 00:06/01:00 PAUSED`, a recorded
+  rifle tracer, public enemy contacts, UKR S1 -9R/SUP+14, 342 rounds/SUP25%,
+  1x/RESUME/STEP and explicit exit. The planning frame has no stale overlay and
+  visibly restores INSPECT, EXECUTE, REVIEW LAST INTERVAL and SAVE & CAMPAIGN.
+- Preliminary passing artifacts exposed a long phase banner overlapping AREA FIRE
+  and INSPECT remaining disabled after exit. The final code shortens the banner,
+  asserts its measured 720p separation/footer fit, restores INSPECT in the normal
+  refresh path, and the final inspected frames confirm both fixes.
+- Tactical v25/campaign v2/result v1, locks, once-only losses, rollback, export/GIS
+  contracts and Windows launchers are unchanged. Review calls no `Battle.step()`,
+  consumes no RNG, emits no checkpoint and stores no save data. Linux render/test
+  evidence does not establish Windows, CMBS-editor or Combat Mission fidelity.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/review-last-interval
+  In Godot 4.5.1 import `project.godot`, press F5, complete one ordinary 60-second
+  interval, press REVIEW LAST INTERVAL, then pause/step and EXIT back to planning.
+- Next focused task: paused PREVIOUS -1s and RESTART REVIEW controls over the same
+  sanitized transient frames. Reverse navigation must clear stale cues rather than
+  fabricate firing, preserve bounds and retain exact planning/disk/result purity.
