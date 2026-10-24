@@ -1143,7 +1143,7 @@ func _apply_interval_review_hud() -> void:
     back_button.disabled = false
     back_button.text = "EXIT REVIEW TO PLANNING"
     back_button.add_theme_font_size_override("font_size", 12)
-    report_label.text = "Recorded public frames only; no combat is rerun.\nEXIT returns to unchanged planning."
+    report_label.text = "Recorded only; combat stays frozen.\nEXIT restores unchanged planning."
     _refresh_playback_control()
 
 func _clear_order_preview() -> void:
