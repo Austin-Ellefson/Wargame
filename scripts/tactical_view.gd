@@ -62,6 +62,8 @@ var playback_pause_button: Button
 var playback_step_button: Button
 var playback_paused := false
 var interval_review_button: Button
+var review_previous_button: Button
+var review_restart_button: Button
 var interval_review_frames: Array = []
 var interval_review_recording := false
 var reviewing_interval := false
@@ -255,6 +257,14 @@ func _build_interface() -> void:
     interval_review_button.add_theme_font_size_override("font_size", 11)
     interval_review_button.tooltip_text = "Replay only the public frames and witnessed shots recorded during the just-completed interval. The planning state and battle RNG remain frozen."
     interval_review_button.visible = false
+    review_previous_button = _button("PREVIOUS -1s", Rect2(986, 540, 122, 32), _previous_interval_review)
+    review_previous_button.add_theme_font_size_override("font_size", 10)
+    review_previous_button.tooltip_text = "While review is paused, move to the previous recorded public frame and clear transient firing cues."
+    review_previous_button.visible = false
+    review_restart_button = _button("RESTART REVIEW", Rect2(1112, 540, 122, 32), _restart_interval_review)
+    review_restart_button.add_theme_font_size_override("font_size", 10)
+    review_restart_button.tooltip_text = "While review is paused, return to its first recorded public frame without replaying a shot."
+    review_restart_button.visible = false
     back_button = _button("SAVE & CAMPAIGN", Rect2(986, 614, 248, 30), _back)
     report_label = _label("", Vector2(986, 650), 12, 244)
     _label("Left: select  /  Right: move  /  Wheel: zoom  /  Middle-drag: pan  /  Shift + middle-drag: rotate", Vector2(24, 691), 13)
@@ -744,6 +754,9 @@ func _cycle_playback_speed() -> void:
 
 func _refresh_playback_control() -> void:
     if reviewing_interval:
+        execute_button.visible = false
+        review_previous_button.visible = true
+        review_restart_button.visible = true
         interval_review_button.visible = false
         speed_button.visible = true
         playback_pause_button.visible = true
@@ -752,7 +765,12 @@ func _refresh_playback_control() -> void:
         playback_pause_button.text = "REVIEW COMPLETE" if review_complete else ("RESUME REVIEW" if review_paused else "PAUSE REVIEW")
         playback_pause_button.disabled = review_complete
         playback_step_button.disabled = not review_paused or review_complete or review_index >= interval_review_frames.size() - 1
+        review_previous_button.disabled = not review_paused or review_index <= 0
+        review_restart_button.disabled = not review_paused or review_index <= 0
         return
+    execute_button.visible = true
+    review_previous_button.visible = false
+    review_restart_button.visible = false
     var executing: bool = simulation != null and simulation.state["phase"] == "execution"
     if not executing:
         playback_paused = false
@@ -1018,6 +1036,29 @@ func _step_interval_review() -> void:
     _refresh_playback_control()
     _apply_interval_review_hud()
 
+func _previous_interval_review() -> void:
+    if not reviewing_interval or not review_paused or review_index <= 0:
+        _refresh_playback_control()
+        return
+    # Rewind is presentation navigation, not inverse simulation. Snap to the
+    # prior recorded frame and remove every transient shot/recoil witness so a
+    # volley is never carried backward or synthesized from current battle data.
+    review_index -= 1
+    review_accumulator = 0.0
+    review_complete = false
+    _clear_shot_cues()
+    _apply_interval_review_frame(false)
+
+func _restart_interval_review() -> void:
+    if not reviewing_interval or not review_paused or review_index <= 0:
+        _refresh_playback_control()
+        return
+    review_index = 0
+    review_accumulator = 0.0
+    review_complete = false
+    _clear_shot_cues()
+    _apply_interval_review_frame(false)
+
 func _interpolate_interval_review() -> void:
     if review_index < 0 or review_index >= interval_review_frames.size() - 1:
         return
@@ -1143,7 +1184,7 @@ func _apply_interval_review_hud() -> void:
     back_button.disabled = false
     back_button.text = "EXIT REVIEW TO PLANNING"
     back_button.add_theme_font_size_override("font_size", 12)
-    report_label.text = "Public recording; combat stays frozen.\nEXIT restores unchanged planning."
+    report_label.text = "Public recording; pause to navigate.\nEXIT restores unchanged planning."
     _refresh_playback_control()
 
 func _clear_order_preview() -> void:
