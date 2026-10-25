@@ -912,3 +912,20 @@ a later interval replaces the buffer, battle completion discards it, and reopeni
 has no buffer. Tactical v25, campaign v2, result v1, exports/GIS and Windows
 launchers are unchanged. This is a transient public playback aid, not saved replay,
 fog-of-war history, authoritative rewind, or evidence of Combat Mission fidelity.
+
+## Bounded review navigation
+
+On `codex/review-navigation`, pausing the public last-interval review enables
+**PREVIOUS -1s** and **RESTART REVIEW** alongside the existing forward STEP.
+PREVIOUS snaps to the exact prior recorded frame; RESTART returns to frame zero
+and remains paused. Both controls are bounded at frame zero and remain available
+after REVIEW COMPLETE so the final seconds can be inspected again.
+
+Backward movement resets fractional playback time and removes every transient
+review tracer, muzzle flash and recoil witness before applying the older frame.
+It does not infer reverse firing or consult the current simulator. Stepping forward
+may display the reached frame's sanitized recorded shots once. The visible actor,
+contact and HUD data still come exclusively from the original public 61-frame
+buffer. Exiting restores the untouched planning view; reopening retains no review
+or navigation state. This remains presentation-only and is not authoritative
+combat rewind, a hidden-information history or a save-format change.

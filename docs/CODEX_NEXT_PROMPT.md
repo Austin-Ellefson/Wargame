@@ -1,26 +1,27 @@
-# Continue from the validated public last-interval review
+# Continue from validated bounded interval-review navigation
 
-Latest validated descendant: `codex/review-last-interval`, draft PR #46, based
-explicitly on tested PR #45 head `f34d13c2d82e0746e0c4a16bd06454234805dc87`.
-Tested code: `c8f65413efa871ba7646ab82be4793a0f282e810`. All 39 local
+Latest validated descendant: `codex/review-navigation`, draft PR #47, explicitly
+based on tested PR #46 head `56bf09a10739a7c556a0d3db374f2940ecf9f7c3`.
+Tested code: `091c6dcdc02ae91b7bb58daab1c1aeaf55639ae4`. All 40 local
 Godot 4.5.1 entries, 26 terrain tests and diff check passed. Combined CI
-https://github.com/Austin-Ellefson/Wargame/actions/runs/40045022943 succeeded on
-that code with all 16 rendered scripts. Artifact 12541201348 was inspected: 55
-logs, 54 PASS-bearing non-editor logs, no script errors and 71 images. The actual
-paused review frame shows recorded movement, a witnessed tracer, -9R/SUP+14 volley
-feedback, public contact labels and clear review controls at 00:06/01:00. The exit
-frame restores planning, INSPECT, EXECUTE and REVIEW LAST INTERVAL with no stale
-review overlay. Check PR #46's final documentation-head CI before dependent work.
+https://github.com/Austin-Ellefson/Wargame/actions/runs/40148036657 succeeded with
+all 17 rendered scripts. Artifact 12581840422 was inspected: 57 logs, 56 PASS-
+bearing non-editor logs, no script errors and 73 images. Its 1280x720 rewound
+frame visibly shows REVIEW 00:02/01:00 PAUSED, PREVIOUS/RESTART/STEP/RESUME,
+recorded public movement and no stale tracer after a two-shot volley was removed.
+The planning capture restores INSPECT, EXECUTE, REVIEW LAST INTERVAL and SAVE &
+CAMPAIGN. Check PR #47's final documentation-head CI before dependent work.
 
-Next focused task: add bounded **PREVIOUS -1s** and **RESTART REVIEW** navigation
-inside this same public presentation buffer. These controls are non-authoritative
-review only, preferably available while paused; moving backward must clear stale
-transient cues and apply a recorded frame without synthesizing a new shot. Forward
-movement may display that frame's recorded events once. Never call `Battle.step()`,
-read current hidden actors, consume RNG, modify the planning snapshot/checkpoint,
-or serialize the buffer. Test start/end bounds, mixed forward/backward input at all
-speeds, shot-cue lifecycle, hidden-data exclusion, explicit exit, disk reopen and
-full-result twin parity. Capture a readable rewound action frame and restored plan.
+Next focused task: add planning-only **REMOVE LAST WAYPOINT** for the selected
+friendly route. Remove exactly the final queued destination without moving the
+squad, querying enemies or consuming RNG. With multiple points, preserve earlier
+legs, movement mode, timed pause and any already-earned command-response time;
+with one point, use the existing HOLD cleanup semantics. Disable the control when
+there is no editable friendly route and restore it correctly after selection,
+execution boundaries and disk reopen. Test actual replace/append/remove input,
+single/multiple/boundary routes, route preview cleanup, strict saved-state validity,
+exact resumed movement/combat and full-result twin parity. Capture the shortened
+planning route plus actual later execution/report evidence.
 
 ## Prior validated hypothetical waypoint probe
 

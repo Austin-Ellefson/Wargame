@@ -517,3 +517,14 @@ cannot call a simulation tick, issue an order, mutate the current planning state
 emit a campaign checkpoint. Actual disk round-trip coverage confirms that only the
 authoritative boundary state survives, then every later tick and the completed
 result remain identical to an unreviewed twin. No migration is required.
+
+## Review navigation — no save change
+
+The paused PREVIOUS and RESTART controls change only the current index and
+fractional time inside the existing transient public review buffer. Reverse
+navigation clears presentation cues and applies a recorded public frame; it does
+not restore, invert or step tactical authority. The index, pause/completion state,
+tracers and buffer remain absent from tactical v25 and campaign v2 snapshots.
+Disk reopen therefore returns to the same authoritative boundary state with no
+review controls, and subsequent ticks/results remain identical to an unreviewed
+twin. No migration is required.

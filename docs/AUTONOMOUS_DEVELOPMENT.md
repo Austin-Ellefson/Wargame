@@ -1103,3 +1103,26 @@ This setup change contains instructions only; these missing tools must be addres
   rollback, export/GIS and Windows launchers remain unchanged. No Windows/CMBS or
   realistic-combat validation is claimed. Next: non-authoritative PREVIOUS -1s and
   RESTART REVIEW navigation using only the same sanitized transient frames.
+
+## Bounded review navigation — ready for review 2026-10-24 (America/Chicago)
+
+- Branch `codex/review-navigation`, draft PR #47, based exactly on validated PR
+  #46 head `56bf09a10739a7c556a0d3db374f2940ecf9f7c3`; no overlapping successor,
+  merge or remote-lease conflict was present.
+- Adds paused PREVIOUS -1s and RESTART REVIEW over the existing sanitized public
+  frame buffer. Backward navigation snaps to records, clears stale shot/recoil
+  presentation and resets the fractional playhead; it never reverses simulation.
+  Frame-zero and completion bounds are explicit, and exit/reopen cleanup remains.
+- Code/evidence `091c6dcdc02ae91b7bb58daab1c1aeaf55639ae4`: all 40 local
+  Godot checks, 26 terrain tests and diff check passed. Combined CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/40148036657 succeeded
+  with 17 rendered scripts. Artifact 12581840422 was inspected: 57 logs, 56 PASS-
+  bearing non-editor logs, no script errors and 73 PNGs. The actual rewound frame
+  shows both backward controls and no stale tracer after a recorded two-shot volley;
+  the restored plan and completed two-sided report remain readable.
+- Initial focused validation exposed footer-adjacent wrapped guidance. The final
+  two-line copy passes measured 720p fit and the full replacement suite/artifact.
+- Campaign/result/save/export/GIS/Windows contracts and frozen downloads remain
+  unchanged. No Windows, CMBS or realistic Combat Mission fidelity claim.
+- Next: planning-only REMOVE LAST WAYPOINT for safe route correction, preserving
+  earlier legs/mode/pause/earned response and exact disk/combat parity.
