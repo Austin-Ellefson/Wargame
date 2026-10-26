@@ -929,3 +929,29 @@ contact and HUD data still come exclusively from the original public 61-frame
 buffer. Exiting restores the untouched planning view; reopening retains no review
 or navigation state. This remains presentation-only and is not authoritative
 combat rewind, a hidden-information history or a save-format change.
+
+## Planning route-tail removal
+
+On `codex/remove-last-waypoint`, **REMOVE LAST WAYPOINT** is available only in
+planning for the selected living, non-broken blue squad with a queued route. It
+removes exactly the final point stored in that route. Earlier points, MOVE/QUICK/
+HUNT mode, a 15/30/60-second movement pause and already-earned command-response
+time remain unchanged. Removing the sole remaining point delegates to **HOLD**,
+so route, movement mode, timed pause and response delay receive the established
+complete cleanup.
+
+The action does not move the squad, reroute the earlier command, inspect an enemy,
+advance time, create an event or sample RNG. The dotted route and hypothetical
+terrain-LOS origin both derive again from the live shortened route; after the final
+point is removed they clear rather than using stale geometry or silently falling
+back to the current position. Execution, an invalid selection, elimination,
+broken morale and enemy routes disable or reject the command.
+
+No field was added: shortened routes use the existing tactical v25 `orders` array,
+so campaign v2/result v1 and older tactical readers are unchanged. Regression
+coverage uses actual replace/Shift-append/pause/remove input, the 128-point save
+boundary, strict validation, disk reopen, real resumed movement/fire and exact
+every-tick/full-result parity. A point is one stored routed coordinate; this first
+increment does not identify or remove a whole user click-leg when terrain routing
+inserted intermediate coordinates. Linux checks do not establish Windows or
+Combat Mission fidelity.
