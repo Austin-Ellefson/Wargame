@@ -1126,3 +1126,23 @@ This setup change contains instructions only; these missing tools must be addres
   unchanged. No Windows, CMBS or realistic Combat Mission fidelity claim.
 - Next: planning-only REMOVE LAST WAYPOINT for safe route correction, preserving
   earlier legs/mode/pause/earned response and exact disk/combat parity.
+
+## Planning route-tail removal — ready for review 2026-10-25 (America/Chicago)
+
+- Branch `codex/remove-last-waypoint`, draft PR #48, based exactly on validated
+  PR #47 documentation head `0e8e9440ff60d22ef1d2a138fa1a8d6717e17b7c`;
+  branches/open PRs were rechecked and no successor, overlap or merge existed.
+- Adds planning-only REMOVE LAST WAYPOINT. One stored route-tail point is removed
+  without rerouting/moving; earlier points, mode, pause and earned response remain.
+  A one-point route reuses HOLD cleanup. Dotted-route and hypothetical-LOS views
+  derive from the shortened live route, and invalid contexts are exact no-ops.
+- Code `1f7092e6c45e6fbe0db9550a2b344c25f42927f8`: all 41 local Godot
+  entries, 26 terrain tests and diff check passed. Combined CI 40250209986 passed
+  18 rendered scripts. Artifact 12620500668 was inspected: 59 logs, 58 PASS-
+  bearing non-editor logs, no script errors and 76 PNGs. Its planning, actual
+  00:03 three-shot execution and readable 03:00 two-sided report captures pass.
+- Tactical v25/campaign v2/result v1 and campaign/export/GIS/Windows contracts are
+  unchanged. This is stored-point removal, not yet whole user-authored leg undo;
+  Windows/CMBS/realistic fidelity remains unverified.
+- Next: versioned authored route-leg boundaries with old-save compatibility,
+  distinct planning markers, whole-leg removal and exact disk/combat parity.

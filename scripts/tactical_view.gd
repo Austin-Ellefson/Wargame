@@ -79,6 +79,7 @@ var posture_buttons := {}
 var bodies := {}
 var command_mode := "move"
 var hold_button: Button
+var remove_waypoint_button: Button
 var squad_buttons := {}
 
 func _ready() -> void:
@@ -234,16 +235,28 @@ func _build_interface() -> void:
         simulation.order_target(selected, "")
         _refresh())
     clear_target_button.add_theme_font_size_override("font_size", 10)
-    hold_button = _button("HOLD POSITION", Rect2(986, 508, 122, 26), func():
+    hold_button = _button("HOLD", Rect2(986, 508, 66, 26), func():
         simulation.order_hold(selected)
         _refresh())
-    pause_button = _button("PAUSE +15s", Rect2(1112, 508, 122, 26), func():
+    hold_button.add_theme_font_size_override("font_size", 11)
+    hold_button.size = Vector2(66,26)
+    hold_button.tooltip_text = "Cancel the selected squad's complete route, movement mode, timed pause and remaining command-response delay."
+    pause_button = _button("PAUSE +15s", Rect2(1056, 508, 72, 26), func():
         var current := int(simulation.state["pause_remaining"].get(selected, 0))
         var following := 15 if current == 0 else (30 if current == 15 else (60 if current == 30 else 0))
         simulation.order_pause(selected, following)
         _refresh())
-    pause_button.add_theme_font_size_override("font_size", 12)
+    pause_button.add_theme_font_size_override("font_size", 9)
+    pause_button.clip_text = true
+    pause_button.size = Vector2(72,26)
     pause_button.tooltip_text = "Cycle 0/15/30/60 seconds. Delays movement only; firing continues."
+    remove_waypoint_button = _button("REMOVE LAST WAYPOINT", Rect2(1132, 508, 102, 26), func():
+        simulation.order_remove_last_waypoint(selected)
+        _refresh())
+    remove_waypoint_button.add_theme_font_size_override("font_size", 8)
+    remove_waypoint_button.clip_text = true
+    remove_waypoint_button.size = Vector2(102,26)
+    remove_waypoint_button.tooltip_text = "Planning only: remove exactly the final saved route point. Earlier points, movement mode, timed pause and earned command-response time remain. A one-point route uses HOLD cleanup."
     execute_button = _button("EXECUTE 60 SECONDS", Rect2(986, 540, 248, 32), _execute)
     speed_button = _button("PLAYBACK 4x", Rect2(986, 578, 86, 28), _cycle_playback_speed)
     speed_button.add_theme_font_size_override("font_size", 10)
@@ -1178,7 +1191,8 @@ func _apply_interval_review_hud() -> void:
     for button in fire_buttons.values(): button.disabled = true
     for button in posture_buttons.values(): button.disabled = true
     for button in [inspect_button, follow_button, los_button, los_origin_button, facing_button,
-            arc_button, area_button, clear_target_button, hold_button, pause_button, execute_button]:
+            arc_button, area_button, clear_target_button, hold_button, pause_button,
+            remove_waypoint_button, execute_button]:
         button.disabled = true
     execute_button.text = "PLANNING FROZEN DURING REVIEW"
     back_button.disabled = false
@@ -1431,6 +1445,7 @@ func _refresh() -> void:
     pause_button.visible = int(state["version"]) >= 8
     pause_button.disabled = hold_button.disabled or not state["orders"].has(selected)
     pause_button.text = "PAUSE %ds" % int(state["pause_remaining"].get(selected, 0)) if int(state["version"]) >= 8 and int(state["pause_remaining"].get(selected, 0)) > 0 else "PAUSE +15s"
+    remove_waypoint_button.disabled = hold_button.disabled or not state["orders"].has(selected) or state["orders"].get(selected, []).is_empty()
     execute_button.disabled = state["phase"] != "planning"
     execute_button.text = "%d SECONDS REMAINING" % state["remaining"] if state["phase"] == "execution" else "EXECUTE 60 SECONDS"
     back_button.disabled = state["phase"] == "execution"

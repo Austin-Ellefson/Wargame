@@ -707,6 +707,24 @@ func order_hold(id: String) -> bool:
     if int(state["version"]) >= 17: state["command_remaining"][id] = 0
     return true
 
+func order_remove_last_waypoint(id: String) -> bool:
+    var squad := squad_by_id(id)
+    if state["phase"] != "planning" or squad.is_empty() or squad["faction"] != "UKR" or int(squad["alive"]) <= 0 or morale_state(id) == "broken":
+        return false
+    var path: Array = state["orders"].get(id, [])
+    if path.is_empty():
+        return false
+    # A one-point route has no earlier destination to retain. Reuse HOLD so its
+    # movement-mode, timed-pause and command-response cleanup stays canonical.
+    if path.size() == 1:
+        return order_hold(id)
+    path = path.duplicate(true)
+    path.pop_back()
+    state["orders"][id] = path
+    # Trimming an existing command is not a new order: preserve its movement
+    # mode, concurrent pause and any response time already earned.
+    return true
+
 func execute() -> bool:
     if state["phase"] != "planning":
         return false

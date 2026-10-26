@@ -1,27 +1,27 @@
-# Continue from validated bounded interval-review navigation
+# Continue from validated planning route-tail removal
 
-Latest validated descendant: `codex/review-navigation`, draft PR #47, explicitly
-based on tested PR #46 head `56bf09a10739a7c556a0d3db374f2940ecf9f7c3`.
-Tested code: `091c6dcdc02ae91b7bb58daab1c1aeaf55639ae4`. All 40 local
-Godot 4.5.1 entries, 26 terrain tests and diff check passed. Combined CI
-https://github.com/Austin-Ellefson/Wargame/actions/runs/40148036657 succeeded with
-all 17 rendered scripts. Artifact 12581840422 was inspected: 57 logs, 56 PASS-
-bearing non-editor logs, no script errors and 73 images. Its 1280x720 rewound
-frame visibly shows REVIEW 00:02/01:00 PAUSED, PREVIOUS/RESTART/STEP/RESUME,
-recorded public movement and no stale tracer after a two-shot volley was removed.
-The planning capture restores INSPECT, EXECUTE, REVIEW LAST INTERVAL and SAVE &
-CAMPAIGN. Check PR #47's final documentation-head CI before dependent work.
+Latest validated descendant: `codex/remove-last-waypoint`, draft PR #48,
+explicitly based on tested PR #47 documentation head
+`0e8e9440ff60d22ef1d2a138fa1a8d6717e17b7c`. Tested code:
+`1f7092e6c45e6fbe0db9550a2b344c25f42927f8`. All 41 local Godot 4.5.1
+entries, 26 terrain tests and diff check passed. Combined CI
+https://github.com/Austin-Ellefson/Wargame/actions/runs/40250209986 succeeded with
+all 18 rendered scripts. Artifact 12620500668 was inspected: 59 logs, 58 PASS-
+bearing non-editor logs, no script errors and 76 images. Its 1280x720 planning
+frame visibly shows the shortened dotted HUNT route, WAIT 15s and readable REMOVE
+LAST WAYPOINT control. The actual 00:03 execution frame has three real shot cues,
+ammo/suppression changes and the control disabled; the 03:00 report clearly shows
+both forces, objective control and campaign consequences. Check PR #48's final
+documentation-head CI before dependent work.
 
-Next focused task: add planning-only **REMOVE LAST WAYPOINT** for the selected
-friendly route. Remove exactly the final queued destination without moving the
-squad, querying enemies or consuming RNG. With multiple points, preserve earlier
-legs, movement mode, timed pause and any already-earned command-response time;
-with one point, use the existing HOLD cleanup semantics. Disable the control when
-there is no editable friendly route and restore it correctly after selection,
-execution boundaries and disk reopen. Test actual replace/append/remove input,
-single/multiple/boundary routes, route preview cleanup, strict saved-state validity,
-exact resumed movement/combat and full-result twin parity. Capture the shortened
-planning route plus actual later execution/report evidence.
+Next focused task: model player-authored route-leg boundaries so one command can
+remove the whole most recently Shift-appended click-leg rather than only one
+pathfinder coordinate. This changes the save contract: use a versioned tactical
+field with strict v1-v25 compatibility/migration, bounded validation and exact
+disk/resumed-combat parity. Keep route generation deterministic and independent
+of enemies/RNG; preserve mode, pause and earned response. Show authored nodes
+distinctly in planning and test replace/append/remove/hold across reopen. Do not
+duplicate this task if an unfinished successor already exists.
 
 ## Prior validated hypothetical waypoint probe
 
