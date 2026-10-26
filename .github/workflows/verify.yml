@@ -65,6 +65,7 @@ jobs:
             ${{ runner.temp }}/playback-step-*-preview.png
             ${{ runner.temp }}/interval-review-*-preview.png
             ${{ runner.temp }}/review-navigation-*-preview.png
+            ${{ runner.temp }}/remove-waypoint-*-preview.png
             ${{ runner.temp }}/soldiers-*-motion-*.png
             ${{ runner.temp }}/soldiers-recoil-*.png
             ${{ runner.temp }}/soldiers-stand-preview.png

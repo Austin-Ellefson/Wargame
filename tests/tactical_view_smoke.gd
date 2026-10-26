@@ -176,11 +176,11 @@ func _run() -> void:
     if not path_capture.is_empty() and DisplayServer.get_name() != "headless":
         await RenderingServer.frame_post_draw
         check(root.get_texture().get_image().save_png(path_capture.get_base_dir().path_join("queued-waypoints-preview.png")) == OK, "Queued-route capture must save.")
-    click(Vector2(1170, 521), MOUSE_BUTTON_LEFT)
+    click(view.pause_button.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
     await process_frame
     check(game.tactical_simulation.state["pause_remaining"]["UKR_S1"] == 15 and "WAIT 15s" in view.selection_label.text, "Pause button must set and show a timed wait on a queued route.")
     for index in range(3):
-        click(Vector2(1170, 521), MOUSE_BUTTON_LEFT)
+        click(view.pause_button.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
         await process_frame
     check(game.tactical_simulation.state["pause_remaining"]["UKR_S1"] == 0, "Pause selector must cycle through 15/30/60/0 seconds.")
     var planning_checkpoint: Dictionary = game.tactical_simulation.state.duplicate(true)
