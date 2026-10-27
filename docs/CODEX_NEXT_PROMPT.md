@@ -1,12 +1,18 @@
 # Continue from authored route-leg boundaries
 
-Current candidate: `codex/route-leg-boundaries`, explicitly based on validated PR
-#48 documentation head `763e182baa3147dd174050e12d94536fe2f00570`.
+Latest validated descendant: `codex/route-leg-boundaries`, draft PR #49,
+explicitly based on validated PR #48 documentation head
+`763e182baa3147dd174050e12d94536fe2f00570`. Tested code:
+`8b9076073b45e3942a7216be450deb61c3c83784`.
 Fresh tactical v26 stores strict remaining point counts for each player-authored
 blue click-leg, renders gold numbered destinations, removes a whole final leg and
 consumes boundaries during execution. V1–v25 keep their exact fields and original
-single-point removal without migration. Focused and complete local Godot checks
-pass; consult the latest milestone ledger/PR for the final code, CI and artifact.
+single-point removal without migration. All 41 local Godot 4.5.1 entries, 26
+terrain tests and diff check passed. Combined CI
+https://github.com/Austin-Ellefson/Wargame/actions/runs/40430123145 succeeded with
+all 18 rendered scripts. Artifact 12701174717 was inspected: 59 logs, 58 PASS-
+bearing non-editor logs, no script errors and 76 PNGs. Check PR #49's final
+documentation-head CI before dependent work.
 
 Next focused task after combined validation: version per-leg MOVE/QUICK/HUNT
 choices so the player may select a different mode before Shift-appending a later

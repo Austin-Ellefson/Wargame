@@ -21,9 +21,8 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/remove-last-waypoint / PR #48
-- Latest post-milestone code/evidence commit: 1f7092e6c45e6fbe0db9550a2b344c25f42927f8
-- Current post-milestone candidate: codex/route-leg-boundaries, based on PR #48
+- Latest validated post-milestone descendant: codex/route-leg-boundaries / PR #49
+- Latest post-milestone code/evidence commit: 8b9076073b45e3942a7216be450deb61c3c83784
 - Post-milestone next task after validation: per-leg MOVE/QUICK/HUNT modes
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
@@ -1696,9 +1695,9 @@ is delivered as the scheduled task result in ChatGPT.
   whole appended click-legs can be shown and removed deterministically across old
   saves, disk restart and exact resumed-combat parity.
 
-## Authored route-leg boundaries — local validation 2026-10-26 (America/Chicago)
+## Authored route-leg boundaries — validated 2026-10-26 (America/Chicago)
 
-- Branch `codex/route-leg-boundaries`, explicitly based on PR #48 documentation
+- Branch `codex/route-leg-boundaries`, draft PR #49, explicitly based on PR #48 documentation
   head `763e182baa3147dd174050e12d94536fe2f00570`; remote branches/open PRs were
   rechecked first and no unfinished successor or overlap existed.
 - Fresh tactical v26 stores bounded remaining path-point counts for each authored
@@ -1714,6 +1713,20 @@ is delivered as the scheduled task result in ChatGPT.
   128-point/64-point-leg boundary, nine malformed records, v25 JSON compatibility,
   v26 disk reopen with reconstructed marker, every resumed combat tick and full
   result parity. All 41 local Godot 4.5.1 entries, 26 terrain tests and diff check
-  pass together; rendered CI/artifact inspection is pending.
+  pass together.
+- Combined CI https://github.com/Austin-Ellefson/Wargame/actions/runs/40430123145
+  succeeded at code `8b9076073b45e3942a7216be450deb61c3c83784` with all 18
+  rendered scripts. Artifact `12701174717`, digest
+  `sha256:1dcdbcd91ad1468d05b3705e113e8534de9ea565100c83a015e19408645507d9`,
+  was inspected: 59 logs, 58 PASS-bearing non-editor logs, zero script/error/
+  failure matches and 76 PNGs.
+- The 1280x720 planning frame visibly shows the retained gold LEG 1 destination,
+  dotted HUNT route, WAIT 15s and readable REMOVE control. The actual 00:03 frame
+  has three witnessed shot lines, S1 -9R/SUP+18, 351 rounds/SUP17% and 57 seconds
+  remaining. The readable 03:00 report shows blue 36/0/36, red 36/20/16,
+  objective 0s/91s and both sides' campaign consequences.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/route-leg-boundaries
+  Import `project.godot` in Godot 4.5.1, press F5, queue HUNT with right-click and
+  Shift-right-click, then use REMOVE LAST WAYPOINT and save/reopen before Execute.
 - Next after combined evidence: version per-leg MOVE/QUICK/HUNT choices so a later
   appended leg may change movement behavior without altering earlier legs.
