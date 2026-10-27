@@ -18,6 +18,7 @@ func _run() -> void:
     var battle = Battle.new()
     battle.setup(PAYLOAD)
     battle.state["version"] = 15
+    if int(battle.state["version"]) < 26: battle.state.erase("route_legs")
     if int(battle.state["version"]) < 23: battle.state.erase("cover_responses")
     battle.state.erase("acquisition")
     battle.state.erase("command_remaining")
@@ -47,6 +48,7 @@ func _run() -> void:
     var firing = Battle.new()
     firing.setup(PAYLOAD)
     firing.state["version"] = 15
+    if int(firing.state["version"]) < 26: firing.state.erase("route_legs")
     if int(firing.state["version"]) < 23: firing.state.erase("cover_responses")
     firing.state.erase("acquisition")
     firing.state.erase("command_remaining")
@@ -65,6 +67,7 @@ func _run() -> void:
     var replacement = Battle.new()
     replacement.setup(PAYLOAD)
     replacement.state["version"] = 15
+    if int(replacement.state["version"]) < 26: replacement.state.erase("route_legs")
     if int(replacement.state["version"]) < 23: replacement.state.erase("cover_responses")
     replacement.state.erase("acquisition")
     replacement.state.erase("command_remaining")
@@ -83,6 +86,7 @@ func _run() -> void:
     var old = Battle.new()
     old.setup(PAYLOAD)
     old.state["version"] = 15
+    if int(old.state["version"]) < 26: old.state.erase("route_legs")
     if int(old.state["version"]) < 23: old.state.erase("cover_responses")
     old.state.erase("acquisition")
     old.state.erase("command_remaining")
@@ -92,6 +96,7 @@ func _run() -> void:
     old.state.erase("facing_orders")
     old.state.erase("area_fire")
     old.state["version"] = 7
+    if int(old.state["version"]) < 26: old.state.erase("route_legs")
     if int(old.state["version"]) < 23: old.state.erase("cover_responses")
     if int(old.state["version"]) < 15: old.state.erase("weapon_roles")
     if int(old.state["version"]) < 14: old.state.erase("postures")
@@ -109,6 +114,7 @@ func _run() -> void:
     game.battle_export_directory = directory
     game._play_demo()
     game.tactical_simulation.state["version"] = 15
+    if int(game.tactical_simulation.state["version"]) < 26: game.tactical_simulation.state.erase("route_legs")
     if int(game.tactical_simulation.state["version"]) < 23: game.tactical_simulation.state.erase("cover_responses")
     game.tactical_simulation.state.erase("acquisition")
     game.tactical_simulation.state.erase("command_remaining")

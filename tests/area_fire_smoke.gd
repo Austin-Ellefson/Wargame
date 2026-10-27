@@ -13,6 +13,7 @@ func fixture(id: String = "UKR_S1") -> RefCounted:
     var sim = Battle.new()
     sim.setup(PAYLOAD)
     sim.state["version"] = 21
+    if int(sim.state["version"]) < 26: sim.state.erase("route_legs")
     if int(sim.state["version"]) < 23: sim.state.erase("cover_responses")
     for squad in sim.state["squads"]:
         squad["ammo"] = 0
@@ -162,6 +163,7 @@ func _run() -> void:
     var current = fixture()
     var legacy = fixture()
     legacy.state["version"] = 20
+    if int(legacy.state["version"]) < 26: legacy.state.erase("route_legs")
     if int(legacy.state["version"]) < 23: legacy.state.erase("cover_responses")
     legacy.state.erase("area_fire")
     check(Battle.validate(legacy.state,PAYLOAD) and not legacy.order_area_fire("UKR_S1",Vector2(298,210)),"V20 retains original fields and cannot receive new orders.")
@@ -173,6 +175,7 @@ func _run() -> void:
         finish(battle)
     var authoritative: Dictionary = current.state.duplicate(true)
     authoritative["version"] = 20
+    authoritative.erase("route_legs")
     authoritative.erase("area_fire")
     check(same(authoritative,legacy.state) and same(current.result(),legacy.result()),"No-area v21 reproduces all v20 authoritative combat fields/results without extra RNG.")
     # Actual campaign disk continuation includes expenditure/suppression/history locks.

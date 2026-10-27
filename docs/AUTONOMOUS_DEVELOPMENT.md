@@ -1146,3 +1146,24 @@ This setup change contains instructions only; these missing tools must be addres
   Windows/CMBS/realistic fidelity remains unverified.
 - Next: versioned authored route-leg boundaries with old-save compatibility,
   distinct planning markers, whole-leg removal and exact disk/combat parity.
+
+## Authored route-leg boundaries — ready for review 2026-10-26 (America/Chicago)
+
+- Branch `codex/route-leg-boundaries`, draft PR #49, explicitly based on PR #48 head
+  `763e182baa3147dd174050e12d94536fe2f00570`; no overlapping successor/merge was
+  found before work.
+- Tactical v26 adds strict bounded `route_legs` metadata for editable blue routes.
+  Gold numbered authored nodes remain distinct from pathfinder dots, whole last
+  click-legs can be removed without rerouting, and actual movement consumes the
+  corresponding segment counts. One-leg removal delegates to HOLD.
+- V1–v25 retain exact saved shapes and point-tail removal rules without migration.
+  Campaign v2/result v1, locks, once-only losses, rollback, export/GIS contracts
+  and optional Windows launchers are preserved.
+- All 41 local Godot 4.5.1 entries, 26 terrain tests and diff check pass together.
+  Combined CI 40430123145 succeeded with all 18 rendered scripts. Artifact
+  12701174717 was inspected: 59 logs, 58 PASS-bearing non-editor logs, no script/
+  error/failure matches and 76 PNGs. Planning visibly shows the retained gold
+  authored node; actual 00:03 firing feedback and the readable 03:00 two-sided
+  report remain intact.
+- Next after validation: versioned per-leg MOVE/QUICK/HUNT choices using the new
+  boundaries, with old-save parity and no hidden-information/RNG coupling.

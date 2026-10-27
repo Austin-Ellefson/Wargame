@@ -14,6 +14,7 @@ func fixture(hidden: bool = true) -> RefCounted:
     var sim = Battle.new()
     sim.setup(PAYLOAD)
     sim.state["version"] = 23 # Preserve the original unspaced cover-response regression.
+    if int(sim.state["version"]) < 26: sim.state.erase("route_legs")
     for response in sim.state["cover_responses"].values(): response.erase("retry_remaining")
     for squad in sim.state["squads"]:
         squad["ammo"] = 0
@@ -174,6 +175,7 @@ func _run() -> void:
         if condition == "broken": check(case.posture("RU_S1") == "stand" and case.morale_state("RU_S1") == "broken" and case.state["orders"]["RU_S1"].back()[0] == 480,"Standing rearward withdrawal retains its route and priority.")
     var legacy = fixture()
     legacy.state["version"] = 22
+    if int(legacy.state["version"]) < 26: legacy.state.erase("route_legs")
     legacy.state.erase("cover_responses")
     start(legacy)
     press(legacy,12)
@@ -181,12 +183,14 @@ func _run() -> void:
     var quiet = fixture()
     var quiet_old = fixture()
     quiet_old.state["version"] = 22
+    if int(quiet_old.state["version"]) < 26: quiet_old.state.erase("route_legs")
     quiet_old.state.erase("cover_responses")
     finish(quiet)
     finish(quiet_old)
     var normalized: Dictionary = quiet.state.duplicate(true)
     normalized.erase("cover_responses")
     normalized["version"] = 22
+    normalized.erase("route_legs")
     check(same(normalized,quiet_old.state) and same(quiet.result(),quiet_old.result()),"Complete quiet v23 and v22 outcomes/authoritative fields remain identical.")
     for index in range(14):
         var bad: Dictionary = active.duplicate(true)
