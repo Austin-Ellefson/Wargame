@@ -256,7 +256,7 @@ func _build_interface() -> void:
     remove_waypoint_button.add_theme_font_size_override("font_size", 8)
     remove_waypoint_button.clip_text = true
     remove_waypoint_button.size = Vector2(102,26)
-    remove_waypoint_button.tooltip_text = "Planning only: remove exactly the final saved route point. Earlier points, movement mode, timed pause and earned command-response time remain. A one-point route uses HOLD cleanup."
+    remove_waypoint_button.tooltip_text = "Planning only: remove the most recently authored route leg. Earlier legs, movement mode, timed pause and earned command-response time remain. A one-leg route uses HOLD cleanup."
     execute_button = _button("EXECUTE 60 SECONDS", Rect2(986, 540, 248, 32), _execute)
     speed_button = _button("PLAYBACK 4x", Rect2(986, 578, 86, 28), _cycle_playback_speed)
     speed_button.add_theme_font_size_override("font_size", 10)
@@ -1229,6 +1229,29 @@ func _refresh_order_preview() -> void:
             dot.height = 0.25
             _mesh(dot, Vector3(point.x, Battle.terrain_height(point.x, point.y) + 0.8, point.y), material, order_preview)
         previous = finish
+    if int(simulation.state["version"]) >= 26 and simulation.state["route_legs"].has(selected):
+        var marker_material := _material(Color(1.0, 0.72, 0.18, 0.96), true)
+        var cursor := 0
+        var legs: Array = simulation.state["route_legs"][selected]
+        for index in range(legs.size()):
+            cursor += int(legs[index])
+            if cursor <= 0 or cursor > path.size(): continue
+            var authored: Array = path[cursor - 1]
+            var point := Vector2(float(authored[0]), float(authored[1]))
+            var marker := CylinderMesh.new()
+            marker.top_radius = 4.3
+            marker.bottom_radius = 4.3
+            marker.height = 0.45
+            _mesh(marker, Vector3(point.x, Battle.terrain_height(point.x, point.y) + 1.0, point.y), marker_material, order_preview)
+            var label := Label3D.new()
+            label.text = "LEG %d" % (index + 1)
+            label.font_size = 24
+            label.pixel_size = 0.08
+            label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+            label.no_depth_test = true
+            label.modulate = Color("ffd07a")
+            label.position = Vector3(point.x, Battle.terrain_height(point.x, point.y) + 5.0, point.y)
+            order_preview.add_child(label)
 
 func _player_observes(squad: Dictionary) -> bool:
     if squad.is_empty(): return false
@@ -1445,7 +1468,8 @@ func _refresh() -> void:
     pause_button.visible = int(state["version"]) >= 8
     pause_button.disabled = hold_button.disabled or not state["orders"].has(selected)
     pause_button.text = "PAUSE %ds" % int(state["pause_remaining"].get(selected, 0)) if int(state["version"]) >= 8 and int(state["pause_remaining"].get(selected, 0)) > 0 else "PAUSE +15s"
-    remove_waypoint_button.disabled = hold_button.disabled or not state["orders"].has(selected) or state["orders"].get(selected, []).is_empty()
+    remove_waypoint_button.disabled = hold_button.disabled or not state["orders"].has(selected) or state["orders"].get(selected, []).is_empty() or (int(state["version"]) >= 26 and not state["route_legs"].has(selected))
+    remove_waypoint_button.tooltip_text = "Planning only: remove the most recently authored route leg. Earlier legs, movement mode, timed pause and earned command-response time remain. A one-leg route uses HOLD cleanup." if int(state["version"]) >= 26 else "Planning only: remove exactly the final saved route point. Earlier points, movement mode, timed pause and earned command-response time remain. A one-point route uses HOLD cleanup."
     execute_button.disabled = state["phase"] != "planning"
     execute_button.text = "%d SECONDS REMAINING" % state["remaining"] if state["phase"] == "execution" else "EXECUTE 60 SECONDS"
     back_button.disabled = state["phase"] == "execution"
@@ -1463,7 +1487,7 @@ func _refresh() -> void:
     if int(state["version"]) >= 5:
         report_label.text = "Mode + right-click. Amber = last seen."
     if int(state["version"]) >= 7:
-        report_label.text = simulation.target_status(selected) + " | Shift-click target\nShift-right: append route"
+        report_label.text = simulation.target_status(selected) + " | Shift-click target\nShift-right: append route leg" if int(state["version"]) >= 26 else simulation.target_status(selected) + " | Shift-click target\nShift-right: append route"
     if area_armed: report_label.text = "AREA: left-click reachable ground.\nRight-click cancels cursor."
     if facing_armed: report_label.text = "FACE: left-click ground.\nRight-click or FACE cancels."
     if not selected_squad.is_empty() and simulation.morale_state(selected) == "broken":

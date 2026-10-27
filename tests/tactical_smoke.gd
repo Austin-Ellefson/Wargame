@@ -158,6 +158,7 @@ func _run() -> void:
     var small = Battle.new()
     small.setup(depleted)
     small.state["version"] = 15
+    if int(small.state["version"]) < 26: small.state.erase("route_legs")
     if int(small.state["version"]) < 23: small.state.erase("cover_responses")
     small.state.erase("acquisition")
     small.state.erase("command_remaining")
@@ -170,6 +171,7 @@ func _run() -> void:
     var timed = Battle.new()
     timed.setup(payload)
     timed.state["version"] = 15
+    if int(timed.state["version"]) < 26: timed.state.erase("route_legs")
     if int(timed.state["version"]) < 23: timed.state.erase("cover_responses")
     timed.state.erase("acquisition")
     timed.state.erase("command_remaining")
@@ -187,6 +189,7 @@ func _run() -> void:
     var event_battle = Battle.new()
     event_battle.setup(payload)
     event_battle.state["version"] = 15
+    if int(event_battle.state["version"]) < 26: event_battle.state.erase("route_legs")
     if int(event_battle.state["version"]) < 23: event_battle.state.erase("cover_responses")
     event_battle.state.erase("acquisition")
     event_battle.state.erase("command_remaining")
@@ -214,6 +217,7 @@ func _run() -> void:
     var no_fire = Battle.new()
     no_fire.setup(payload)
     no_fire.state["version"] = 15
+    if int(no_fire.state["version"]) < 26: no_fire.state.erase("route_legs")
     if int(no_fire.state["version"]) < 23: no_fire.state.erase("cover_responses")
     no_fire.state.erase("acquisition")
     no_fire.state.erase("command_remaining")
@@ -234,6 +238,7 @@ func _run() -> void:
     var blocked = Battle.new()
     blocked.setup(payload)
     blocked.state["version"] = 15
+    if int(blocked.state["version"]) < 26: blocked.state.erase("route_legs")
     if int(blocked.state["version"]) < 23: blocked.state.erase("cover_responses")
     blocked.state.erase("acquisition")
     blocked.state.erase("command_remaining")
@@ -255,6 +260,7 @@ func _run() -> void:
     var distant = Battle.new()
     distant.setup(payload)
     distant.state["version"] = 15
+    if int(distant.state["version"]) < 26: distant.state.erase("route_legs")
     if int(distant.state["version"]) < 23: distant.state.erase("cover_responses")
     distant.state.erase("acquisition")
     distant.state.erase("command_remaining")

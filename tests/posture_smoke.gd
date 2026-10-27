@@ -12,6 +12,7 @@ func fixture() -> RefCounted:
     var battle = Battle.new()
     battle.setup(PAYLOAD)
     battle.state["version"] = 15
+    if int(battle.state["version"]) < 26: battle.state.erase("route_legs")
     if int(battle.state["version"]) < 23: battle.state.erase("cover_responses")
     battle.state.erase("acquisition")
     battle.state.erase("command_remaining")
@@ -116,6 +117,7 @@ func _run() -> void:
     check(not Battle.validate(invalid,PAYLOAD), "Extra posture IDs must reject.")
     var legacy = fixture()
     legacy.state["version"] = 13
+    if int(legacy.state["version"]) < 26: legacy.state.erase("route_legs")
     if int(legacy.state["version"]) < 23: legacy.state.erase("cover_responses")
     if int(legacy.state["version"]) < 15: legacy.state.erase("weapon_roles")
     legacy.state.erase("postures")
@@ -133,6 +135,7 @@ func _run() -> void:
     game.battle_export_directory = directory
     game._play_demo()
     game.tactical_simulation.state["version"] = 15
+    if int(game.tactical_simulation.state["version"]) < 26: game.tactical_simulation.state.erase("route_legs")
     if int(game.tactical_simulation.state["version"]) < 23: game.tactical_simulation.state.erase("cover_responses")
     game.tactical_simulation.state.erase("acquisition")
     game.tactical_simulation.state.erase("command_remaining")

@@ -56,7 +56,7 @@ static func visible(a: Vector2, b: Vector2, observer_height: float = 1.6, target
     return true
 
 func setup(payload: Dictionary) -> void:
-    state = {"version": 25, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
+    state = {"version": 26, "battle_id": payload["battle_id"], "phase": "planning", "elapsed": 0,
         "remaining": 0, "objective": {"UKR": 0, "RU": 0}, "squads": [], "orders": {}, "winner": ""}
     state["squads"] = get_script_static_setup(payload)
     state["contacts"] = {"UKR": {}, "RU": {}}
@@ -67,6 +67,7 @@ func setup(payload: Dictionary) -> void:
     state["area_fire"] = {}
     state["cover_responses"] = {}
     state["movement_modes"] = {}
+    state["route_legs"] = {}
     state["fire_modes"] = {}
     state["fire_targets"] = {}
     state["pause_remaining"] = {}
@@ -187,6 +188,7 @@ func _retreat_route(squad: Dictionary) -> void:
     if int(state["version"]) >= 23: _clear_cover_response(id)
     state["orders"].erase(id)
     state["movement_modes"].erase(id)
+    if int(state["version"]) >= 26: state["route_legs"].erase(id)
     state["pause_remaining"][id] = 0
     if int(state["version"]) >= 14: state["postures"][id] = "stand"
     _assign_route(id, Vector2(32 if squad["faction"] == "UKR" else 480, clampf(position(squad).y, 24, 488)), "quick")
@@ -670,6 +672,12 @@ func _assign_route(id: String, target: Vector2, mode: String = "move", append: b
     var previous: Array = state["orders"].get(id, []).duplicate(true) if append else []
     if append and not previous.is_empty() and movement_mode(id) != mode:
         return false
+    var previous_legs: Array = []
+    if int(state["version"]) >= 26 and squad["faction"] == "UKR" and morale_state(id) != "broken" and append and not previous.is_empty():
+        if not state["route_legs"].has(id):
+            return false
+        previous_legs = state["route_legs"][id].duplicate()
+    var previous_size := previous.size()
     var new_command := not append or previous.is_empty()
     var origin := Vector2(previous.back()[0], previous.back()[1]) if not previous.is_empty() else position(squad)
     var start := Vector2i(int(origin.x / CELL), int(origin.y / CELL))
@@ -688,6 +696,13 @@ func _assign_route(id: String, target: Vector2, mode: String = "move", append: b
     if path.size() > 128:
         return false
     state["orders"][id] = path
+    if int(state["version"]) >= 26:
+        if squad["faction"] == "UKR" and morale_state(id) != "broken":
+            var legs: Array = previous_legs if append and previous_size > 0 else []
+            legs.append(path.size() - previous_size)
+            state["route_legs"][id] = legs
+        else:
+            state["route_legs"].erase(id)
     if int(state["version"]) >= 17 and new_command: state["command_remaining"][id] = 5
     if int(state["version"]) >= 5:
         state["movement_modes"][id] = mode
@@ -700,6 +715,7 @@ func order_hold(id: String) -> bool:
     if state["phase"] != "planning" or squad.is_empty() or squad["faction"] != "UKR" or int(squad["alive"]) <= 0 or morale_state(id) == "broken":
         return false
     state["orders"].erase(id)
+    if int(state["version"]) >= 26: state["route_legs"].erase(id)
     if int(state["version"]) >= 5:
         state["movement_modes"].erase(id)
     if int(state["version"]) >= 8:
@@ -714,6 +730,25 @@ func order_remove_last_waypoint(id: String) -> bool:
     var path: Array = state["orders"].get(id, [])
     if path.is_empty():
         return false
+    if int(state["version"]) >= 26:
+        var legs = state["route_legs"].get(id)
+        if not legs is Array or legs.is_empty():
+            return false
+        # V26 records the number of still-queued path points contributed by
+        # each authored click. Remove the complete final click-leg without
+        # pathfinding again or disturbing the earlier command.
+        if legs.size() == 1:
+            return order_hold(id)
+        var remove_count := int(legs.back())
+        if remove_count <= 0 or remove_count >= path.size():
+            return false
+        path = path.duplicate(true)
+        path.resize(path.size() - remove_count)
+        legs = legs.duplicate()
+        legs.pop_back()
+        state["orders"][id] = path
+        state["route_legs"][id] = legs
+        return true
     # A one-point route has no earlier destination to retain. Reuse HOLD so its
     # movement-mode, timed-pause and command-response cleanup stays canonical.
     if path.size() == 1:
@@ -724,6 +759,20 @@ func order_remove_last_waypoint(id: String) -> bool:
     # Trimming an existing command is not a new order: preserve its movement
     # mode, concurrent pause and any response time already earned.
     return true
+
+func _consume_route_point(id: String) -> void:
+    if int(state["version"]) < 26 or not state["route_legs"].has(id):
+        return
+    var legs: Array = state["route_legs"][id].duplicate()
+    if legs.is_empty():
+        return
+    legs[0] = int(legs[0]) - 1
+    if int(legs[0]) <= 0:
+        legs.pop_front()
+    if legs.is_empty():
+        state["route_legs"].erase(id)
+    else:
+        state["route_legs"][id] = legs
 
 func execute() -> bool:
     if state["phase"] != "planning":
@@ -808,6 +857,7 @@ func step() -> void:
             state["pause_remaining"][squad["id"]] = int(state["pause_remaining"][squad["id"]]) - 1
         if int(squad["alive"]) <= 0:
             state["orders"].erase(squad["id"])
+            if int(state["version"]) >= 26: state["route_legs"].erase(squad["id"])
             if int(state["version"]) >= 5:
                 state["movement_modes"].erase(squad["id"])
             if int(state["version"]) >= 8:
@@ -830,6 +880,7 @@ func step() -> void:
             if distance <= speed:
                 squad["position"] = [target.x, target.y]
                 path.pop_front()
+                if not covering: _consume_route_point(squad["id"])
                 speed -= distance
             else:
                 var next := current.move_toward(target, speed)
@@ -843,6 +894,7 @@ func step() -> void:
             state["fatigue"][squad["id"]] = clampi(int(state["fatigue"][squad["id"]]) + roundi(change * 1000.0), 0, 1000)
         if path.is_empty() and not covering:
             state["orders"].erase(squad["id"])
+            if int(state["version"]) >= 26: state["route_legs"].erase(squad["id"])
             if int(state["version"]) >= 5:
                 state["movement_modes"].erase(squad["id"])
             if int(state["version"]) >= 8:
@@ -968,10 +1020,10 @@ func result() -> Dictionary:
         "elapsed": state["elapsed"], "objective": state["objective"].duplicate(true), "forces": forces}
 
 static func validate(saved: Variant, payload: Dictionary) -> bool:
-    if not saved is Dictionary or not _integer(saved.get("version"), 1, 25):
+    if not saved is Dictionary or not _integer(saved.get("version"), 1, 26):
         return false
     var version := int(saved["version"])
-    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12) + 2 * int(version >= 13) + int(version >= 14) + int(version >= 15) + int(version >= 16) + int(version >= 17) + 2 * int(version >= 18) + int(version >= 19) + int(version >= 20) + int(version >= 21) + int(version >= 23)
+    var field_count := 9 + int(version >= 4) + int(version >= 5) + int(version >= 6) + int(version >= 7) + int(version >= 8) + int(version >= 12) + 2 * int(version >= 13) + int(version >= 14) + int(version >= 15) + int(version >= 16) + int(version >= 17) + 2 * int(version >= 18) + int(version >= 19) + int(version >= 20) + int(version >= 21) + int(version >= 23) + int(version >= 26)
     if saved.size() != field_count:
         return false
     for key in ["version", "battle_id", "phase", "elapsed", "remaining", "objective", "squads", "orders", "winner"]:
@@ -1103,6 +1155,26 @@ static func _validate_fields(saved: Dictionary, payload: Dictionary) -> bool:
             if states.get(id) not in ["steady", "shaken", "broken"] or not _integer(rally.get(id), 0, 30): return false
             if states[id] != "broken" and rally[id] != 0: return false
             if states[id] == "broken" and int(squad["alive"]) > 0 and rally[id] == 0: return false
+    if int(saved["version"]) >= 26:
+        var route_legs = saved.get("route_legs")
+        if not route_legs is Dictionary:
+            return false
+        for id in route_legs:
+            if not saved["orders"].has(id) or not known.has(id) or known[id]["faction"] != "UKR" or saved["morale_states"][id] == "broken":
+                return false
+            var legs = route_legs[id]
+            if not legs is Array or legs.is_empty() or legs.size() > 128:
+                return false
+            var covered := 0
+            for length in legs:
+                if not _integer(length, 1, 128):
+                    return false
+                covered += int(length)
+            if covered != saved["orders"][id].size():
+                return false
+        for id in saved["orders"]:
+            if known[id]["faction"] == "UKR" and saved["morale_states"][id] != "broken" and not route_legs.has(id):
+                return false
     if int(saved["version"]) >= 14:
         var postures = saved.get("postures")
         if not postures is Dictionary or postures.size() != known.size(): return false

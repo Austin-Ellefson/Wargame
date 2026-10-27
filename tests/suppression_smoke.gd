@@ -20,6 +20,7 @@ func _run() -> void:
     var battle = Battle.new()
     battle.setup(payload)
     battle.state["version"] = 15
+    if int(battle.state["version"]) < 26: battle.state.erase("route_legs")
     if int(battle.state["version"]) < 23: battle.state.erase("cover_responses")
     battle.state.erase("acquisition")
     battle.state.erase("command_remaining")
@@ -54,6 +55,7 @@ func _run() -> void:
     var legacy = Battle.new()
     legacy.setup(payload)
     legacy.state["version"] = 15
+    if int(legacy.state["version"]) < 26: legacy.state.erase("route_legs")
     if int(legacy.state["version"]) < 23: legacy.state.erase("cover_responses")
     legacy.state.erase("acquisition")
     legacy.state.erase("command_remaining")
@@ -63,6 +65,7 @@ func _run() -> void:
     legacy.state.erase("facing_orders")
     legacy.state.erase("area_fire")
     legacy.state["version"] = 1
+    if int(legacy.state["version"]) < 26: legacy.state.erase("route_legs")
     if int(legacy.state["version"]) < 23: legacy.state.erase("cover_responses")
     if int(legacy.state["version"]) < 15: legacy.state.erase("weapon_roles")
     if int(legacy.state["version"]) < 14: legacy.state.erase("postures")
@@ -94,6 +97,7 @@ func _run() -> void:
     var firefight = Battle.new()
     firefight.setup(payload)
     firefight.state["version"] = 15
+    if int(firefight.state["version"]) < 26: firefight.state.erase("route_legs")
     if int(firefight.state["version"]) < 23: firefight.state.erase("cover_responses")
     firefight.state.erase("acquisition")
     firefight.state.erase("command_remaining")

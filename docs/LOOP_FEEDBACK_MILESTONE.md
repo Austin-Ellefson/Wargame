@@ -23,7 +23,8 @@ they actually run on Windows.
 - Next task: user Windows playtest, then small independent tactical improvements
 - Latest validated post-milestone descendant: codex/remove-last-waypoint / PR #48
 - Latest post-milestone code/evidence commit: 1f7092e6c45e6fbe0db9550a2b344c25f42927f8
-- Post-milestone next task: versioned player-authored route-leg boundaries
+- Current post-milestone candidate: codex/route-leg-boundaries, based on PR #48
+- Post-milestone next task after validation: per-leg MOVE/QUICK/HUNT modes
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -1694,3 +1695,25 @@ is delivered as the scheduled task result in ChatGPT.
 - Next focused task: version and validate player-authored route-leg boundaries so
   whole appended click-legs can be shown and removed deterministically across old
   saves, disk restart and exact resumed-combat parity.
+
+## Authored route-leg boundaries — local validation 2026-10-26 (America/Chicago)
+
+- Branch `codex/route-leg-boundaries`, explicitly based on PR #48 documentation
+  head `763e182baa3147dd174050e12d94536fe2f00570`; remote branches/open PRs were
+  rechecked first and no unfinished successor or overlap existed.
+- Fresh tactical v26 stores bounded remaining path-point counts for each authored
+  blue click-leg. Gold numbered nodes distinguish authored destinations from
+  routed dots. REMOVE LAST WAYPOINT removes the whole last click-leg; one leg
+  uses canonical HOLD. Mode, pause, earned response, position, events and RNG are
+  unchanged, and actual execution consumes the metadata with the route.
+- Strict validation rejects missing, extra, red/broken, empty, fractional,
+  nonpositive, oversized and path-inconsistent leg records. V1–v25 preserve exact
+  field shapes and old point removal without migration. Campaign v2/result v1,
+  locks, once-only loss, rollback, exports/GIS and Windows launchers are unchanged.
+- Focused headless regression passes actual right/Shift-right/pause/remove/HOLD,
+  128-point/64-point-leg boundary, nine malformed records, v25 JSON compatibility,
+  v26 disk reopen with reconstructed marker, every resumed combat tick and full
+  result parity. All 41 local Godot 4.5.1 entries, 26 terrain tests and diff check
+  pass together; rendered CI/artifact inspection is pending.
+- Next after combined evidence: version per-leg MOVE/QUICK/HUNT choices so a later
+  appended leg may change movement behavior without altering earlier legs.

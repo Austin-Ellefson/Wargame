@@ -105,6 +105,34 @@ No save fields or simulation rules change: complete routes already persist in
 `orders`. Tactical v7 remains current; old engagements keep their fields/rules.
 Disk-restart regression now includes a multi-leg campaign route.
 
+## Authored route-leg boundaries (tactical v26)
+
+Fresh v26 battles add `route_legs`, a dictionary for editable blue routes. Each
+entry is a nonempty array of positive integer point counts, one count per player
+click, whose sum must exactly equal that squad's remaining `orders` path length.
+The map may contain only known, non-broken blue squads with routes; every such
+route requires an entry. Red objective routes and automatic broken-squad
+withdrawals are deliberately not described as player-authored legs.
+
+Right-click replacement stores one leg. Each successful Shift-right-click appends
+one bounded leg without changing earlier path points. As execution consumes routed
+points, the first count decrements and disappears at its boundary. Death,
+withdrawal, destination completion and HOLD clear matching metadata. The existing
+128-point total route limit still applies; leg counts and list length are each
+bounded to 1–128.
+
+**REMOVE LAST WAYPOINT** now removes the complete last authored leg in v26. It
+does not reroute, move, inspect contacts, advance time or sample RNG. Earlier legs,
+movement mode, timed pause and earned command-response delay remain exact. A
+single-leg route delegates to HOLD. Gold numbered planning markers are derived
+from the validated counts and are not saved separately.
+
+Missing/extra IDs, red or broken owners, empty/fractional/nonpositive/oversized
+counts, and sums inconsistent with `orders` reject before restore. V1–v25 states
+retain their exact fields and point-by-point removal rules; loading never invents
+leg boundaries. Campaign v2, result v1, locks, once-only losses, rollback,
+exports/GIS and launchers are unchanged.
+
 ## Timed movement pauses (tactical v8)
 
 With a queued route, PAUSE cycles 0/15/30/60 simulated seconds. The squad waits

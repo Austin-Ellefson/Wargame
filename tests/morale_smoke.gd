@@ -12,6 +12,7 @@ func fixture() -> RefCounted:
     var battle = Battle.new()
     battle.setup(PAYLOAD)
     battle.state["version"] = 15
+    if int(battle.state["version"]) < 26: battle.state.erase("route_legs")
     if int(battle.state["version"]) < 23: battle.state.erase("cover_responses")
     battle.state.erase("acquisition")
     battle.state.erase("command_remaining")
@@ -73,6 +74,7 @@ func _run() -> void:
     check(blue["ammo"] < 100, "Rallied shaken survivors must be able to fire again.")
     var legacy = fixture()
     legacy.state["version"] = 12
+    if int(legacy.state["version"]) < 26: legacy.state.erase("route_legs")
     if int(legacy.state["version"]) < 23: legacy.state.erase("cover_responses")
     if int(legacy.state["version"]) < 15: legacy.state.erase("weapon_roles")
     if int(legacy.state["version"]) < 14: legacy.state.erase("postures")
@@ -95,6 +97,7 @@ func _run() -> void:
     var firefight = Battle.new()
     firefight.setup(PAYLOAD)
     firefight.state["version"] = 15
+    if int(firefight.state["version"]) < 26: firefight.state.erase("route_legs")
     if int(firefight.state["version"]) < 23: firefight.state.erase("cover_responses")
     firefight.state.erase("acquisition")
     firefight.state.erase("command_remaining")
@@ -123,6 +126,7 @@ func _run() -> void:
     game.battle_export_directory = directory
     game._play_demo()
     game.tactical_simulation.state["version"] = 15
+    if int(game.tactical_simulation.state["version"]) < 26: game.tactical_simulation.state.erase("route_legs")
     if int(game.tactical_simulation.state["version"]) < 23: game.tactical_simulation.state.erase("cover_responses")
     game.tactical_simulation.state.erase("acquisition")
     game.tactical_simulation.state.erase("command_remaining")

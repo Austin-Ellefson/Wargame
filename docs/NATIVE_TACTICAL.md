@@ -6,12 +6,12 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/waypoint-los-preview` descendant includes a planning-only terrain
+The newer `codex/route-leg-boundaries` descendant includes a planning-only terrain
 LOS/range tool with current-position and explicitly hypothetical final-waypoint
 origins, smooth combat zoom, route previews,
 camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
 queued waypoints, timed pauses, local-contact reactions and cover-weighted red routes. The milestone
-branch above remains frozen. Fresh battles use tactical rules v25, including selected-squad visibility, delayed shared reports, spaced nearby cover and saved retries when friendlies block otherwise usable cover. See the five-step
+branch above remains frozen. Fresh battles use tactical rules v26, including authored route-leg markers/removal, selected-squad visibility, delayed shared reports, spaced nearby cover and saved retries when friendlies block otherwise usable cover. See the five-step
 batch test guide in [FIVE_STEP_TACTICAL_PROGRESS.md](FIVE_STEP_TACTICAL_PROGRESS.md).
 
 ## Complete game loop
@@ -955,3 +955,25 @@ every-tick/full-result parity. A point is one stored routed coordinate; this fir
 increment does not identify or remove a whole user click-leg when terrain routing
 inserted intermediate coordinates. Linux checks do not establish Windows or
 Combat Mission fidelity.
+
+## Authored route-leg planning (v26)
+
+On `codex/route-leg-boundaries`, each successful blue planning click owns one
+exact segment of the flattened terrain-safe route. Gold **LEG 1/2/...** disks and
+labels distinguish those clicked destinations from the smaller blue pathfinder
+dots. Replacement starts one leg; Shift-right-click appends another without
+rerouting the earlier command.
+
+**REMOVE LAST WAYPOINT** removes all path points contributed by the latest click.
+Earlier legs, MOVE/QUICK/HUNT mode, timed PAUSE, squad position and earned command
+response remain unchanged. Removing the only leg delegates to HOLD, clearing the
+route and all established dependent state. The dotted preview and hypothetical
+LOS origin immediately use the retained final authored destination.
+
+Tactical v26 persists remaining per-leg point counts in `route_legs`. Counts are
+decremented as actual movement consumes path points and strictly validated against
+the remaining route. Disk reopen and resumed execution reconstruct the exact same
+markers and results. V1–v25 saves are accepted without migration and continue to
+remove one stored coordinate at a time. This adds no enemy query, random sample,
+individual-soldier navigation, campaign/result/export/GIS change, or evidence of
+Windows/Combat Mission fidelity.

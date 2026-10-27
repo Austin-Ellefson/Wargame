@@ -13,6 +13,7 @@ func fixture() -> RefCounted:
     var sim = Battle.new()
     sim.setup(PAYLOAD)
     sim.state["version"] = 20
+    if int(sim.state["version"]) < 26: sim.state.erase("route_legs")
     if int(sim.state["version"]) < 23: sim.state.erase("cover_responses")
     sim.state.erase("area_fire")
     for squad in sim.state["squads"]:
@@ -140,6 +141,7 @@ func _run() -> void:
     var current = fixture()
     var legacy = fixture()
     legacy.state["version"] = 19
+    if int(legacy.state["version"]) < 26: legacy.state.erase("route_legs")
     if int(legacy.state["version"]) < 23: legacy.state.erase("cover_responses")
     legacy.state.erase("facing_orders")
     legacy.state.erase("area_fire")
@@ -150,6 +152,7 @@ func _run() -> void:
         finish(battle)
     var authoritative: Dictionary = current.state.duplicate(true)
     authoritative["version"] = 19
+    authoritative.erase("route_legs")
     authoritative.erase("facing_orders")
     authoritative.erase("area_fire")
     check(same(authoritative,legacy.state) and same(current.result(),legacy.result()), "Default unrestricted v20 reproduces complete v19 combat fields/results exactly.")

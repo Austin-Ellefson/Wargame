@@ -1,27 +1,19 @@
-# Continue from validated planning route-tail removal
+# Continue from authored route-leg boundaries
 
-Latest validated descendant: `codex/remove-last-waypoint`, draft PR #48,
-explicitly based on tested PR #47 documentation head
-`0e8e9440ff60d22ef1d2a138fa1a8d6717e17b7c`. Tested code:
-`1f7092e6c45e6fbe0db9550a2b344c25f42927f8`. All 41 local Godot 4.5.1
-entries, 26 terrain tests and diff check passed. Combined CI
-https://github.com/Austin-Ellefson/Wargame/actions/runs/40250209986 succeeded with
-all 18 rendered scripts. Artifact 12620500668 was inspected: 59 logs, 58 PASS-
-bearing non-editor logs, no script errors and 76 images. Its 1280x720 planning
-frame visibly shows the shortened dotted HUNT route, WAIT 15s and readable REMOVE
-LAST WAYPOINT control. The actual 00:03 execution frame has three real shot cues,
-ammo/suppression changes and the control disabled; the 03:00 report clearly shows
-both forces, objective control and campaign consequences. Check PR #48's final
-documentation-head CI before dependent work.
+Current candidate: `codex/route-leg-boundaries`, explicitly based on validated PR
+#48 documentation head `763e182baa3147dd174050e12d94536fe2f00570`.
+Fresh tactical v26 stores strict remaining point counts for each player-authored
+blue click-leg, renders gold numbered destinations, removes a whole final leg and
+consumes boundaries during execution. V1–v25 keep their exact fields and original
+single-point removal without migration. Focused and complete local Godot checks
+pass; consult the latest milestone ledger/PR for the final code, CI and artifact.
 
-Next focused task: model player-authored route-leg boundaries so one command can
-remove the whole most recently Shift-appended click-leg rather than only one
-pathfinder coordinate. This changes the save contract: use a versioned tactical
-field with strict v1-v25 compatibility/migration, bounded validation and exact
-disk/resumed-combat parity. Keep route generation deterministic and independent
-of enemies/RNG; preserve mode, pause and earned response. Show authored nodes
-distinctly in planning and test replace/append/remove/hold across reopen. Do not
-duplicate this task if an unfinished successor already exists.
+Next focused task after combined validation: version per-leg MOVE/QUICK/HUNT
+choices so the player may select a different mode before Shift-appending a later
+leg. Preserve v1–v26 save behavior, deterministic path points, pause/response
+semantics, authored-node removal and exact disk/resumed-combat parity. Display the
+mode at each authored node without leaking hidden information or using RNG. Do not
+duplicate the task if an unfinished successor already exists.
 
 ## Prior validated hypothetical waypoint probe
 
@@ -55,9 +47,8 @@ or decorative tree mesh. CLEAR is not spotting, fire permission or hit probabili
 No arrival, future posture/target, path-safety or individual soldier prediction.
 Dense/distant labels and decorative tree/HUD occlusion remain limitations.
 
-Fresh battles remain tactical v25: crowded-cover retries save retry_remaining
-(0–12), preserve original queues/modes/waits across interval breaks, and keep
-12 m friendly destination spacing. V1–v24 retain original fields and rules.
+Fresh battles use tactical v26: authored route legs sit above the unchanged v25
+crowded-cover retry rules. V1–v25 retain original fields and behavior.
 Preserve exact disk continuation and all movement gates. These are abstract
 squad behaviors, not individual collision avoidance or validated combat realism.
 
