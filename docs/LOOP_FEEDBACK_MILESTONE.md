@@ -21,9 +21,9 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/route-leg-boundaries / PR #49
-- Latest post-milestone code/evidence commit: 8b9076073b45e3942a7216be450deb61c3c83784
-- Post-milestone next task after validation: per-leg MOVE/QUICK/HUNT modes
+- Latest validated post-milestone descendant: codex/per-leg-movement-modes / PR #50
+- Latest post-milestone code/evidence commit: 19070b4097a015a2e70b5defd43359495230fb25
+- Post-milestone next task after validation: per-leg timed pauses at authored nodes
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -1730,3 +1730,44 @@ is delivered as the scheduled task result in ChatGPT.
   Shift-right-click, then use REMOVE LAST WAYPOINT and save/reopen before Execute.
 - Next after combined evidence: version per-leg MOVE/QUICK/HUNT choices so a later
   appended leg may change movement behavior without altering earlier legs.
+
+## Per-leg movement modes — validated 2026-10-27 (America/Chicago)
+
+- Branch `codex/per-leg-movement-modes`, draft PR #50, explicitly based on PR #49
+  documentation head `d1807ffbf591f7921e22c7e63e51d8484fa80947`;
+  branches/open PRs were rechecked first and no unfinished successor or overlap
+  existed. PR #50 is open, draft and mergeable.
+- Fresh tactical v27 stores one strict MOVE/QUICK/HUNT string beside every
+  remaining editable blue authored leg in `route_modes`. Actual mode selection
+  plus right/Shift-right input can queue HUNT, QUICK and MOVE without rewriting
+  the active first leg. Gold nodes name each saved mode.
+- Reaching a changed-mode boundary stops at the exact authored node for the rest
+  of that second. The next tick applies the new pace and HUNT contact/pressure
+  gates, preventing leftover QUICK travel from entering HUNT incorrectly. Whole-
+  leg removal pops the paired mode without touching pause or earned response.
+- Strict validation rejects nine missing/extra/count/value/active-mode cases.
+  V26 exact same-mode append, mismatched-mode rejection and JSON shape/restart
+  pass without a `route_modes` field. Real v27 file reopen reconstructs the exact
+  labels, active mode, pause and response. Every mixed-mode combat tick validates
+  and matches an unrendered twin through its full result.
+- All 42 local Godot 4.5.1 entries, 26 terrain tests and diff check pass together.
+  Combined CI https://github.com/Austin-Ellefson/Wargame/actions/runs/40612832018
+  succeeded at code `19070b4097a015a2e70b5defd43359495230fb25` with all 19
+  rendered scripts. Artifact `12783698414`, digest
+  `sha256:30da540dcec5257900a0597399ed0735bb5c679e1a6f1db62a6ef490161dcaa5`,
+  was inspected: 61 logs, 60 PASS-bearing non-editor logs, zero script/error/
+  failure matches and 79 PNGs.
+- The 1280x720 planning frame visibly shows gold HUNT, QUICK and MOVE authored
+  nodes, WAIT 15s and the new mode-plus-Shift-right help. Actual execution at
+  00:03 shows witnessed shot lines, S1 -9R/SUP+18, 351 rounds/SUP17% and a queued
+  mixed-mode route. The readable 02:42 report shows blue 36/0/36, red 36/22/14,
+  objective 0s/75s and both sides' campaign consequences.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/per-leg-movement-modes
+  Import `project.godot` in Godot 4.5.1, press F5, select HUNT and right-click,
+  then select QUICK/MOVE before each Shift-right-click. Save/reopen and Execute.
+- V1–v26 fields/rules, campaign v2/result v1, deterministic paths, battle locks,
+  once-only losses, rollback, export/GIS and Windows launcher contracts remain
+  unchanged. Linux/headless/rendered CI does not establish Windows, CMBS editor,
+  individual-soldier navigation or realistic Combat Mission fidelity.
+- Next focused task: version per-leg timed pauses at authored nodes, with visible
+  delay labels and exact v1–v27 disk/resumed-combat parity.

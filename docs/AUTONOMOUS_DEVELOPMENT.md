@@ -1167,3 +1167,24 @@ This setup change contains instructions only; these missing tools must be addres
   report remain intact.
 - Next after validation: versioned per-leg MOVE/QUICK/HUNT choices using the new
   boundaries, with old-save parity and no hidden-information/RNG coupling.
+
+## Per-leg movement modes — ready for review 2026-10-27 (America/Chicago)
+
+- Branch `codex/per-leg-movement-modes`, draft PR #50, explicitly based on PR
+  #49 documentation head `d1807ffbf591f7921e22c7e63e51d8484fa80947`;
+  no overlapping successor, merge or task PR was present before publication.
+- Tactical v27 adds strict `route_modes` metadata parallel to each editable blue
+  route leg. Players can select MOVE/QUICK/HUNT before Shift-appending, gold
+  authored nodes name their modes, and a changed mode starts on the next whole
+  tick at its exact boundary. Removal and cleanup retain paired metadata.
+- V1–v26 retain exact saved shapes and behavior without migration. Campaign v2/
+  result v1, deterministic paths, locks, once-only losses, rollback, export/GIS
+  contracts and optional Windows launchers are preserved.
+- All 42 local Godot 4.5.1 entries, 26 terrain tests and diff check pass. Combined
+  CI 40612832018 passed all 19 rendered scripts. Artifact 12783698414 was
+  inspected: 61 logs, 60 PASS-bearing non-editor logs, no script/error/failure
+  matches and 79 PNGs. Planning visibly shows three differently named leg modes;
+  actual 00:03 fire/feedback and the readable 02:42 report remain intact.
+- Windows, CMBS and realistic Combat Mission fidelity remain unverified.
+- Next: versioned per-leg timed pauses at authored nodes with v1–v27 compatibility,
+  visible delay labels and exact disk/resumed-combat parity.
