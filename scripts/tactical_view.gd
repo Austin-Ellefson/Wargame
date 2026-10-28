@@ -256,7 +256,7 @@ func _build_interface() -> void:
     remove_waypoint_button.add_theme_font_size_override("font_size", 8)
     remove_waypoint_button.clip_text = true
     remove_waypoint_button.size = Vector2(102,26)
-    remove_waypoint_button.tooltip_text = "Planning only: remove the most recently authored route leg. Earlier legs, movement mode, timed pause and earned command-response time remain. A one-leg route uses HOLD cleanup."
+    remove_waypoint_button.tooltip_text = "Planning only: remove the most recently authored route leg. Earlier legs and their modes, timed pause and earned command-response time remain. A one-leg route uses HOLD cleanup."
     execute_button = _button("EXECUTE 60 SECONDS", Rect2(986, 540, 248, 32), _execute)
     speed_button = _button("PLAYBACK 4x", Rect2(986, 578, 86, 28), _cycle_playback_speed)
     speed_button.add_theme_font_size_override("font_size", 10)
@@ -583,7 +583,10 @@ func _map_input(event: InputEvent) -> void:
         _refresh()
     elif event.button_index == MOUSE_BUTTON_RIGHT and simulation.state["phase"] == "planning":
         var target := _ground_point(event.position)
-        var mode: String = simulation.movement_mode(selected) if event.shift_pressed and simulation.state["orders"].has(selected) else command_mode
+        # V27 attaches the currently selected mode to a newly appended authored
+        # leg. Older saves retain their one-mode queue and mismatched-mode guard.
+        var legacy_append: bool = event.shift_pressed and simulation.state["orders"].has(selected) and int(simulation.state["version"]) < 27
+        var mode: String = simulation.movement_mode(selected) if legacy_append else command_mode
         if target.x >= 0 and simulation.order_move(selected, target, true, mode, event.shift_pressed):
             _refresh()
 
@@ -1245,6 +1248,8 @@ func _refresh_order_preview() -> void:
             _mesh(marker, Vector3(point.x, Battle.terrain_height(point.x, point.y) + 1.0, point.y), marker_material, order_preview)
             var label := Label3D.new()
             label.text = "LEG %d" % (index + 1)
+            if int(simulation.state["version"]) >= 27 and simulation.state["route_modes"].has(selected):
+                label.text += " %s" % str(simulation.state["route_modes"][selected][index]).to_upper()
             label.font_size = 24
             label.pixel_size = 0.08
             label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
@@ -1469,7 +1474,7 @@ func _refresh() -> void:
     pause_button.disabled = hold_button.disabled or not state["orders"].has(selected)
     pause_button.text = "PAUSE %ds" % int(state["pause_remaining"].get(selected, 0)) if int(state["version"]) >= 8 and int(state["pause_remaining"].get(selected, 0)) > 0 else "PAUSE +15s"
     remove_waypoint_button.disabled = hold_button.disabled or not state["orders"].has(selected) or state["orders"].get(selected, []).is_empty() or (int(state["version"]) >= 26 and not state["route_legs"].has(selected))
-    remove_waypoint_button.tooltip_text = "Planning only: remove the most recently authored route leg. Earlier legs, movement mode, timed pause and earned command-response time remain. A one-leg route uses HOLD cleanup." if int(state["version"]) >= 26 else "Planning only: remove exactly the final saved route point. Earlier points, movement mode, timed pause and earned command-response time remain. A one-point route uses HOLD cleanup."
+    remove_waypoint_button.tooltip_text = "Planning only: remove the most recently authored route leg. Earlier legs and their modes, timed pause and earned command-response time remain. A one-leg route uses HOLD cleanup." if int(state["version"]) >= 27 else "Planning only: remove the most recently authored route leg. Earlier legs, movement mode, timed pause and earned command-response time remain. A one-leg route uses HOLD cleanup." if int(state["version"]) >= 26 else "Planning only: remove exactly the final saved route point. Earlier points, movement mode, timed pause and earned command-response time remain. A one-point route uses HOLD cleanup."
     execute_button.disabled = state["phase"] != "planning"
     execute_button.text = "%d SECONDS REMAINING" % state["remaining"] if state["phase"] == "execution" else "EXECUTE 60 SECONDS"
     back_button.disabled = state["phase"] == "execution"
@@ -1488,6 +1493,8 @@ func _refresh() -> void:
         report_label.text = "Mode + right-click. Amber = last seen."
     if int(state["version"]) >= 7:
         report_label.text = simulation.target_status(selected) + " | Shift-click target\nShift-right: append route leg" if int(state["version"]) >= 26 else simulation.target_status(selected) + " | Shift-click target\nShift-right: append route"
+    if int(state["version"]) >= 27:
+        report_label.text = simulation.target_status(selected) + " | Shift-click target\nMode + Shift-right: append leg"
     if area_armed: report_label.text = "AREA: left-click reachable ground.\nRight-click cancels cursor."
     if facing_armed: report_label.text = "FACE: left-click ground.\nRight-click or FACE cancels."
     if not selected_squad.is_empty() and simulation.morale_state(selected) == "broken":

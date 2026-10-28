@@ -133,6 +133,31 @@ retain their exact fields and point-by-point removal rules; loading never invent
 leg boundaries. Campaign v2, result v1, locks, once-only losses, rollback,
 exports/GIS and launchers are unchanged.
 
+## Per-leg movement modes (tactical v27)
+
+Fresh v27 battles add `route_modes`, a dictionary parallel to v26
+`route_legs`. Each editable blue route stores exactly one `move`, `quick` or
+`hunt` string for every remaining authored leg. The first entry must equal that
+squad's execution-facing `movement_modes` value. Missing or extra owners,
+empty/mismatched arrays, nonstring or unknown values, and a first-mode mismatch
+reject the complete save before restore.
+
+Right-click replacement stores the selected mode on the first leg. Selecting a
+different mode before Shift-right-click appends that mode without changing the
+active or earlier leg. Reaching a boundary consumes both first entries and makes
+the next mode active. If the mode changes, movement stops at the exact authored
+node for the rest of that simulation second; the next mode's pace and HUNT gates
+begin on the following whole tick. A same-mode boundary may use the existing
+remaining movement distance.
+
+Whole-leg removal pops the matching final mode without rerouting, moving,
+advancing time, querying contacts or sampling RNG. HOLD, death, withdrawal and
+route completion clear both maps. Timed pause and earned command-response time
+retain their existing semantics. V1–v25 retain their exact field shapes and
+point-removal rules; v26 retains `route_legs` and its original single mode for the
+whole route. Loading never invents per-leg modes. Campaign v2, result v1, locks,
+once-only losses, rollback, exports/GIS and launchers remain unchanged.
+
 ## Timed movement pauses (tactical v8)
 
 With a queued route, PAUSE cycles 0/15/30/60 simulated seconds. The squad waits

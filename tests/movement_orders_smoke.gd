@@ -19,6 +19,7 @@ func fixture(mode: String) -> RefCounted:
     battle.setup(PAYLOAD)
     battle.state["version"] = 15
     if int(battle.state["version"]) < 26: battle.state.erase("route_legs")
+    if int(battle.state["version"]) < 27: battle.state.erase("route_modes")
     if int(battle.state["version"]) < 23: battle.state.erase("cover_responses")
     battle.state.erase("acquisition")
     battle.state.erase("command_remaining")
@@ -102,6 +103,7 @@ func _run() -> void:
     queue.setup(PAYLOAD)
     queue.state["version"] = 15
     if int(queue.state["version"]) < 26: queue.state.erase("route_legs")
+    if int(queue.state["version"]) < 27: queue.state.erase("route_modes")
     if int(queue.state["version"]) < 23: queue.state.erase("cover_responses")
     queue.state.erase("acquisition")
     queue.state.erase("command_remaining")
@@ -136,6 +138,7 @@ func _run() -> void:
     planning.setup(PAYLOAD)
     planning.state["version"] = 15
     if int(planning.state["version"]) < 26: planning.state.erase("route_legs")
+    if int(planning.state["version"]) < 27: planning.state.erase("route_modes")
     if int(planning.state["version"]) < 23: planning.state.erase("cover_responses")
     planning.state.erase("acquisition")
     planning.state.erase("command_remaining")
@@ -157,6 +160,7 @@ func _run() -> void:
         var legacy = fixture("move")
         legacy.state["version"] = version
         if int(legacy.state["version"]) < 26: legacy.state.erase("route_legs")
+        if int(legacy.state["version"]) < 27: legacy.state.erase("route_modes")
         if int(legacy.state["version"]) < 23: legacy.state.erase("cover_responses")
         if int(legacy.state["version"]) < 15: legacy.state.erase("weapon_roles")
         if int(legacy.state["version"]) < 14: legacy.state.erase("postures")
@@ -186,6 +190,7 @@ func _run() -> void:
     game._play_demo()
     game.tactical_simulation.state["version"] = 15
     if int(game.tactical_simulation.state["version"]) < 26: game.tactical_simulation.state.erase("route_legs")
+    if int(game.tactical_simulation.state["version"]) < 27: game.tactical_simulation.state.erase("route_modes")
     if int(game.tactical_simulation.state["version"]) < 23: game.tactical_simulation.state.erase("cover_responses")
     game.tactical_simulation.state.erase("acquisition")
     game.tactical_simulation.state.erase("command_remaining")
