@@ -50,6 +50,7 @@ func real_fire_setup(sim: RefCounted) -> void:
 func legacy(sim: RefCounted) -> void:
     sim.state["version"] = 24
     if int(sim.state["version"]) < 26: sim.state.erase("route_legs")
+    if int(sim.state["version"]) < 27: sim.state.erase("route_modes")
     for record in sim.state["cover_responses"].values(): record.erase("retry_remaining")
 func finish(sim: RefCounted) -> void:
     for tick in range(400):
@@ -64,7 +65,7 @@ func capture_frame(name: String) -> void:
 func _run() -> void:
     root.size = Vector2i(1280,720)
     var sim = fixture()
-    check(sim.state["version"] == 26 and Battle.validate(sim.state,PAYLOAD),"Fresh v26 has valid retry and authored-route fields.")
+    check(sim.state["version"] == 27 and Battle.validate(sim.state,PAYLOAD),"Fresh v27 has valid retry, authored-route and per-leg-mode fields.")
     start(sim)
     sim._assign_route("RU_S1",Vector2(390,260),"hunt")
     sim.state["pause_remaining"]["RU_S1"] = 60
@@ -174,8 +175,9 @@ func _run() -> void:
     var normalized: Dictionary = quiet.state.duplicate(true)
     normalized["version"] = 24
     normalized.erase("route_legs")
+    normalized.erase("route_modes")
     for record in normalized["cover_responses"].values(): record.erase("retry_remaining")
-    check(same(normalized,quiet_old.state) and same(quiet.result(),quiet_old.result()),"Quiet v26 and v24 complete states/results are identical except their versioned fields.")
+    check(same(normalized,quiet_old.state) and same(quiet.result(),quiet_old.result()),"Quiet v27 and v24 complete states/results are identical except their versioned fields.")
     for index in range(9):
         var bad: Dictionary = pending.duplicate(true)
         var record: Dictionary = bad["cover_responses"]["RU_S1"]

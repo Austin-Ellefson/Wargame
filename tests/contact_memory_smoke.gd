@@ -34,6 +34,7 @@ func _run() -> void:
     game._play_demo()
     game.tactical_simulation.state["version"] = 15
     if int(game.tactical_simulation.state["version"]) < 26: game.tactical_simulation.state.erase("route_legs")
+    if int(game.tactical_simulation.state["version"]) < 27: game.tactical_simulation.state.erase("route_modes")
     if int(game.tactical_simulation.state["version"]) < 23: game.tactical_simulation.state.erase("cover_responses")
     game.tactical_simulation.state.erase("acquisition")
     game.tactical_simulation.state.erase("command_remaining")
@@ -114,6 +115,7 @@ func _run() -> void:
     legacy.setup(payload)
     legacy.state["version"] = 15
     if int(legacy.state["version"]) < 26: legacy.state.erase("route_legs")
+    if int(legacy.state["version"]) < 27: legacy.state.erase("route_modes")
     if int(legacy.state["version"]) < 23: legacy.state.erase("cover_responses")
     legacy.state.erase("acquisition")
     legacy.state.erase("command_remaining")
@@ -124,6 +126,7 @@ func _run() -> void:
     legacy.state.erase("area_fire")
     legacy.state["version"] = 3
     if int(legacy.state["version"]) < 26: legacy.state.erase("route_legs")
+    if int(legacy.state["version"]) < 27: legacy.state.erase("route_modes")
     if int(legacy.state["version"]) < 23: legacy.state.erase("cover_responses")
     if int(legacy.state["version"]) < 15: legacy.state.erase("weapon_roles")
     if int(legacy.state["version"]) < 14: legacy.state.erase("postures")

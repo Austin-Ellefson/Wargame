@@ -6,12 +6,12 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/route-leg-boundaries` descendant includes a planning-only terrain
+The newer `codex/per-leg-movement-modes` descendant includes a planning-only terrain
 LOS/range tool with current-position and explicitly hypothetical final-waypoint
 origins, smooth combat zoom, route previews,
 camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
 queued waypoints, timed pauses, local-contact reactions and cover-weighted red routes. The milestone
-branch above remains frozen. Fresh battles use tactical rules v26, including authored route-leg markers/removal, selected-squad visibility, delayed shared reports, spaced nearby cover and saved retries when friendlies block otherwise usable cover. See the five-step
+branch above remains frozen. Fresh battles use tactical rules v27, including authored route-leg modes/markers/removal, selected-squad visibility, delayed shared reports, spaced nearby cover and saved retries when friendlies block otherwise usable cover. See the five-step
 batch test guide in [FIVE_STEP_TACTICAL_PROGRESS.md](FIVE_STEP_TACTICAL_PROGRESS.md).
 
 ## Complete game loop
@@ -977,3 +977,26 @@ markers and results. V1–v25 saves are accepted without migration and continue 
 remove one stored coordinate at a time. This adds no enemy query, random sample,
 individual-soldier navigation, campaign/result/export/GIS change, or evidence of
 Windows/Combat Mission fidelity.
+
+## Per-leg movement modes (v27)
+
+On `codex/per-leg-movement-modes`, each blue authored route leg carries its own
+MOVE, QUICK or HUNT mode. Right-click replaces the route using the selected mode;
+choose another mode and Shift-right-click to append it. Gold labels display
+**LEG 1 HUNT**, **LEG 2 QUICK**, and so on, while the smaller blue dots continue
+to show pathfinder coordinates. Appending does not rewrite the active first leg.
+
+At a changed-mode boundary the squad reaches the exact authored node and spends
+no leftover distance from the prior mode beyond it. The next whole simulation
+tick applies the new pace and HUNT contact/pressure gates. Same-mode boundaries
+remain continuous. Removing the final authored leg removes its paired mode;
+pause and already-earned command response remain intact. The one-leg case still
+uses canonical HOLD cleanup.
+
+Tactical v27 persists `route_modes` parallel to v26 `route_legs` and validates
+their owner, count, value and active-first-mode agreement. Disk reopen reconstructs
+the labels and exact active mode. V1–v25 preserve their original fields and
+point-tail behavior; v26 preserves its exact fields and one mode for the whole
+route. No opponent knowledge, random draw, campaign/result/export/GIS contract or
+individual-soldier navigation is added. Linux checks do not establish Windows,
+CMBS editor or Combat Mission-level fidelity.

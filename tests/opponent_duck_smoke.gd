@@ -14,6 +14,7 @@ func fixture(hidden: bool = true) -> RefCounted:
     sim.setup(PAYLOAD)
     sim.state["version"] = 22 # Preserve the original duck-only fixture.
     if int(sim.state["version"]) < 26: sim.state.erase("route_legs")
+    if int(sim.state["version"]) < 27: sim.state.erase("route_modes")
     if int(sim.state["version"]) < 23: sim.state.erase("cover_responses")
     for squad in sim.state["squads"]:
         squad["ammo"] = 0
@@ -104,6 +105,7 @@ func _run() -> void:
     var legacy = fixture(false)
     legacy.state["version"] = 21
     if int(legacy.state["version"]) < 26: legacy.state.erase("route_legs")
+    if int(legacy.state["version"]) < 27: legacy.state.erase("route_modes")
     if int(legacy.state["version"]) < 23: legacy.state.erase("cover_responses")
     legacy.squad_by_id("RU_S1")["suppression"] = 0.6
     stationary(legacy)
@@ -113,12 +115,14 @@ func _run() -> void:
     var old = fixture(false)
     old.state["version"] = 21
     if int(old.state["version"]) < 26: old.state.erase("route_legs")
+    if int(old.state["version"]) < 27: old.state.erase("route_modes")
     if int(old.state["version"]) < 23: old.state.erase("cover_responses")
     finish(current)
     finish(old)
     var normalized: Dictionary = current.state.duplicate(true)
     normalized["version"] = 21
     normalized.erase("route_legs")
+    normalized.erase("route_modes")
     check(same(normalized,old.state) and same(current.result(),old.result()),"With no pressure the complete v22 campaign battle matches v21 fields/results.")
     # Actual campaign save/load with real received fire and autonomous pose.
     var game = load("res://scenes/main.tscn").instantiate()

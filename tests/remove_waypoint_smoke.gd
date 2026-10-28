@@ -8,10 +8,15 @@ func authored_labels(view: Control) -> Array[String]:
             labels.append(child.text)
     return labels
 
+func v26(sim: RefCounted) -> void:
+    sim.state["version"] = 26
+    sim.state.erase("route_modes")
+
 func _run() -> void:
     root.size = Vector2i(1280,720)
     var sim = Battle.new()
     sim.setup(PAYLOAD)
+    v26(sim)
     sim.squad_by_id("UKR_S1")["position"] = [180,245]
     var view = View.new()
     view.simulation = sim
@@ -86,6 +91,7 @@ func _run() -> void:
     # Direct boundary/rejection coverage proves bad contexts are no-ops.
     var boundary = Battle.new()
     boundary.setup(PAYLOAD)
+    v26(boundary)
     var untouched: Dictionary = boundary.state.duplicate(true)
     check(not boundary.order_remove_last_waypoint("UKR_S1") and same(untouched,boundary.state), "An absent route rejects without mutation.")
     check(not boundary.order_remove_last_waypoint("UNKNOWN") and same(untouched,boundary.state), "An unknown squad rejects without mutation.")
@@ -97,6 +103,7 @@ func _run() -> void:
     untouched = boundary.state.duplicate(true)
     check(not boundary.order_remove_last_waypoint("RU_S1") and same(untouched,boundary.state), "Execution rejects removal without mutation.")
     boundary.setup(PAYLOAD)
+    v26(boundary)
     check(boundary.order_move("UKR_S1",Vector2(210,245)), "Elimination and morale rejection fixture has a friendly route.")
     boundary.squad_by_id("UKR_S1")["alive"] = 0
     untouched = boundary.state.duplicate(true)
@@ -142,7 +149,9 @@ func _run() -> void:
     var legacy = Battle.new()
     legacy.setup(PAYLOAD)
     legacy.state["version"] = 25
+    legacy.state.erase("route_modes")
     if int(legacy.state["version"]) < 26: legacy.state.erase("route_legs")
+    if int(legacy.state["version"]) < 27: legacy.state.erase("route_modes")
     legacy.state.erase("route_legs")
     legacy.squad_by_id("UKR_S1")["position"] = [180,245]
     check(legacy.order_move("UKR_S1",Vector2(210,245),true,"quick") and legacy.order_move("UKR_S1",Vector2(250,245),true,"quick",true), "Legacy v25 fixture builds its original flattened route.")
@@ -155,6 +164,7 @@ func _run() -> void:
     # Persist a shortened multi-point route and verify a fresh view reconstructs
     # the button lifecycle, authored marker and preview solely from saved v26 data.
     sim.setup(PAYLOAD)
+    v26(sim)
     sim.squad_by_id("UKR_S1")["position"] = [180,245]
     check(sim.order_move("UKR_S1",Vector2(210,245),true,"quick") and sim.order_move("UKR_S1",Vector2(250,245),true,"quick",true) and sim.order_pause("UKR_S1",30), "Disk fixture has a multi-point QUICK route and pause.")
     sim.state["command_remaining"]["UKR_S1"] = 1
@@ -183,6 +193,7 @@ func _run() -> void:
     # rendered view must remain tick-identical to a headless twin.
     var combat = Battle.new()
     combat.setup(PAYLOAD)
+    v26(combat)
     combat.squad_by_id("UKR_S1")["position"] = [180,245]
     combat.squad_by_id("RU_S1")["position"] = [240,245]
     check(combat.order_move("UKR_S1",Vector2(210,245),true,"hunt") and combat.order_move("UKR_S1",Vector2(250,245),true,"hunt",true) and combat.order_pause("UKR_S1",15) and combat.order_remove_last_waypoint("UKR_S1"), "Combat fixture starts from a genuinely shortened HUNT route.")
