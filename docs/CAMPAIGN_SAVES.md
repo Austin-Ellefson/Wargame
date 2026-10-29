@@ -158,6 +158,31 @@ point-removal rules; v26 retains `route_legs` and its original single mode for t
 whole route. Loading never invents per-leg modes. Campaign v2, result v1, locks,
 once-only losses, rollback, exports/GIS and launchers remain unchanged.
 
+## Per-leg timed pauses (tactical v28)
+
+Fresh v28 battles add `route_pauses`, a dictionary parallel to `route_legs` and
+`route_modes`. Every remaining editable blue authored leg has one integer wait
+from 0 through 60 simulated seconds. Entry zero mirrors that squad's existing
+`pause_remaining` route-start wait exactly; later entries begin at the previous
+authored node before their corresponding leg. Missing/extra owners, empty or
+mismatched arrays, fractional/out-of-range values, and an active-wait mismatch
+reject the complete save before restore.
+
+**START** retains the established 0/15/30/60-second wait before the first leg.
+After Shift-right-click appends a leg, **LEG** independently cycles the wait before
+that newest leg. Reaching a boundary consumes the completed mode/wait pair, makes
+the next mode active and loads its wait. A positive wait stops at the exact gold
+node even when adjacent legs share a mode; spotting and firing continue. Each
+executed waiting second decrements both `pause_remaining` and the first saved
+entry, so mid-wait disk restart remains exact.
+
+Whole-leg removal pops its paired mode and wait without rerouting, moving,
+advancing time, querying contacts or sampling RNG. HOLD, death, withdrawal and
+route completion clear all three route maps. V1–v27 retain their exact field
+shapes and prior pause behavior; loading never invents per-leg waits. Campaign
+v2, result v1, locks, once-only losses, rollback, exports/GIS and launchers remain
+unchanged.
+
 ## Timed movement pauses (tactical v8)
 
 With a queued route, PAUSE cycles 0/15/30/60 simulated seconds. The squad waits

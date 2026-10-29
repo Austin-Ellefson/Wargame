@@ -16,6 +16,7 @@ func fixture(hidden: bool = true) -> RefCounted:
     sim.state["version"] = 23 # Preserve the original unspaced cover-response regression.
     if int(sim.state["version"]) < 26: sim.state.erase("route_legs")
     if int(sim.state["version"]) < 27: sim.state.erase("route_modes")
+    if int(sim.state["version"]) < 28: sim.state.erase("route_pauses")
     for response in sim.state["cover_responses"].values(): response.erase("retry_remaining")
     for squad in sim.state["squads"]:
         squad["ammo"] = 0
@@ -178,6 +179,7 @@ func _run() -> void:
     legacy.state["version"] = 22
     if int(legacy.state["version"]) < 26: legacy.state.erase("route_legs")
     if int(legacy.state["version"]) < 27: legacy.state.erase("route_modes")
+    if int(legacy.state["version"]) < 28: legacy.state.erase("route_pauses")
     legacy.state.erase("cover_responses")
     start(legacy)
     press(legacy,12)
@@ -187,6 +189,7 @@ func _run() -> void:
     quiet_old.state["version"] = 22
     if int(quiet_old.state["version"]) < 26: quiet_old.state.erase("route_legs")
     if int(quiet_old.state["version"]) < 27: quiet_old.state.erase("route_modes")
+    if int(quiet_old.state["version"]) < 28: quiet_old.state.erase("route_pauses")
     quiet_old.state.erase("cover_responses")
     finish(quiet)
     finish(quiet_old)
@@ -195,6 +198,7 @@ func _run() -> void:
     normalized["version"] = 22
     normalized.erase("route_legs")
     normalized.erase("route_modes")
+    normalized.erase("route_pauses")
     check(same(normalized,quiet_old.state) and same(quiet.result(),quiet_old.result()),"Complete quiet v23 and v22 outcomes/authoritative fields remain identical.")
     for index in range(14):
         var bad: Dictionary = active.duplicate(true)

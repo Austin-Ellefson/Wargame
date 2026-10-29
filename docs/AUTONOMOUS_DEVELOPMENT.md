@@ -1188,3 +1188,23 @@ This setup change contains instructions only; these missing tools must be addres
 - Windows, CMBS and realistic Combat Mission fidelity remain unverified.
 - Next: versioned per-leg timed pauses at authored nodes with v1–v27 compatibility,
   visible delay labels and exact disk/resumed-combat parity.
+
+## Per-leg timed pauses — in validation 2026-10-28 (America/Chicago)
+
+- Branch `codex/per-leg-timed-pauses`, based exactly on PR #50 head
+  `4fe819eb6d85862ca66a5d393165aa6c46582053`; branches and open PRs were
+  rechecked first and no unfinished successor, merge or overlap existed.
+- Tactical v28 adds strict `route_pauses` metadata parallel to every editable
+  blue authored leg. START edits the first wait; LEG edits the newest appended
+  leg's wait. Later waits activate at the previous gold node and stop leftover
+  movement there without changing spotting, firing or deterministic outcomes.
+- Actual-input regression covers mode/right/Shift-right/START/LEG/removal, 720p
+  control separation and visible delay labels. It also covers twelve malformed
+  saves, exact v27 shape/behavior, mid-wait JSON and file restart, RNG purity,
+  every resumed tick and full real-combat/report parity to an unrendered twin.
+- All 43 local Godot 4.5.1 entries, 26 terrain tests and diff check pass together.
+  Rendered CI and artifact inspection remain pending publication; Windows, CMBS
+  editor and realistic Combat Mission fidelity remain unverified.
+- Next after combined validation: transiently select an earlier authored leg so
+  its mode/wait can be revised in planning without removing later legs, rerouting,
+  changing authority/RNG, or adding hidden information.

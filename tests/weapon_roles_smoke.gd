@@ -14,6 +14,7 @@ func fixture(id: String) -> RefCounted:
     battle.state["version"] = 15
     if int(battle.state["version"]) < 26: battle.state.erase("route_legs")
     if int(battle.state["version"]) < 27: battle.state.erase("route_modes")
+    if int(battle.state["version"]) < 28: battle.state.erase("route_pauses")
     if int(battle.state["version"]) < 23: battle.state.erase("cover_responses")
     battle.state.erase("acquisition")
     battle.state.erase("command_remaining")
@@ -86,6 +87,7 @@ func _run() -> void:
     legacy.state["version"] = 14
     if int(legacy.state["version"]) < 26: legacy.state.erase("route_legs")
     if int(legacy.state["version"]) < 27: legacy.state.erase("route_modes")
+    if int(legacy.state["version"]) < 28: legacy.state.erase("route_pauses")
     if int(legacy.state["version"]) < 23: legacy.state.erase("cover_responses")
     legacy.state.erase("weapon_roles")
     check(Battle.validate(legacy.state,PAYLOAD) and legacy.weapon_role("UKR_S2") == "rifle", "V14 support-numbered squads retain original rifle behavior and field contract.")
@@ -117,6 +119,7 @@ func _run() -> void:
     game.tactical_simulation.state["version"] = 15
     if int(game.tactical_simulation.state["version"]) < 26: game.tactical_simulation.state.erase("route_legs")
     if int(game.tactical_simulation.state["version"]) < 27: game.tactical_simulation.state.erase("route_modes")
+    if int(game.tactical_simulation.state["version"]) < 28: game.tactical_simulation.state.erase("route_pauses")
     if int(game.tactical_simulation.state["version"]) < 23: game.tactical_simulation.state.erase("cover_responses")
     game.tactical_simulation.state.erase("acquisition")
     game.tactical_simulation.state.erase("command_remaining")

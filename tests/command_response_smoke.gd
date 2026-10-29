@@ -14,6 +14,7 @@ func fixture() -> RefCounted:
     sim.state["version"] = 17
     if int(sim.state["version"]) < 26: sim.state.erase("route_legs")
     if int(sim.state["version"]) < 27: sim.state.erase("route_modes")
+    if int(sim.state["version"]) < 28: sim.state.erase("route_pauses")
     if int(sim.state["version"]) < 23: sim.state.erase("cover_responses")
     sim.state.erase("shared_contacts")
     sim.state.erase("pending_reports")
@@ -92,6 +93,7 @@ func _run() -> void:
     legacy.state["version"] = 16
     if int(legacy.state["version"]) < 26: legacy.state.erase("route_legs")
     if int(legacy.state["version"]) < 27: legacy.state.erase("route_modes")
+    if int(legacy.state["version"]) < 28: legacy.state.erase("route_pauses")
     if int(legacy.state["version"]) < 23: legacy.state.erase("cover_responses")
     legacy.state.erase("command_remaining")
     legacy.state.erase("shared_contacts")
@@ -126,6 +128,7 @@ func _run() -> void:
     game.tactical_simulation.state["version"] = 17
     if int(game.tactical_simulation.state["version"]) < 26: game.tactical_simulation.state.erase("route_legs")
     if int(game.tactical_simulation.state["version"]) < 27: game.tactical_simulation.state.erase("route_modes")
+    if int(game.tactical_simulation.state["version"]) < 28: game.tactical_simulation.state.erase("route_pauses")
     if int(game.tactical_simulation.state["version"]) < 23: game.tactical_simulation.state.erase("cover_responses")
     game.tactical_simulation.state.erase("shared_contacts")
     game.tactical_simulation.state.erase("pending_reports")

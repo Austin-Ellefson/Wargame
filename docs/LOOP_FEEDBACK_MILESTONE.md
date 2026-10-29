@@ -1771,3 +1771,29 @@ is delivered as the scheduled task result in ChatGPT.
   individual-soldier navigation or realistic Combat Mission fidelity.
 - Next focused task: version per-leg timed pauses at authored nodes, with visible
   delay labels and exact v1–v27 disk/resumed-combat parity.
+
+## Per-leg timed pauses — local candidate 2026-10-28 (America/Chicago)
+
+- Branch `codex/per-leg-timed-pauses`, based exactly on open draft PR #50 head
+  `4fe819eb6d85862ca66a5d393165aa6c46582053`; remote branches/open PRs were
+  rechecked and no unfinished successor or overlap existed.
+- Fresh tactical v28 stores one strict integer wait beside every remaining
+  editable blue leg in `route_pauses`. START edits the active first entry while
+  LEG edits the newest appended entry without resetting the active wait or earned
+  response. Gold nodes visibly show the delay that begins there before the next
+  leg.
+- Boundary execution consumes the completed mode/wait pair, activates the next
+  mode and holds exactly at the authored node for a positive wait. Mid-wait state,
+  mode/HUNT gates, file restart and every authoritative tick match an unrendered
+  twin through the completed battle report. Whole-leg removal drops only its
+  paired final mode/wait and samples no RNG.
+- Strict validation rejects twelve missing/extra/count/value/active-wait cases.
+  V1–v27 retain exact saved shapes and behavior without migration. Campaign v2/
+  result v1, deterministic paths, battle locks, once-only loss, rollback,
+  export/GIS and optional Windows launcher contracts remain unchanged.
+- All 43 local Godot 4.5.1 entries, 26 terrain tests and diff check pass together.
+  Combined rendered CI/artifact inspection is still pending publication; this
+  does not establish Windows, CMBS editor or realistic Combat Mission fidelity.
+- Next after combined validation: transient selection/editing of an earlier
+  authored leg's mode/wait without rerouting, save-schema growth, authority/RNG
+  mutation or hidden-information access.

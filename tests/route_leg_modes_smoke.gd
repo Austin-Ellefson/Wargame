@@ -1,10 +1,15 @@
 extends "res://tests/remove_waypoint_smoke.gd"
 # Reuse actual input/render/disk helpers; override the inherited v26 run.
 
+func v27(sim: RefCounted) -> void:
+    sim.state["version"] = 27
+    sim.state.erase("route_pauses")
+
 func _run() -> void:
     root.size = Vector2i(1280,720)
     var sim = Battle.new()
     sim.setup(PAYLOAD)
+    v27(sim)
     sim.squad_by_id("UKR_S1")["position"] = [180,245]
     var view = View.new()
     view.simulation = sim
@@ -74,6 +79,7 @@ func _run() -> void:
     legacy.setup(PAYLOAD)
     legacy.state["version"] = 26
     legacy.state.erase("route_modes")
+    legacy.state.erase("route_pauses")
     legacy.squad_by_id("UKR_S1")["position"] = [180,245]
     check(legacy.order_move("UKR_S1",Vector2(210,245),true,"hunt"), "V26 accepts its original first route mode.")
     var legacy_before: Dictionary = legacy.state.duplicate(true)
@@ -88,6 +94,7 @@ func _run() -> void:
     # being entered using leftover QUICK movement in the boundary tick.
     var pacing = Battle.new()
     pacing.setup(PAYLOAD)
+    v27(pacing)
     for squad in pacing.state["squads"]: squad["ammo"] = 0
     pacing.squad_by_id("UKR_S1")["position"] = [100.0,100.0]
     pacing.state["orders"]["UKR_S1"] = [[102.0,100.0],[105.0,100.0],[112.0,100.0]]
@@ -133,6 +140,7 @@ func _run() -> void:
     # comparing the rendered instance to an unrendered authoritative twin.
     var combat = Battle.new()
     combat.setup(PAYLOAD)
+    v27(combat)
     combat.squad_by_id("UKR_S1")["position"] = [180,245]
     combat.squad_by_id("RU_S1")["position"] = [240,245]
     check(combat.order_move("UKR_S1",Vector2(205,245),true,"move") and combat.order_move("UKR_S1",Vector2(250,245),true,"quick",true) and combat.order_move("UKR_S1",Vector2(280,245),true,"hunt",true), "Combat fixture queues real MOVE, QUICK and HUNT legs.")
