@@ -1,13 +1,18 @@
 # Continue from per-leg timed pauses
 
-Current candidate: `codex/per-leg-timed-pauses`, explicitly based on open draft
-PR #50 head `4fe819eb6d85862ca66a5d393165aa6c46582053`. Fresh tactical
-v28 stores one bounded wait beside every editable blue authored leg, distinguishes
+Latest validated descendant: `codex/per-leg-timed-pauses`, draft PR #51,
+explicitly based on PR #50 head `4fe819eb6d85862ca66a5d393165aa6c46582053`.
+Feature code: `16d7b7afe3259694779abc035dac552cca1cbb04`; evidence head:
+`d1817eaac2f5327d090647d98c702b49555cd2bf`. Fresh tactical v28
+stores one bounded wait beside every editable blue authored leg, distinguishes
 START from the newest LEG wait, labels the gold node where a later wait begins,
 and stops at that exact boundary. V1–v27 keep exact fields and behavior without
-migration. All 43 local Godot 4.5.1 entries and 26 terrain tests pass together.
-Publish/reuse its draft PR, run combined rendered CI and inspect the actual
-planning, firing and completed-report artifact before treating it as validated.
+migration. All 43 Godot 4.5.1 entries, 20 rendered scripts and 26 terrain tests
+passed in combined CI https://github.com/Austin-Ellefson/Wargame/actions/runs/40795213690.
+Artifact 12864046001 was inspected: 63 logs, 62 PASS-bearing non-editor logs, no
+script errors and 82 PNGs including planning labels, actual 00:03 fire/feedback
+and the readable 03:00 completed report. Check PR #51's final documentation-head
+CI before dependent work.
 
 Next focused task only after combined validation: transiently select an earlier
 authored leg so its mode/wait can be revised in planning without removing later
