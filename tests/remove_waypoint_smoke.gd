@@ -11,6 +11,7 @@ func authored_labels(view: Control) -> Array[String]:
 func v26(sim: RefCounted) -> void:
     sim.state["version"] = 26
     sim.state.erase("route_modes")
+    sim.state.erase("route_pauses")
 
 func _run() -> void:
     root.size = Vector2i(1280,720)
@@ -150,6 +151,7 @@ func _run() -> void:
     legacy.setup(PAYLOAD)
     legacy.state["version"] = 25
     legacy.state.erase("route_modes")
+    legacy.state.erase("route_pauses")
     if int(legacy.state["version"]) < 26: legacy.state.erase("route_legs")
     if int(legacy.state["version"]) < 27: legacy.state.erase("route_modes")
     legacy.state.erase("route_legs")

@@ -6,12 +6,12 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/per-leg-movement-modes` descendant includes a planning-only terrain
+The newer `codex/per-leg-timed-pauses` descendant includes a planning-only terrain
 LOS/range tool with current-position and explicitly hypothetical final-waypoint
 origins, smooth combat zoom, route previews,
 camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
 queued waypoints, timed pauses, local-contact reactions and cover-weighted red routes. The milestone
-branch above remains frozen. Fresh battles use tactical rules v27, including authored route-leg modes/markers/removal, selected-squad visibility, delayed shared reports, spaced nearby cover and saved retries when friendlies block otherwise usable cover. See the five-step
+branch above remains frozen. Fresh battles use tactical rules v28, including authored route-leg modes/waits/markers/removal, selected-squad visibility, delayed shared reports, spaced nearby cover and saved retries when friendlies block otherwise usable cover. See the five-step
 batch test guide in [FIVE_STEP_TACTICAL_PROGRESS.md](FIVE_STEP_TACTICAL_PROGRESS.md).
 
 ## Complete game loop
@@ -1000,3 +1000,27 @@ point-tail behavior; v26 preserves its exact fields and one mode for the whole
 route. No opponent knowledge, random draw, campaign/result/export/GIS contract or
 individual-soldier navigation is added. Linux checks do not establish Windows,
 CMBS editor or Combat Mission-level fidelity.
+
+## Per-leg timed pauses (v28)
+
+On `codex/per-leg-timed-pauses`, **START** cycles the established wait before the
+first route leg while **LEG** independently cycles the wait before the newest
+appended leg. Each uses 0/15/30/60 simulated seconds. A later wait is displayed
+on the prior gold authored node, where it will actually begin; it does not start
+at order entry or rewrite the active start wait. Append and wait editing retain
+the current five-second command response.
+
+At a route boundary, the completed leg's mode and wait are consumed together.
+The next mode becomes active immediately, but a positive wait holds the exact
+authored position for its full number of whole execution ticks before movement.
+Spotting, firing, suppression, fatigue recovery and damage continue normally.
+Mode changes and HUNT gates still apply after the wait, and no leftover distance
+from the prior leg crosses a waiting boundary. **REMOVE LEG** pops the paired
+newest mode/wait; one leg still uses canonical HOLD cleanup.
+
+Tactical v28 persists strict `route_pauses` metadata beside v26 `route_legs` and
+v27 `route_modes`. Disk reopen during a partial node wait reconstructs the exact
+remaining seconds, labels, route and outcome. V1–v27 preserve their original
+fields and behavior without migration. No opponent knowledge, random draw,
+campaign/result/export/GIS contract or individual-soldier navigation is added.
+Linux checks do not establish Windows, CMBS editor or Combat Mission fidelity.

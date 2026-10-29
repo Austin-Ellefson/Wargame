@@ -1,24 +1,23 @@
-# Continue from per-leg movement modes
+# Continue from per-leg timed pauses
 
-Latest validated descendant: `codex/per-leg-movement-modes`, draft PR #50,
-explicitly based on validated PR #49 documentation head
-`d1807ffbf591f7921e22c7e63e51d8484fa80947`. Tested code:
-`19070b4097a015a2e70b5defd43359495230fb25`.
-Fresh tactical v27 stores one MOVE/QUICK/HUNT choice beside every remaining
-player-authored blue leg, labels each gold destination with that mode and changes
-pace/gates at the exact authored boundary. V1–v26 keep exact fields and behavior
-without migration. All 42 local Godot 4.5.1 entries and 26 terrain tests passed.
-Combined CI https://github.com/Austin-Ellefson/Wargame/actions/runs/40612832018
-succeeded with all 19 rendered scripts. Artifact 12783698414 was inspected: 61
-logs, 60 PASS-bearing non-editor logs, no script errors and 79 PNGs. Check PR
-#50's final documentation-head CI before dependent work.
+Latest validated descendant: `codex/per-leg-timed-pauses`, draft PR #51,
+explicitly based on PR #50 head `4fe819eb6d85862ca66a5d393165aa6c46582053`.
+Feature code: `16d7b7afe3259694779abc035dac552cca1cbb04`; evidence head:
+`d1817eaac2f5327d090647d98c702b49555cd2bf`. Fresh tactical v28
+stores one bounded wait beside every editable blue authored leg, distinguishes
+START from the newest LEG wait, labels the gold node where a later wait begins,
+and stops at that exact boundary. V1–v27 keep exact fields and behavior without
+migration. All 43 Godot 4.5.1 entries, 20 rendered scripts and 26 terrain tests
+passed in combined CI https://github.com/Austin-Ellefson/Wargame/actions/runs/40795213690.
+Artifact 12864046001 was inspected: 63 logs, 62 PASS-bearing non-editor logs, no
+script errors and 82 PNGs including planning labels, actual 00:03 fire/feedback
+and the readable 03:00 completed report. Check PR #51's final documentation-head
+CI before dependent work.
 
-Next focused task after combined validation: version per-leg timed pauses so the
-player can attach a bounded delay to a later authored node without restarting the
-route's current pause or earned command response. Preserve v1–v27 save behavior,
-mode-boundary semantics, deterministic path points, authored-node removal and
-exact disk/resumed-combat parity. Display each queued delay without leaking hidden
-information or consuming RNG. Do not duplicate an unfinished successor.
+Next focused task only after combined validation: transiently select an earlier
+authored leg so its mode/wait can be revised in planning without removing later
+legs, rerouting, changing the v28 save schema, consuming RNG or reading hidden
+information. Do not duplicate an unfinished successor.
 
 ## Prior validated hypothetical waypoint probe
 
@@ -52,8 +51,9 @@ or decorative tree mesh. CLEAR is not spotting, fire permission or hit probabili
 No arrival, future posture/target, path-safety or individual soldier prediction.
 Dense/distant labels and decorative tree/HUD occlusion remain limitations.
 
-Fresh battles use tactical v27: per-leg modes sit above v26 route boundaries and
-the unchanged v25 crowded-cover retry rules. V1–v26 retain original fields and behavior.
+Fresh battles use tactical v28: per-leg waits sit above v27 modes, v26 route
+boundaries and the unchanged v25 crowded-cover retry rules. V1–v27 retain original
+fields and behavior.
 Preserve exact disk continuation and all movement gates. These are abstract
 squad behaviors, not individual collision avoidance or validated combat realism.
 

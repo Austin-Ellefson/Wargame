@@ -21,9 +21,9 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/per-leg-movement-modes / PR #50
-- Latest post-milestone code/evidence commit: 19070b4097a015a2e70b5defd43359495230fb25
-- Post-milestone next task after validation: per-leg timed pauses at authored nodes
+- Latest validated post-milestone descendant: codex/per-leg-timed-pauses / PR #51
+- Latest post-milestone code/evidence commit: 16d7b7afe3259694779abc035dac552cca1cbb04
+- Post-milestone next task after validation: select/edit an earlier authored leg
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -1771,3 +1771,49 @@ is delivered as the scheduled task result in ChatGPT.
   individual-soldier navigation or realistic Combat Mission fidelity.
 - Next focused task: version per-leg timed pauses at authored nodes, with visible
   delay labels and exact v1–v27 disk/resumed-combat parity.
+
+## Per-leg timed pauses — validated 2026-10-28 (America/Chicago)
+
+- Branch `codex/per-leg-timed-pauses`, draft PR #51, based exactly on open draft
+  PR #50 head `4fe819eb6d85862ca66a5d393165aa6c46582053`;
+  remote branches/open PRs were rechecked and no unfinished successor or overlap
+  existed.
+- Fresh tactical v28 stores one strict integer wait beside every remaining
+  editable blue leg in `route_pauses`. START edits the active first entry while
+  LEG edits the newest appended entry without resetting the active wait or earned
+  response. Gold nodes visibly show the delay that begins there before the next
+  leg.
+- Boundary execution consumes the completed mode/wait pair, activates the next
+  mode and holds exactly at the authored node for a positive wait. Mid-wait state,
+  mode/HUNT gates, file restart and every authoritative tick match an unrendered
+  twin through the completed battle report. Whole-leg removal drops only its
+  paired final mode/wait and samples no RNG.
+- Strict validation rejects twelve missing/extra/count/value/active-wait cases.
+  V1–v27 retain exact saved shapes and behavior without migration. Campaign v2/
+  result v1, deterministic paths, battle locks, once-only loss, rollback,
+  export/GIS and optional Windows launcher contracts remain unchanged.
+- Feature code `16d7b7afe3259694779abc035dac552cca1cbb04`: all 43 local
+  Godot 4.5.1 entries, 26 terrain tests and diff check pass together. Combined CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/40795213690 succeeded
+  at evidence head `d1817eaac2f5327d090647d98c702b49555cd2bf` with all
+  20 rendered scripts.
+- Artifact `12864046001`, digest
+  `sha256:1f9cc06dcb0c42be38b35e3b4d63d99dfdeb930d40581e6e98ebf551a6dc14ed`,
+  was downloaded and inspected: 63 logs, 62 PASS-bearing non-editor logs, zero
+  script/error/failure matches and 82 PNGs. The first passing run exposed that
+  the new PNGs were absent from the upload manifest; `d1817ea` added the exact
+  pattern and the full workflow was rerun before validation.
+- The 1280x720 planning frame visibly separates HOLD, START 15s, LEG 30s and
+  REMOVE LEG and labels gold HUNT/QUICK/MOVE nodes with their future waits. The
+  actual 00:03 frame shows three witnessed shots, S1 -9R/SUP+18, S1 351R/SUP17%
+  and 12 seconds of its active start wait. The readable 03:00 report shows blue
+  36/0/36, red 36/24/12, objective 0s/92s and both sides' campaign consequences.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/per-leg-timed-pauses
+  Import `project.godot` in Godot 4.5.1, press F5, queue HUNT with right-click,
+  then QUICK/MOVE with Shift-right-click and use START/LEG before save/reopen and
+  Execute.
+- Linux/headless/rendered CI does not establish Windows, CMBS editor, individual-
+  soldier navigation or realistic Combat Mission fidelity.
+- Next after combined validation: transient selection/editing of an earlier
+  authored leg's mode/wait without rerouting, save-schema growth, authority/RNG
+  mutation or hidden-information access.

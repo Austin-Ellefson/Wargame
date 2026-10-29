@@ -16,6 +16,7 @@ func fixture() -> RefCounted:
     sim.state["version"] = 24 # Preserve the original no-retry spacing rules.
     if int(sim.state["version"]) < 26: sim.state.erase("route_legs")
     if int(sim.state["version"]) < 27: sim.state.erase("route_modes")
+    if int(sim.state["version"]) < 28: sim.state.erase("route_pauses")
     for response in sim.state["cover_responses"].values(): response.erase("retry_remaining")
     for squad in sim.state["squads"]:
         squad["ammo"] = 0
@@ -69,6 +70,7 @@ func _run() -> void:
     legacy.state["version"] = 23
     if int(legacy.state["version"]) < 26: legacy.state.erase("route_legs")
     if int(legacy.state["version"]) < 27: legacy.state.erase("route_modes")
+    if int(legacy.state["version"]) < 28: legacy.state.erase("route_pauses")
     for id in RED_IDS: legacy.squad_by_id(id)["position"] = [338,212]
     start(legacy)
     press(legacy, 6)
@@ -153,12 +155,14 @@ func _run() -> void:
     quiet_old.state["version"] = 23
     if int(quiet_old.state["version"]) < 26: quiet_old.state.erase("route_legs")
     if int(quiet_old.state["version"]) < 27: quiet_old.state.erase("route_modes")
+    if int(quiet_old.state["version"]) < 28: quiet_old.state.erase("route_pauses")
     finish(quiet)
     finish(quiet_old)
     var normalized: Dictionary = quiet.state.duplicate(true)
     normalized["version"] = 23
     normalized.erase("route_legs")
     normalized.erase("route_modes")
+    normalized.erase("route_pauses")
     check(same(normalized,quiet_old.state) and same(quiet.result(),quiet_old.result()), "Without cover competition, complete v24 and v23 quiet states/results match.")
     # Actual campaign disk checkpoint after real support volleys cause two detours.
     var game = load("res://scenes/main.tscn").instantiate()

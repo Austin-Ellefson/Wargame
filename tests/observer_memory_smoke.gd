@@ -14,6 +14,7 @@ func fixture() -> RefCounted:
     sim.state["version"] = 19
     if int(sim.state["version"]) < 26: sim.state.erase("route_legs")
     if int(sim.state["version"]) < 27: sim.state.erase("route_modes")
+    if int(sim.state["version"]) < 28: sim.state.erase("route_pauses")
     if int(sim.state["version"]) < 23: sim.state.erase("cover_responses")
     sim.state.erase("facing_orders")
     sim.state.erase("area_fire")
@@ -116,6 +117,7 @@ func _run() -> void:
     legacy.state["version"] = 18
     if int(legacy.state["version"]) < 26: legacy.state.erase("route_legs")
     if int(legacy.state["version"]) < 27: legacy.state.erase("route_modes")
+    if int(legacy.state["version"]) < 28: legacy.state.erase("route_pauses")
     if int(legacy.state["version"]) < 23: legacy.state.erase("cover_responses")
     legacy.state.erase("observer_contacts")
     legacy.state.erase("facing_orders")
@@ -129,6 +131,7 @@ func _run() -> void:
     authoritative["version"] = 18
     authoritative.erase("route_legs")
     authoritative.erase("route_modes")
+    authoritative.erase("route_pauses")
     authoritative.erase("observer_contacts")
     authoritative.erase("facing_orders")
     authoritative.erase("area_fire")
