@@ -67,6 +67,7 @@ jobs:
             ${{ runner.temp }}/review-navigation-*-preview.png
             ${{ runner.temp }}/remove-waypoint-*-preview.png
             ${{ runner.temp }}/route-modes-*-preview.png
+            ${{ runner.temp }}/route-pauses-*-preview.png
             ${{ runner.temp }}/soldiers-*-motion-*.png
             ${{ runner.temp }}/soldiers-recoil-*.png
             ${{ runner.temp }}/soldiers-stand-preview.png
