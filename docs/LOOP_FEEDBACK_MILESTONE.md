@@ -21,9 +21,9 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/per-leg-timed-pauses / PR #51
-- Latest post-milestone code/evidence commit: 16d7b7afe3259694779abc035dac552cca1cbb04
-- Post-milestone next task after validation: select/edit an earlier authored leg
+- Latest validated post-milestone descendant: codex/edit-earlier-route-leg / PR #52
+- Latest post-milestone code/evidence commit: 6c1039f9410898a012a92eb7482ea793a402c650
+- Post-milestone next task after validation: retarget a selected authored destination
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -1818,7 +1818,7 @@ is delivered as the scheduled task result in ChatGPT.
   authored leg's mode/wait without rerouting, save-schema growth, authority/RNG
   mutation or hidden-information access.
 
-## Earlier authored-leg editing — in validation 2026-10-30 (America/Chicago)
+## Earlier authored-leg editing — validated 2026-10-30 (America/Chicago)
 
 - `codex/edit-earlier-route-leg` starts exactly from tested PR #51 documentation
   head `6dee130a0f4b1ef0af3e106f0a32fa6b497a44f5`; branches/open PRs were rechecked
@@ -1831,8 +1831,15 @@ is delivered as the scheduled task result in ChatGPT.
   invalid/enemy/v27 no-ops, event/global-RNG purity, exact wait/HUNT boundary
   behavior, disk reopen, every real-combat tick and full-result twin parity. Real
   shots and the completed report are reached. All 44 local Godot 4.5.1 logic/
-  editor entries and 26 terrain tests pass; rendered CI/artifact evidence remains
-  pending because this host has no usable X display.
+  editor entries and 26 terrain tests pass.
+- Feature code `6c1039f9410898a012a92eb7482ea793a402c650`: combined CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/41153756976 passed all
+  21 rendered scripts. Artifact `13024880746`, digest
+  `sha256:72c6e97490092e558803c867385a7cfc124085a946ebbc4111c75506bcf2bcdf`,
+  was inspected: 65 logs, 64 PASS-bearing non-editor logs, zero script/error/
+  failure matches and 85 PNGs. Planning clearly shows the selected cyan `[EDIT]`
+  marker and exact mode/wait help; actual 00:03 firing/feedback and the readable
+  02:42 two-sided objective/consequence report remain intact.
 - Tactical v28/campaign v2/result v1, deterministic restart, battle locks,
   bounded once-only losses, rollback, exports/GIS and optional Windows launchers
   remain unchanged. No Windows, CMBS editor or realistic Combat Mission fidelity

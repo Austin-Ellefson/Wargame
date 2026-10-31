@@ -1,7 +1,7 @@
 # Continue from earlier authored-leg editing
 
-Current validation descendant: `codex/edit-earlier-route-leg`, explicitly based
-on the tested PR #51 documentation head
+Latest validated descendant: `codex/edit-earlier-route-leg`, draft PR #52,
+explicitly based on the tested PR #51 documentation head
 `6dee130a0f4b1ef0af3e106f0a32fa6b497a44f5`. It transiently selects any gold
 authored marker during planning and edits that exact leg's MOVE/QUICK/HUNT mode
 or pre-leg wait. A cyan **[EDIT]** marker, selected-mode star, numbered wait
@@ -9,15 +9,17 @@ control and command help identify the target. It preserves the future append-mod
 selector, route geometry, boundaries, later legs and earned response time.
 
 The implementation reuses tactical v28 `route_modes`/`route_pauses`; selection
-is not saved and V1–v27 remain exact. Focused coverage passes actual input, both
-first/later leg edits, invalid/v27 isolation, RNG/event purity, exact boundary
-activation, JSON disk reopen, every rendered/headless combat tick, real shots and
-the completed report. All 44 local Godot 4.5.1 logic/editor entries and 26 terrain
-tests pass; this host lacks a usable Xvfb display, so rendered CI/artifact evidence
-is still required before the branch becomes the latest validated descendant.
+is not saved and V1–v27 remain exact. Feature code
+`6c1039f9410898a012a92eb7482ea793a402c650` passed all 44 Godot 4.5.1
+logic/editor entries, 21 rendered scripts and 26 terrain tests in combined CI
+https://github.com/Austin-Ellefson/Wargame/actions/runs/41153756976. Artifact
+13024880746 was inspected: 65 logs, 64 PASS-bearing non-editor logs, zero script/
+error/failure matches and 85 PNGs. The new planning frame shows the cyan `[EDIT]`
+leg and exact wait/mode help; actual 00:03 shots/feedback and the readable 02:42
+two-sided report remain intact.
 
-Reuse this branch/PR if it is unfinished; do not duplicate it. After its combined
-validation, the next focused planning task may retarget a selected authored
+Check PR #52's final documentation-head CI before dependent work and do not
+duplicate the completed editor. The next focused planning task may retarget a selected authored
 destination with deterministic affected-segment rerouting and exact later-leg,
 save/restart and outcome parity. Keep that separate from the current editor.
 
