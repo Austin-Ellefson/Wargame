@@ -1817,3 +1817,23 @@ is delivered as the scheduled task result in ChatGPT.
 - Next after combined validation: transient selection/editing of an earlier
   authored leg's mode/wait without rerouting, save-schema growth, authority/RNG
   mutation or hidden-information access.
+
+## Earlier authored-leg editing — in validation 2026-10-30 (America/Chicago)
+
+- `codex/edit-earlier-route-leg` starts exactly from tested PR #51 documentation
+  head `6dee130a0f4b1ef0af3e106f0a32fa6b497a44f5`; branches/open PRs were rechecked
+  and no unfinished successor or overlap existed.
+- A real planning click on any gold authored destination transiently selects that
+  leg. Cyan `[EDIT]` marker/help and the existing mode/START/numbered wait controls
+  revise only its saved v28 mode/wait. The future append selector, complete route,
+  boundaries, later legs and earned response remain exact.
+- Focused validation covers actual input, LEG 1 and earlier/later changes,
+  invalid/enemy/v27 no-ops, event/global-RNG purity, exact wait/HUNT boundary
+  behavior, disk reopen, every real-combat tick and full-result twin parity. Real
+  shots and the completed report are reached. All 44 local Godot 4.5.1 logic/
+  editor entries and 26 terrain tests pass; rendered CI/artifact evidence remains
+  pending because this host has no usable X display.
+- Tactical v28/campaign v2/result v1, deterministic restart, battle locks,
+  bounded once-only losses, rollback, exports/GIS and optional Windows launchers
+  remain unchanged. No Windows, CMBS editor or realistic Combat Mission fidelity
+  is claimed.

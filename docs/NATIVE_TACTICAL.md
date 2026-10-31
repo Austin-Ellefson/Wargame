@@ -6,7 +6,7 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/per-leg-timed-pauses` descendant includes a planning-only terrain
+The newer `codex/edit-earlier-route-leg` descendant includes a planning-only terrain
 LOS/range tool with current-position and explicitly hypothetical final-waypoint
 origins, smooth combat zoom, route previews,
 camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
@@ -1024,3 +1024,27 @@ remaining seconds, labels, route and outcome. V1–v27 preserve their original
 fields and behavior without migration. No opponent knowledge, random draw,
 campaign/result/export/GIS contract or individual-soldier navigation is added.
 Linux checks do not establish Windows, CMBS editor or Combat Mission fidelity.
+
+## Editing an earlier authored leg (v28, no save change)
+
+On `codex/edit-earlier-route-leg`, left-click any gold authored route destination
+during planning to select its leg. The marker grows, turns cyan and adds **[EDIT]**;
+the command help names that leg's saved mode and wait. MOVE/QUICK/HUNT then changes
+only the selected leg. **START** changes LEG 1's pre-leg wait; for a later leg the
+numbered **L2/L3...** button changes that leg's wait. The separate mode selector
+for a future right/Shift-right-click is retained while editing.
+
+Changing LEG 1 also updates the execution-facing mode and active start wait.
+Changing a later leg leaves the active leg, complete route coordinates, authored
+boundaries, later legs and earned command response untouched. Existing boundary
+execution applies the revised mode/wait only when that leg becomes active. Click
+the marker again, empty ground, another friendly or press Escape to clear the
+transient selection. A new route, REMOVE LEG, HOLD or execution also clears it.
+
+The editor reuses validated v28 `route_modes` and `route_pauses`; no save field or
+version was added. Reopening reconstructs the edited command but no selection.
+Selection/editing creates no event, clock tick, route search, hidden-information
+query or RNG sample. V1–v27 retain exact fields and behavior. Campaign v2/result
+v1, battle locks, once-only loss application, rollback, exports/GIS and Windows
+launchers remain unchanged. Linux checks do not establish Windows, CMBS editor,
+individual-soldier navigation or Combat Mission fidelity.

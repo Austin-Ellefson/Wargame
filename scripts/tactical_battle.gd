@@ -653,6 +653,22 @@ func order_leg_pause(id: String, seconds: Variant, leg_index: int = -1, player: 
         state["pause_remaining"][id] = int(seconds)
     return true
 
+func order_leg_mode(id: String, mode: String, leg_index: int, player: bool = true) -> bool:
+    var squad := squad_by_id(id)
+    if int(state["version"]) < 28 or state["phase"] != "planning" or mode not in ["move", "quick", "hunt"] or squad.is_empty() or int(squad["alive"]) <= 0 or morale_state(id) == "broken" or (player and squad["faction"] != "UKR"):
+        return false
+    var modes = state["route_modes"].get(id)
+    if not modes is Array or leg_index < 0 or leg_index >= modes.size():
+        return false
+    modes = modes.duplicate()
+    modes[leg_index] = mode
+    state["route_modes"][id] = modes
+    # The first remaining authored leg is also the execution-facing mode. Later
+    # edits must not disturb the currently active first leg before its boundary.
+    if leg_index == 0:
+        state["movement_modes"][id] = mode
+    return true
+
 func movement_mode(id: String) -> String:
     if not state["orders"].has(id):
         return "hold"

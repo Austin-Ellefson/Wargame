@@ -79,6 +79,7 @@ var movement_buttons := {}
 var posture_buttons := {}
 var bodies := {}
 var command_mode := "move"
+var route_leg_edit_index := -1
 var hold_button: Button
 var remove_waypoint_button: Button
 var squad_buttons := {}
@@ -140,6 +141,7 @@ func _build_interface() -> void:
     follow_button.add_theme_font_size_override("font_size", 12)
     follow_button.tooltip_text = "Execution only: keep the camera centered on the selected living friendly's actual position. Pan, rotate, selection, INSPECT, RESET, elimination, completion or reopening stops follow. Wheel zoom remains available."
     los_button = _button("TERRAIN LOS", Rect2(1102, 70, 132, 30), func():
+        route_leg_edit_index = -1
         los_armed = not los_armed and _can_probe_terrain()
         los_observer = selected if los_armed else ""
         los_point = Vector2(-1, -1)
@@ -177,6 +179,7 @@ func _build_interface() -> void:
     completed_report_panel.visible = false
     completed_report_label.visible = false
     area_button = _button("AREA FIRE",Rect2(244,70,118,36),func():
+        route_leg_edit_index = -1
         _clear_los_probe()
         area_armed = not area_armed
         facing_armed = false
@@ -184,6 +187,7 @@ func _build_interface() -> void:
     area_button.add_theme_font_size_override("font_size",12)
     area_button.tooltip_text = "Left-click ground to suppress a 16m area using real rounds. No casualty/hit reports. CLEAR FIRE cancels the order; right-click cancels cursor. HOLD FIRE pauses it."
     facing_button = _button("FACE", Rect2(370, 70, 104, 36), func():
+        route_leg_edit_index = -1
         _clear_los_probe()
         facing_armed = not facing_armed
         area_armed = false
@@ -201,6 +205,7 @@ func _build_interface() -> void:
         var button := _button("", Rect2(986, 208 + index * 34, 248, 32), func():
             _clear_los_probe()
             selected = id
+            route_leg_edit_index = -1
             facing_armed = false
             area_armed = false
             _refresh())
@@ -219,7 +224,10 @@ func _build_interface() -> void:
     for index in range(3):
         var mode: String = ["move", "quick", "hunt"][index]
         var button := _button(mode.to_upper(), Rect2(986 + index * 84, 444, 80, 26), func():
-            command_mode = mode
+            if _can_edit_route_leg(route_leg_edit_index):
+                simulation.order_leg_mode(selected, mode, route_leg_edit_index)
+            else:
+                command_mode = mode
             _refresh())
         button.add_theme_font_size_override("font_size", 12)
         button.tooltip_text = {"move": "2.4 m/s normal movement", "quick": "4 m/s before fatigue/posture/suppression; tires fastest", "hunt": "1.2 m/s; pauses on local contact or SUP >= 25%"}[mode]
@@ -238,7 +246,8 @@ func _build_interface() -> void:
     clear_target_button.add_theme_font_size_override("font_size", 10)
     var per_leg_pauses := int(simulation.state["version"]) >= 28
     hold_button = _button("HOLD", Rect2(986, 508, 50 if per_leg_pauses else 66, 26), func():
-        simulation.order_hold(selected)
+        if simulation.order_hold(selected):
+            route_leg_edit_index = -1
         _refresh())
     hold_button.add_theme_font_size_override("font_size", 11)
     hold_button.size = Vector2(50 if per_leg_pauses else 66,26)
@@ -255,9 +264,10 @@ func _build_interface() -> void:
     leg_pause_button = _button("LEG +15s", Rect2(1102, 508, 62, 26), func():
         var pauses = simulation.state.get("route_pauses", {}).get(selected)
         if pauses is Array and pauses.size() >= 2:
-            var current := int(pauses.back())
+            var index: int = route_leg_edit_index if _can_edit_route_leg(route_leg_edit_index) and route_leg_edit_index > 0 else pauses.size() - 1
+            var current := int(pauses[index])
             var following := 15 if current == 0 else (30 if current == 15 else (60 if current == 30 else 0))
-            simulation.order_leg_pause(selected, following)
+            simulation.order_leg_pause(selected, following, index)
         _refresh())
     leg_pause_button.add_theme_font_size_override("font_size", 8)
     leg_pause_button.clip_text = true
@@ -265,7 +275,8 @@ func _build_interface() -> void:
     leg_pause_button.tooltip_text = "Cycle the wait before the newest appended leg. It begins at the previous gold authored node; spotting and firing continue."
     leg_pause_button.visible = per_leg_pauses
     remove_waypoint_button = _button("REMOVE LEG" if per_leg_pauses else "REMOVE LAST WAYPOINT", Rect2(1168 if per_leg_pauses else 1132, 508, 66 if per_leg_pauses else 102, 26), func():
-        simulation.order_remove_last_waypoint(selected)
+        if simulation.order_remove_last_waypoint(selected):
+            route_leg_edit_index = -1
         _refresh())
     remove_waypoint_button.add_theme_font_size_override("font_size", 8)
     remove_waypoint_button.clip_text = true
@@ -512,8 +523,10 @@ func _refresh_los_probe() -> void:
     _mesh(marker, end, material, los_preview)
 
 func _unhandled_key_input(event: InputEvent) -> void:
-    if los_armed and event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
-        _clear_los_probe()
+    if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE and (los_armed or route_leg_edit_index >= 0):
+        if los_armed:
+            _clear_los_probe()
+        route_leg_edit_index = -1
         _refresh()
         get_viewport().set_input_as_handled()
 
@@ -570,6 +583,12 @@ func _map_input(event: InputEvent) -> void:
             if simulation.order_facing(selected, _ground_point(event.position)): facing_armed = false
             _refresh()
             return
+    if event.button_index == MOUSE_BUTTON_LEFT and not event.shift_pressed and simulation.state["phase"] == "planning" and int(simulation.state["version"]) >= 28:
+        var route_leg := _route_leg_at_screen(event.position)
+        if route_leg >= 0:
+            route_leg_edit_index = -1 if route_leg_edit_index == route_leg else route_leg
+            _refresh()
+            return
     if event.button_index == MOUSE_BUTTON_LEFT and event.shift_pressed and simulation.state["phase"] == "planning" and int(simulation.state["version"]) >= 7:
         var best := 30.0
         var target_id := ""
@@ -586,6 +605,7 @@ func _map_input(event: InputEvent) -> void:
         return
     if event.button_index == MOUSE_BUTTON_LEFT:
         var best := 30.0
+        var prior_selected := selected
         for squad in simulation.state["squads"]:
             if squad["faction"] != "UKR" or int(squad["alive"]) <= 0:
                 continue
@@ -594,6 +614,8 @@ func _map_input(event: InputEvent) -> void:
             if distance < best:
                 best = distance
                 selected = squad["id"]
+        if selected != prior_selected or best >= 30.0:
+            route_leg_edit_index = -1
         _refresh()
     elif event.button_index == MOUSE_BUTTON_RIGHT and simulation.state["phase"] == "planning":
         var target := _ground_point(event.position)
@@ -602,6 +624,7 @@ func _map_input(event: InputEvent) -> void:
         var legacy_append: bool = event.shift_pressed and simulation.state["orders"].has(selected) and int(simulation.state["version"]) < 27
         var mode: String = simulation.movement_mode(selected) if legacy_append else command_mode
         if target.x >= 0 and simulation.order_move(selected, target, true, mode, event.shift_pressed):
+            route_leg_edit_index = -1
             _refresh()
 
 func _update_camera() -> void:
@@ -704,6 +727,7 @@ func _execute() -> void:
     if reviewing_interval:
         return
     if simulation.execute():
+        route_leg_edit_index = -1
         playback_paused = false
         accumulator = 0
         interval_review_frames.clear()
@@ -1218,6 +1242,48 @@ func _apply_interval_review_hud() -> void:
     report_label.text = "Public recording; pause to navigate.\nEXIT restores unchanged planning."
     _refresh_playback_control()
 
+func _can_edit_route_leg(index: int) -> bool:
+    if index < 0 or int(simulation.state["version"]) < 28 or simulation.state["phase"] != "planning":
+        return false
+    var squad: Dictionary = simulation.squad_by_id(selected)
+    if squad.is_empty() or squad["faction"] != "UKR" or int(squad["alive"]) <= 0 or simulation.morale_state(selected) == "broken":
+        return false
+    var legs = simulation.state["route_legs"].get(selected)
+    var modes = simulation.state["route_modes"].get(selected)
+    var pauses = simulation.state["route_pauses"].get(selected)
+    return legs is Array and modes is Array and pauses is Array and legs.size() == modes.size() and modes.size() == pauses.size() and index < legs.size()
+
+func _authored_route_points() -> Array[Vector2]:
+    var result: Array[Vector2] = []
+    var path: Array = simulation.state["orders"].get(selected, [])
+    var legs = simulation.state.get("route_legs", {}).get(selected)
+    if not legs is Array or path.is_empty():
+        return result
+    var cursor := 0
+    for length in legs:
+        cursor += int(length)
+        if cursor <= 0 or cursor > path.size():
+            result.clear()
+            return result
+        var point: Array = path[cursor - 1]
+        result.append(Vector2(float(point[0]), float(point[1])))
+    return result
+
+func _route_leg_at_screen(point: Vector2) -> int:
+    var best := 28.0
+    var found := -1
+    var authored := _authored_route_points()
+    for index in range(authored.size()):
+        var location: Vector2 = authored[index]
+        var world_point := Vector3(location.x, Battle.terrain_height(location.x, location.y) + 1.0, location.y)
+        if camera.is_position_behind(world_point):
+            continue
+        var distance := camera.unproject_position(world_point).distance_to(point)
+        if distance < best:
+            best = distance
+            found = index
+    return found
+
 func _clear_order_preview() -> void:
     for child in order_preview.get_children():
         order_preview.remove_child(child)
@@ -1255,15 +1321,19 @@ func _refresh_order_preview() -> void:
             if cursor <= 0 or cursor > path.size(): continue
             var authored: Array = path[cursor - 1]
             var point := Vector2(float(authored[0]), float(authored[1]))
+            var editing := index == route_leg_edit_index and _can_edit_route_leg(index)
             var marker := CylinderMesh.new()
-            marker.top_radius = 4.3
-            marker.bottom_radius = 4.3
+            marker.top_radius = 5.2 if editing else 4.3
+            marker.bottom_radius = 5.2 if editing else 4.3
             marker.height = 0.45
-            _mesh(marker, Vector3(point.x, Battle.terrain_height(point.x, point.y) + 1.0, point.y), marker_material, order_preview)
+            var selected_material := _material(Color(0.35, 0.95, 1.0, 0.98), true) if editing else marker_material
+            _mesh(marker, Vector3(point.x, Battle.terrain_height(point.x, point.y) + 1.0, point.y), selected_material, order_preview)
             var label := Label3D.new()
             label.text = "LEG %d" % (index + 1)
             if int(simulation.state["version"]) >= 27 and simulation.state["route_modes"].has(selected):
                 label.text += " %s" % str(simulation.state["route_modes"][selected][index]).to_upper()
+            if editing:
+                label.text += " [EDIT]"
             if int(simulation.state["version"]) >= 28 and simulation.state["route_pauses"].has(selected):
                 var pauses: Array = simulation.state["route_pauses"][selected]
                 if index + 1 < pauses.size() and int(pauses[index + 1]) > 0:
@@ -1272,7 +1342,7 @@ func _refresh_order_preview() -> void:
             label.pixel_size = 0.08
             label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
             label.no_depth_test = true
-            label.modulate = Color("ffd07a")
+            label.modulate = Color("75f2ff") if editing else Color("ffd07a")
             label.position = Vector3(point.x, Battle.terrain_height(point.x, point.y) + 5.0, point.y)
             order_preview.add_child(label)
 
@@ -1407,6 +1477,8 @@ func _refresh() -> void:
     inspect_button.disabled = false
     _refresh_los_probe()
     var state: Dictionary = simulation.state
+    if not _can_edit_route_leg(route_leg_edit_index):
+        route_leg_edit_index = -1
     _refresh_playback_control()
     if state["phase"] != "planning":
         facing_armed = false
@@ -1478,7 +1550,9 @@ func _refresh() -> void:
     for mode in movement_buttons:
         movement_buttons[mode].visible = int(state["version"]) >= 5
         movement_buttons[mode].disabled = state["phase"] != "planning" or selected_squad.is_empty() or int(selected_squad.get("alive", 0)) <= 0 or simulation.morale_state(selected) == "broken"
-        movement_buttons[mode].text = mode.to_upper() + (" *" if command_mode == mode else "")
+        var displayed_mode: String = str(state["route_modes"][selected][route_leg_edit_index]) if _can_edit_route_leg(route_leg_edit_index) else command_mode
+        movement_buttons[mode].text = mode.to_upper() + (" *" if displayed_mode == mode else "")
+        movement_buttons[mode].tooltip_text = ("Edit LEG %d without rerouting or changing later legs." % (route_leg_edit_index + 1)) if _can_edit_route_leg(route_leg_edit_index) else {"move": "2.4 m/s normal movement", "quick": "4 m/s before fatigue/posture/suppression; tires fastest", "hunt": "1.2 m/s; pauses on local contact or SUP >= 25%"}[mode]
     for id in squad_buttons:
         var squad: Dictionary = simulation.squad_by_id(id)
         if int(squad.get("alive", 0)) <= 0: continue
@@ -1494,9 +1568,12 @@ func _refresh() -> void:
     pause_button.text = ("START %ds" % start_pause if start_pause > 0 else "START +15s") if int(state["version"]) >= 28 else ("PAUSE %ds" % start_pause if start_pause > 0 else "PAUSE +15s")
     leg_pause_button.visible = int(state["version"]) >= 28
     var leg_pauses = state.get("route_pauses", {}).get(selected)
-    leg_pause_button.disabled = hold_button.disabled or not leg_pauses is Array or leg_pauses.size() < 2
-    var newest_pause := int(leg_pauses.back()) if leg_pauses is Array and not leg_pauses.is_empty() else 0
-    leg_pause_button.text = "LEG %ds" % newest_pause if newest_pause > 0 else "LEG +15s"
+    var edited_leg := route_leg_edit_index if _can_edit_route_leg(route_leg_edit_index) else -1
+    var pause_index: int = edited_leg if edited_leg > 0 else (leg_pauses.size() - 1 if leg_pauses is Array else -1)
+    leg_pause_button.disabled = hold_button.disabled or not leg_pauses is Array or leg_pauses.size() < 2 or edited_leg == 0
+    var shown_pause := int(leg_pauses[pause_index]) if leg_pauses is Array and pause_index >= 0 and pause_index < leg_pauses.size() else 0
+    leg_pause_button.text = ("L%d %ds" % [pause_index + 1, shown_pause] if shown_pause > 0 else "L%d +15s" % (pause_index + 1)) if edited_leg > 0 else ("L1=START" if edited_leg == 0 else ("LEG %ds" % shown_pause if shown_pause > 0 else "LEG +15s"))
+    leg_pause_button.tooltip_text = ("Edit the wait before LEG %d. It begins at the previous gold node; spotting and firing continue." % (pause_index + 1)) if edited_leg > 0 else ("Use START to edit the wait before LEG 1." if edited_leg == 0 else "Cycle the wait before the newest appended leg. It begins at the previous gold authored node; spotting and firing continue.")
     remove_waypoint_button.disabled = hold_button.disabled or not state["orders"].has(selected) or state["orders"].get(selected, []).is_empty() or (int(state["version"]) >= 26 and not state["route_legs"].has(selected))
     remove_waypoint_button.text = "REMOVE LEG" if int(state["version"]) >= 28 else "REMOVE LAST WAYPOINT"
     remove_waypoint_button.tooltip_text = "Planning only: remove the most recently authored route leg and its paired mode/wait. Earlier legs, active pause and earned response remain. A one-leg route uses HOLD cleanup." if int(state["version"]) >= 28 else "Planning only: remove the most recently authored route leg. Earlier legs and their modes, timed pause and earned command-response time remain. A one-leg route uses HOLD cleanup." if int(state["version"]) >= 27 else "Planning only: remove the most recently authored route leg. Earlier legs, movement mode, timed pause and earned command-response time remain. A one-leg route uses HOLD cleanup." if int(state["version"]) >= 26 else "Planning only: remove exactly the final saved route point. Earlier points, movement mode, timed pause and earned command-response time remain. A one-point route uses HOLD cleanup."
@@ -1522,6 +1599,10 @@ func _refresh() -> void:
         report_label.text = simulation.target_status(selected) + " | Shift-click target\nMode + Shift-right: append leg"
     if int(state["version"]) >= 28:
         report_label.text = simulation.target_status(selected) + " | Shift-right: append leg\nLEG WAIT: pause at prior gold node"
+    if _can_edit_route_leg(route_leg_edit_index):
+        var edit_modes: Array = state["route_modes"][selected]
+        var edit_pauses: Array = state["route_pauses"][selected]
+        report_label.text = "EDIT LEG %d: %s | WAIT BEFORE %ds\nMode/%s edit; marker or Esc exits." % [route_leg_edit_index + 1, str(edit_modes[route_leg_edit_index]).to_upper(), int(edit_pauses[route_leg_edit_index]), "START" if route_leg_edit_index == 0 else "L%d" % (route_leg_edit_index + 1)]
     if area_armed: report_label.text = "AREA: left-click reachable ground.\nRight-click cancels cursor."
     if facing_armed: report_label.text = "FACE: left-click ground.\nRight-click or FACE cancels."
     if not selected_squad.is_empty() and simulation.morale_state(selected) == "broken":

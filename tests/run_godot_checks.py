@@ -33,6 +33,7 @@ def main():
     checks.append(("remove_waypoint_smoke", ["--headless", "--script", "res://tests/remove_waypoint_smoke.gd"]))
     checks.append(("route_leg_modes_smoke", ["--headless", "--script", "res://tests/route_leg_modes_smoke.gd"]))
     checks.append(("route_leg_pauses_smoke", ["--headless", "--script", "res://tests/route_leg_pauses_smoke.gd"]))
+    checks.append(("route_leg_edit_smoke", ["--headless", "--script", "res://tests/route_leg_edit_smoke.gd"]))
     if args.render_check:
         if args.capture:
             args.capture = args.capture.resolve()
@@ -114,6 +115,9 @@ def main():
         route_leg_pauses_command = route_leg_modes_command.copy()
         route_leg_pauses_command[route_leg_pauses_command.index("res://tests/route_leg_modes_smoke.gd")] = "res://tests/route_leg_pauses_smoke.gd"
         checks.append(("route_leg_pauses_render", route_leg_pauses_command))
+        route_leg_edit_command = route_leg_pauses_command.copy()
+        route_leg_edit_command[route_leg_edit_command.index("res://tests/route_leg_pauses_smoke.gd")] = "res://tests/route_leg_edit_smoke.gd"
+        checks.append(("route_leg_edit_render", route_leg_edit_command))
     for name, flags in checks:
         result = subprocess.run([args.godot, "--path", str(root), *flags], cwd=root,
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,

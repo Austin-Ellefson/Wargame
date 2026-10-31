@@ -1,23 +1,25 @@
-# Continue from per-leg timed pauses
+# Continue from earlier authored-leg editing
 
-Latest validated descendant: `codex/per-leg-timed-pauses`, draft PR #51,
-explicitly based on PR #50 head `4fe819eb6d85862ca66a5d393165aa6c46582053`.
-Feature code: `16d7b7afe3259694779abc035dac552cca1cbb04`; evidence head:
-`d1817eaac2f5327d090647d98c702b49555cd2bf`. Fresh tactical v28
-stores one bounded wait beside every editable blue authored leg, distinguishes
-START from the newest LEG wait, labels the gold node where a later wait begins,
-and stops at that exact boundary. V1–v27 keep exact fields and behavior without
-migration. All 43 Godot 4.5.1 entries, 20 rendered scripts and 26 terrain tests
-passed in combined CI https://github.com/Austin-Ellefson/Wargame/actions/runs/40795213690.
-Artifact 12864046001 was inspected: 63 logs, 62 PASS-bearing non-editor logs, no
-script errors and 82 PNGs including planning labels, actual 00:03 fire/feedback
-and the readable 03:00 completed report. Check PR #51's final documentation-head
-CI before dependent work.
+Current validation descendant: `codex/edit-earlier-route-leg`, explicitly based
+on the tested PR #51 documentation head
+`6dee130a0f4b1ef0af3e106f0a32fa6b497a44f5`. It transiently selects any gold
+authored marker during planning and edits that exact leg's MOVE/QUICK/HUNT mode
+or pre-leg wait. A cyan **[EDIT]** marker, selected-mode star, numbered wait
+control and command help identify the target. It preserves the future append-mode
+selector, route geometry, boundaries, later legs and earned response time.
 
-Next focused task only after combined validation: transiently select an earlier
-authored leg so its mode/wait can be revised in planning without removing later
-legs, rerouting, changing the v28 save schema, consuming RNG or reading hidden
-information. Do not duplicate an unfinished successor.
+The implementation reuses tactical v28 `route_modes`/`route_pauses`; selection
+is not saved and V1–v27 remain exact. Focused coverage passes actual input, both
+first/later leg edits, invalid/v27 isolation, RNG/event purity, exact boundary
+activation, JSON disk reopen, every rendered/headless combat tick, real shots and
+the completed report. All 44 local Godot 4.5.1 logic/editor entries and 26 terrain
+tests pass; this host lacks a usable Xvfb display, so rendered CI/artifact evidence
+is still required before the branch becomes the latest validated descendant.
+
+Reuse this branch/PR if it is unfinished; do not duplicate it. After its combined
+validation, the next focused planning task may retarget a selected authored
+destination with deterministic affected-segment rerouting and exact later-leg,
+save/restart and outcome parity. Keep that separate from the current editor.
 
 ## Prior validated hypothetical waypoint probe
 
