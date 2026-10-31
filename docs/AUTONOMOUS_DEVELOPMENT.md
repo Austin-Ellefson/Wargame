@@ -1214,3 +1214,42 @@ This setup change contains instructions only; these missing tools must be addres
 - Next after combined validation: transiently select an earlier authored leg so
   its mode/wait can be revised in planning without removing later legs, rerouting,
   changing authority/RNG, or adding hidden information.
+
+## Earlier authored-leg editing — ready for review 2026-10-30 (America/Chicago)
+
+- Branch `codex/edit-earlier-route-leg`, draft PR #52, explicitly based on tested PR #51 head
+  `6dee130a0f4b1ef0af3e106f0a32fa6b497a44f5`; remote descendants/open PRs were
+  rechecked first and no unfinished successor or overlapping task existed.
+- In planning, clicking any gold authored destination selects its leg without
+  changing authority. The marker becomes cyan and adds `[EDIT]`; the mode buttons
+  edit that leg, START edits LEG 1's wait, and a numbered L2/L3 control edits a
+  selected later leg's wait. Escape, empty ground, selection/order changes, HOLD,
+  removal and execution clear the transient selection.
+- The edit changes only the chosen v28 `route_modes`/`route_pauses` entry. Entry
+  zero stays synchronized with the execution-facing mode/wait; later edits leave
+  the active leg, route coordinates, boundaries, later legs, response, events and
+  RNG exact. No schema/version, hidden query, route search or presentation RNG was
+  added. V1–v27 and campaign/result/export/GIS/launcher contracts are unchanged.
+- Focused regression passes actual controls, invalid/enemy/v27 rejection, exact
+  boundary timing, HUNT gating, disk reopen and full real-combat parity to an
+  unrendered twin with witnessed shots and the readable report. All 44 local
+  Godot 4.5.1 logic/editor entries and all 26 terrain tests pass.
+- Feature code `6c1039f9410898a012a92eb7482ea793a402c650`: combined CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/41153756976 passed all
+  21 rendered scripts and 26 terrain tests. Artifact `13024880746`, digest
+  `sha256:72c6e97490092e558803c867385a7cfc124085a946ebbc4111c75506bcf2bcdf`,
+  was downloaded and inspected: 65 logs, 64 PASS-bearing non-editor logs, zero
+  script/error/failure matches and 85 PNGs.
+- The 1280x720 planning frame visibly shows the cyan selected LEG 1 `[EDIT]`,
+  HUNT star, START 30s/L1=START controls and `WAIT BEFORE 30s` help. Actual 00:03
+  execution shows three shot lines, S1 -9R/SUP+18, 351 rounds/SUP17% and 57s
+  remaining. The readable 02:42 RU report shows blue 36/0/36, red 36/22/14,
+  objective 0s/75s and both sides' campaign consequences.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/edit-earlier-route-leg
+  Import `project.godot` in Godot 4.5.1, press F5, author several legs, click an
+  earlier gold marker, edit its mode/wait, save/reopen and Execute.
+- Linux/headless/rendered CI does not establish Windows, CMBS editor, individual-
+  soldier navigation or realistic Combat Mission fidelity.
+- Next only after combined validation: separately scope deterministic retargeting
+  of a selected authored destination while retaining later authored intent and
+  exact save/restart/outcome parity.

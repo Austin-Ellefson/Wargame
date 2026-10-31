@@ -183,6 +183,22 @@ shapes and prior pause behavior; loading never invents per-leg waits. Campaign
 v2, result v1, locks, once-only losses, rollback, exports/GIS and launchers remain
 unchanged.
 
+## Earlier authored-leg editing (tactical v28, no save change)
+
+The selected gold leg index is transient view state and is never written into a
+campaign or tactical snapshot. Editing a selected leg changes only the existing
+validated `route_modes` or `route_pauses` entry. Editing entry zero also mirrors
+the established execution-facing `movement_modes` or `pause_remaining` value;
+later entries do not change the currently active leg. Route points, `route_legs`,
+later commands and earned response time remain exact.
+
+Disk reopen therefore retains the revised v28 command arrays but starts with no
+selected marker. V1–v27 saves retain their exact fields and behavior and cannot
+accept the new v28-only edit command. Selection and editing do not advance time,
+emit battle events, route, inspect contacts or consume RNG. Campaign v2, result
+v1, locks, once-only losses, rollback, export/GIS and launcher contracts remain
+unchanged; no migration or tactical version bump is required.
+
 ## Timed movement pauses (tactical v8)
 
 With a queued route, PAUSE cycles 0/15/30/60 simulated seconds. The squad waits
