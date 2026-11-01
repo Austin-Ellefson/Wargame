@@ -1253,3 +1253,46 @@ This setup change contains instructions only; these missing tools must be addres
 - Next only after combined validation: separately scope deterministic retargeting
   of a selected authored destination while retaining later authored intent and
   exact save/restart/outcome parity.
+
+## Authored route-leg retargeting — ready for review 2026-10-31 (America/Chicago)
+
+- Branch `codex/retarget-authored-route-leg`, draft PR #53, starts exactly from
+  validated PR #52 documentation head
+  `f6f22f733c2967921e56a944334e4ed1b562cc69`; remote branches and open PRs were
+  rechecked and no unfinished successor or overlapping task existed.
+- With any gold authored leg selected in planning, unmodified right-click moves
+  that destination. Geometry before the selected leg stays exact; the selected
+  and every later segment reroute deterministically through the unchanged later
+  authored destinations. Shift-right-click still appends a leg, and the selected
+  cyan `[EDIT]` marker remains visible after success or rejection.
+- Retargeting changes only `orders` and `route_legs`. Per-leg modes and waits,
+  active mode/wait, earned response, events, RNG and every other authoritative
+  field remain exact. Invalid/off-map/building, blocked, enemy, legacy-v27 and
+  over-128-point edits reject atomically. Tactical v28, campaign v2 and result v1
+  contracts remain unchanged; no save migration or presentation RNG was added.
+- The focused actual-input regression checks earlier-prefix identity, changed
+  selected/later paths, exact later endpoints, all rejection paths, no-ammo
+  boundary/wait/mode execution, disk reopen and full real-combat parity to an
+  unrendered twin through witnessed shots and the completed report.
+- Feature/evidence code `e6bfc31abf42698c2ae943dce7a36a1ca875b0ee`:
+  all 45 local Godot 4.5.1 logic/editor entries, 26 terrain tests, Python compile
+  and diff check pass. Combined CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/41258701633 passed all
+  22 rendered scripts and 26 terrain tests.
+- Artifact `13064247111`, digest
+  `sha256:4c64541796115c4b31dbac53ea5d3a85c580d1b4e4e6dd0fd94ed5d443c71d48`,
+  was downloaded and inspected: 67 logs, 66 PASS-bearing non-editor logs, zero
+  script/error/failure matches and 88 PNGs. Planning visibly shows cyan LEG 2
+  `[EDIT]`, QUICK/wait help and its retained later destination. Actual 00:03
+  execution shows witnessed firing, -9 rounds, SUP+18, 351 rounds/SUP17% and 57s
+  remaining. The readable 02:42 report shows blue 36/0/36, red 36/22/14,
+  objective 0s/75s and both sides' campaign consequences.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/retarget-authored-route-leg
+  Import `project.godot` in Godot 4.5.1, press F5, author three legs, select an
+  earlier gold marker and right-click a new destination before save/reopen and
+  Execute.
+- Linux/headless/rendered CI does not establish Windows, CMBS editor, individual-
+  soldier navigation or realistic Combat Mission fidelity.
+- Next only after final documentation-head CI: separately remove a selected
+  earlier authored leg and deterministically reconnect to unchanged later intent
+  while preserving later metadata, disk continuation and authoritative outcome.

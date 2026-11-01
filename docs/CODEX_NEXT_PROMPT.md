@@ -1,27 +1,34 @@
-# Continue from earlier authored-leg editing
+# Continue from authored-leg retargeting
 
-Latest validated descendant: `codex/edit-earlier-route-leg`, draft PR #52,
-explicitly based on the tested PR #51 documentation head
-`6dee130a0f4b1ef0af3e106f0a32fa6b497a44f5`. It transiently selects any gold
-authored marker during planning and edits that exact leg's MOVE/QUICK/HUNT mode
-or pre-leg wait. A cyan **[EDIT]** marker, selected-mode star, numbered wait
-control and command help identify the target. It preserves the future append-mode
-selector, route geometry, boundaries, later legs and earned response time.
+Latest validated descendant: `codex/retarget-authored-route-leg`, draft PR #53,
+explicitly based on tested PR #52 head
+`f6f22f733c2967921e56a944334e4ed1b562cc69`. With a gold authored leg selected
+for editing, an unmodified right-click changes that destination, keeps the route
+before it exact, and deterministically reroutes the selected and every later
+segment through the unchanged later authored destinations. Shift-right-click
+continues to append a new leg. Modes, waits, active wait/mode, earned command
+response, event history and simulation RNG remain exact.
 
-The implementation reuses tactical v28 `route_modes`/`route_pauses`; selection
-is not saved and V1–v27 remain exact. Feature code
-`6c1039f9410898a012a92eb7482ea793a402c650` passed all 44 Godot 4.5.1
-logic/editor entries, 21 rendered scripts and 26 terrain tests in combined CI
-https://github.com/Austin-Ellefson/Wargame/actions/runs/41153756976. Artifact
-13024880746 was inspected: 65 logs, 64 PASS-bearing non-editor logs, zero script/
-error/failure matches and 85 PNGs. The new planning frame shows the cyan `[EDIT]`
-leg and exact wait/mode help; actual 00:03 shots/feedback and the readable 02:42
-two-sided report remain intact.
+The implementation reuses tactical v28 route metadata without a schema bump;
+selection remains transient and V1–v27 reject the edit without migration.
+Feature/evidence code `e6bfc31abf42698c2ae943dce7a36a1ca875b0ee`
+passed all 45 Godot 4.5.1 logic/editor entries, 22 rendered scripts and 26
+terrain tests in combined CI
+https://github.com/Austin-Ellefson/Wargame/actions/runs/41258701633. Artifact
+13064247111, digest
+`sha256:4c64541796115c4b31dbac53ea5d3a85c580d1b4e4e6dd0fd94ed5d443c71d48`,
+was inspected: 67 logs, 66 PASS-bearing non-editor logs, zero script/error/
+failure matches and 88 PNGs. Planning visibly shows selected cyan LEG 2 `[EDIT]`,
+QUICK/wait help and the retained later destination; actual 00:03 fire shows
+witnessed shots, -9 rounds, SUP+18 and 351 rounds/SUP17%. The readable 02:42
+report shows both sides' deployed/surviving/lost personnel, objective 0s/75s and
+both campaign consequences.
 
-Check PR #52's final documentation-head CI before dependent work and do not
-duplicate the completed editor. The next focused planning task may retarget a selected authored
-destination with deterministic affected-segment rerouting and exact later-leg,
-save/restart and outcome parity. Keep that separate from the current editor.
+Check PR #53's final documentation-head CI before dependent work and do not
+duplicate retargeting. The next focused planning task may remove a selected
+earlier authored leg, deterministically reconnecting the prior segment to the
+unchanged next/later authored destinations while preserving later mode/wait
+metadata, disk continuation and authoritative outcome. Keep it separate.
 
 ## Prior validated hypothetical waypoint probe
 
