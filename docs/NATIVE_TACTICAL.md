@@ -1048,3 +1048,26 @@ query or RNG sample. V1–v27 retain exact fields and behavior. Campaign v2/resu
 v1, battle locks, once-only loss application, rollback, exports/GIS and Windows
 launchers remain unchanged. Linux checks do not establish Windows, CMBS editor,
 individual-soldier navigation or Combat Mission fidelity.
+
+## Retargeting an authored leg (v28, no save change)
+
+On `codex/retarget-authored-route-leg`, select a gold authored destination so it
+shows **[EDIT]**, then right-click a new ground point. An unmodified right-click
+now moves that selected destination; Shift-right keeps its separate append-leg
+meaning. Invalid/blocked ground and routes that would exceed 128 saved points
+leave the complete command untouched and keep the marker selected for correction.
+
+Geometry before the selected leg is retained exactly. The simulator rebuilds the
+selected segment and every later segment in order, preserving every later gold
+destination plus all saved MOVE/QUICK/HUNT modes, pre-leg waits, the active wait
+and mode, and already-earned command response. This is necessary because moving
+one destination also changes the origin of its following segment. The operation
+does not move the squad, advance battle time, create a combat event, inspect an
+enemy or consume RNG. Reopening retains the new route but not transient selection.
+
+The command reuses tactical v28 `orders`, `route_legs`, `route_modes` and
+`route_pauses`; no field/version migration is added and v1–v27 retain their exact
+behavior. Campaign v2/result v1, locks, bounded once-only losses, rollback,
+exports/GIS and Windows launchers remain unchanged. This remains squad-center
+route planning, not individual-soldier navigation or Windows/Combat Mission
+fidelity validation.

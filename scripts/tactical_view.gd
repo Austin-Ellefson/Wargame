@@ -619,6 +619,13 @@ func _map_input(event: InputEvent) -> void:
         _refresh()
     elif event.button_index == MOUSE_BUTTON_RIGHT and simulation.state["phase"] == "planning":
         var target := _ground_point(event.position)
+        # An unmodified right-click while editing retargets that authored leg.
+        # Shift-right retains its established meaning: append a new future leg.
+        if not event.shift_pressed and _can_edit_route_leg(route_leg_edit_index):
+            if target.x >= 0:
+                simulation.order_retarget_leg(selected, target, route_leg_edit_index)
+                _refresh()
+            return
         # V27 attaches the currently selected mode to a newly appended authored
         # leg. Older saves retain their one-mode queue and mismatched-mode guard.
         var legacy_append: bool = event.shift_pressed and simulation.state["orders"].has(selected) and int(simulation.state["version"]) < 27
@@ -1602,7 +1609,7 @@ func _refresh() -> void:
     if _can_edit_route_leg(route_leg_edit_index):
         var edit_modes: Array = state["route_modes"][selected]
         var edit_pauses: Array = state["route_pauses"][selected]
-        report_label.text = "EDIT LEG %d: %s | WAIT BEFORE %ds\nMode/%s edit; marker or Esc exits." % [route_leg_edit_index + 1, str(edit_modes[route_leg_edit_index]).to_upper(), int(edit_pauses[route_leg_edit_index]), "START" if route_leg_edit_index == 0 else "L%d" % (route_leg_edit_index + 1)]
+        report_label.text = "EDIT LEG %d: %s | WAIT BEFORE %ds\nRight-click retargets; Mode/%s edits; Esc exits." % [route_leg_edit_index + 1, str(edit_modes[route_leg_edit_index]).to_upper(), int(edit_pauses[route_leg_edit_index]), "START" if route_leg_edit_index == 0 else "L%d" % (route_leg_edit_index + 1)]
     if area_armed: report_label.text = "AREA: left-click reachable ground.\nRight-click cancels cursor."
     if facing_armed: report_label.text = "FACE: left-click ground.\nRight-click or FACE cancels."
     if not selected_squad.is_empty() and simulation.morale_state(selected) == "broken":
