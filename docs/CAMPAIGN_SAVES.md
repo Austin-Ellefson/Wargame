@@ -622,3 +622,20 @@ tracers and buffer remain absent from tactical v25 and campaign v2 snapshots.
 Disk reopen therefore returns to the same authoritative boundary state with no
 review controls, and subsequent ticks/results remain identical to an unreviewed
 twin. No migration is required.
+
+## Retargeting an authored route leg — no save change
+
+The selected gold-marker index remains transient view state. An accepted v28
+retarget rewrites only the existing `orders` path and matching `route_legs`
+counts: geometry before the selected leg stays exact, while the selected and
+later segments are routed again through the new destination and every unchanged
+later authored destination. The existing parallel `route_modes` and
+`route_pauses`, active wait/mode, earned command response and all other saved
+fields remain unchanged. The complete rebuilt route must fit the existing
+128-point limit or the command rejects atomically.
+
+No field or rules version was added. Reopening reconstructs the retargeted gold
+destinations but not their edit selection. V1–v27 reject the command and retain
+their exact fields and behavior. Tactical v28/campaign v2/result v1, simulation
+RNG, battle locks, bounded once-only results, rollback, exports/GIS and Windows
+launchers are unchanged.
