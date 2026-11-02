@@ -1,34 +1,33 @@
-# Continue from authored-leg retargeting
+# Continue from selected authored-leg removal
 
-Latest validated descendant: `codex/retarget-authored-route-leg`, draft PR #53,
-explicitly based on tested PR #52 head
-`f6f22f733c2967921e56a944334e4ed1b562cc69`. With a gold authored leg selected
-for editing, an unmodified right-click changes that destination, keeps the route
-before it exact, and deterministically reroutes the selected and every later
-segment through the unchanged later authored destinations. Shift-right-click
-continues to append a new leg. Modes, waits, active wait/mode, earned command
-response, event history and simulation RNG remain exact.
+Latest validated descendant: `codex/remove-authored-route-leg`, draft PR #54,
+explicitly based on tested PR #53 documentation head
+`af255a1300e3e09f4e579feddc2953c4e5faabbc`. Selecting a gold authored marker
+changes the command to **REMOVE L#**. It removes that destination and paired
+mode/wait, keeps the complete earlier route prefix exact, then reconnects through
+every unchanged later destination. Removing LEG 1 promotes the next retained
+mode/wait; tail and one-leg removal retain existing last-leg/HOLD semantics.
 
 The implementation reuses tactical v28 route metadata without a schema bump;
-selection remains transient and V1–v27 reject the edit without migration.
-Feature/evidence code `e6bfc31abf42698c2ae943dce7a36a1ca875b0ee`
-passed all 45 Godot 4.5.1 logic/editor entries, 22 rendered scripts and 26
+selection remains transient and V1–v27 reject selected removal without migration.
+Feature/evidence code `91d0a4a2676cc6ceada7632e33b70a2f0fb8c995`
+passed all 46 Godot 4.5.1 logic/editor entries, 23 rendered scripts and 26
 terrain tests in combined CI
-https://github.com/Austin-Ellefson/Wargame/actions/runs/41258701633. Artifact
-13064247111, digest
-`sha256:4c64541796115c4b31dbac53ea5d3a85c580d1b4e4e6dd0fd94ed5d443c71d48`,
-was inspected: 67 logs, 66 PASS-bearing non-editor logs, zero script/error/
-failure matches and 88 PNGs. Planning visibly shows selected cyan LEG 2 `[EDIT]`,
-QUICK/wait help and the retained later destination; actual 00:03 fire shows
-witnessed shots, -9 rounds, SUP+18 and 351 rounds/SUP17%. The readable 02:42
+https://github.com/Austin-Ellefson/Wargame/actions/runs/41373798243. Artifact
+13110224066, digest
+`sha256:8849bc65ac0cb062f33edad25c2a16273581159e3a9b3b228397262c907b4728`,
+was inspected: 69 logs, 68 PASS-bearing non-editor logs, zero script/error/
+failure matches and 92 PNGs. Planning visibly shows selected LEG 2, REMOVE L2,
+QUICK/15s and deletion help; the result shows three retained legs. Actual 00:03
+fire shows three cues, -9 rounds, SUP+18 and 351 rounds/SUP17%. The readable 02:42
 report shows both sides' deployed/surviving/lost personnel, objective 0s/75s and
 both campaign consequences.
 
-Check PR #53's final documentation-head CI before dependent work and do not
-duplicate retargeting. The next focused planning task may remove a selected
-earlier authored leg, deterministically reconnecting the prior segment to the
-unchanged next/later authored destinations while preserving later mode/wait
-metadata, disk continuation and authoritative outcome. Keep it separate.
+Check PR #54's final documentation-head CI before dependent work and do not
+duplicate selected removal. The next focused planning task may insert a new
+authored destination immediately before selected intent, using bounded
+deterministic route splicing while preserving later modes/waits, disk continuation
+and authoritative outcome. Keep it separate.
 
 ## Prior validated hypothetical waypoint probe
 

@@ -21,9 +21,9 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/retarget-authored-route-leg / PR #53
-- Latest post-milestone code/evidence commit: e6bfc31abf42698c2ae943dce7a36a1ca875b0ee
-- Post-milestone next task after validation: remove a selected earlier authored leg
+- Latest validated post-milestone descendant: codex/remove-authored-route-leg / PR #54
+- Latest post-milestone code/evidence commit: 91d0a4a2676cc6ceada7632e33b70a2f0fb8c995
+- Post-milestone next task after validation: insert a new leg before selected intent
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -1879,3 +1879,37 @@ is delivered as the scheduled task result in ChatGPT.
 - Next only after final documentation-head CI: remove a selected earlier authored
   leg and deterministically reconnect unchanged later intent while preserving
   later mode/wait metadata, disk continuation and authoritative outcome.
+
+## Selected authored route-leg removal — validated 2026-11-01 (America/Chicago)
+
+- `codex/remove-authored-route-leg` / draft PR #54 starts exactly from validated
+  PR #53 documentation head `af255a1300e3e09f4e579feddc2953c4e5faabbc`;
+  branches/open PRs were rechecked and no unfinished successor or overlap existed.
+- Actual gold-marker selection changes the control to **REMOVE L#**. Removing an
+  earlier leg preserves the complete earlier routed prefix, deletes only that
+  destination's paired mode/wait and deterministically reconnects through exact
+  later endpoints. LEG 1 promotes the next active mode/wait; tail and one-leg
+  removal retain established tail/HOLD semantics.
+- Focused coverage proves actual input/help, route/metadata ownership, invalid,
+  enemy and v27 no-ops, 128-point atomicity, RNG/event purity, promoted start wait,
+  exact later-boundary HUNT/wait execution, disk reopen and every real-combat tick
+  through full-result twin parity. All 46 local Godot 4.5.1 logic/editor entries,
+  26 terrain tests, Python compile and diff checks pass.
+- Feature/evidence code `91d0a4a2676cc6ceada7632e33b70a2f0fb8c995`:
+  combined CI https://github.com/Austin-Ellefson/Wargame/actions/runs/41373798243
+  passed all 23 rendered scripts and 26 terrain tests. Artifact `13110224066`,
+  digest `sha256:8849bc65ac0cb062f33edad25c2a16273581159e3a9b3b228397262c907b4728`,
+  was inspected: 69 logs, 68 PASS-bearing non-editor logs, zero script/error/
+  failure matches and 92 PNGs.
+- Planning visibly shows selected LEG 2, **REMOVE L2**, QUICK/15s and deletion
+  help; the result frame shows the retained three-leg route. Actual 00:03 fire
+  shows three shot cues, -9 rounds, SUP+18 and 351 rounds/SUP17%. The readable
+  02:42 report shows blue 36/0/36, red 36/22/14, objective 0s/75s and both sides'
+  campaign consequences.
+- Tactical v28/campaign v2/result v1, deterministic restart, locks, bounded
+  once-only losses, rollback, exports/GIS and Windows launchers remain unchanged.
+  No Windows, CMBS editor, individual-soldier navigation or realistic Combat
+  Mission fidelity is claimed.
+- Next only after final documentation-head CI: separately scope insertion of a
+  new authored destination immediately before selected intent, with bounded
+  deterministic splicing and exact later metadata/restart/outcome parity.

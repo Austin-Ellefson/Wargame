@@ -275,13 +275,15 @@ func _build_interface() -> void:
     leg_pause_button.tooltip_text = "Cycle the wait before the newest appended leg. It begins at the previous gold authored node; spotting and firing continue."
     leg_pause_button.visible = per_leg_pauses
     remove_waypoint_button = _button("REMOVE LEG" if per_leg_pauses else "REMOVE LAST WAYPOINT", Rect2(1168 if per_leg_pauses else 1132, 508, 66 if per_leg_pauses else 102, 26), func():
-        if simulation.order_remove_last_waypoint(selected):
+        var edit_index := route_leg_edit_index if _can_edit_route_leg(route_leg_edit_index) else -1
+        var removed: bool = simulation.order_remove_leg(selected, edit_index) if edit_index >= 0 else simulation.order_remove_last_waypoint(selected)
+        if removed:
             route_leg_edit_index = -1
         _refresh())
     remove_waypoint_button.add_theme_font_size_override("font_size", 8)
     remove_waypoint_button.clip_text = true
     remove_waypoint_button.size = Vector2(66 if per_leg_pauses else 102,26)
-    remove_waypoint_button.tooltip_text = "Planning only: remove the most recently authored route leg. Earlier legs and their modes, timed pause and earned command-response time remain. A one-leg route uses HOLD cleanup."
+    remove_waypoint_button.tooltip_text = "Planning only: remove the most recently authored route leg. Select a gold marker first to remove that exact leg and reconnect later intent."
     execute_button = _button("EXECUTE 60 SECONDS", Rect2(986, 540, 248, 32), _execute)
     speed_button = _button("PLAYBACK 4x", Rect2(986, 578, 86, 28), _cycle_playback_speed)
     speed_button.add_theme_font_size_override("font_size", 10)
@@ -1582,8 +1584,8 @@ func _refresh() -> void:
     leg_pause_button.text = ("L%d %ds" % [pause_index + 1, shown_pause] if shown_pause > 0 else "L%d +15s" % (pause_index + 1)) if edited_leg > 0 else ("L1=START" if edited_leg == 0 else ("LEG %ds" % shown_pause if shown_pause > 0 else "LEG +15s"))
     leg_pause_button.tooltip_text = ("Edit the wait before LEG %d. It begins at the previous gold node; spotting and firing continue." % (pause_index + 1)) if edited_leg > 0 else ("Use START to edit the wait before LEG 1." if edited_leg == 0 else "Cycle the wait before the newest appended leg. It begins at the previous gold authored node; spotting and firing continue.")
     remove_waypoint_button.disabled = hold_button.disabled or not state["orders"].has(selected) or state["orders"].get(selected, []).is_empty() or (int(state["version"]) >= 26 and not state["route_legs"].has(selected))
-    remove_waypoint_button.text = "REMOVE LEG" if int(state["version"]) >= 28 else "REMOVE LAST WAYPOINT"
-    remove_waypoint_button.tooltip_text = "Planning only: remove the most recently authored route leg and its paired mode/wait. Earlier legs, active pause and earned response remain. A one-leg route uses HOLD cleanup." if int(state["version"]) >= 28 else "Planning only: remove the most recently authored route leg. Earlier legs and their modes, timed pause and earned command-response time remain. A one-leg route uses HOLD cleanup." if int(state["version"]) >= 27 else "Planning only: remove the most recently authored route leg. Earlier legs, movement mode, timed pause and earned command-response time remain. A one-leg route uses HOLD cleanup." if int(state["version"]) >= 26 else "Planning only: remove exactly the final saved route point. Earlier points, movement mode, timed pause and earned command-response time remain. A one-point route uses HOLD cleanup."
+    remove_waypoint_button.text = ("REMOVE L%d" % (edited_leg + 1)) if edited_leg >= 0 else ("REMOVE LEG" if int(state["version"]) >= 28 else "REMOVE LAST WAYPOINT")
+    remove_waypoint_button.tooltip_text = ("Planning only: remove selected LEG %d and its paired mode/wait. Earlier geometry stays exact; later authored destinations reconnect deterministically." % (edited_leg + 1)) if edited_leg >= 0 else ("Planning only: remove the most recently authored route leg and its paired mode/wait. Earlier legs, active pause and earned response remain. A one-leg route uses HOLD cleanup." if int(state["version"]) >= 28 else "Planning only: remove the most recently authored route leg. Earlier legs and their modes, timed pause and earned command-response time remain. A one-leg route uses HOLD cleanup." if int(state["version"]) >= 27 else "Planning only: remove the most recently authored route leg. Earlier legs, movement mode, timed pause and earned command-response time remain. A one-leg route uses HOLD cleanup." if int(state["version"]) >= 26 else "Planning only: remove exactly the final saved route point. Earlier points, movement mode, timed pause and earned command-response time remain. A one-point route uses HOLD cleanup.")
     execute_button.disabled = state["phase"] != "planning"
     execute_button.text = "%d SECONDS REMAINING" % state["remaining"] if state["phase"] == "execution" else "EXECUTE 60 SECONDS"
     back_button.disabled = state["phase"] == "execution"
@@ -1609,7 +1611,7 @@ func _refresh() -> void:
     if _can_edit_route_leg(route_leg_edit_index):
         var edit_modes: Array = state["route_modes"][selected]
         var edit_pauses: Array = state["route_pauses"][selected]
-        report_label.text = "EDIT LEG %d: %s | WAIT BEFORE %ds\nRight-click retargets; Mode/%s edits; Esc exits." % [route_leg_edit_index + 1, str(edit_modes[route_leg_edit_index]).to_upper(), int(edit_pauses[route_leg_edit_index]), "START" if route_leg_edit_index == 0 else "L%d" % (route_leg_edit_index + 1)]
+        report_label.text = "EDIT LEG %d: %s | WAIT BEFORE %ds\nRight-click retargets; Mode/%s edits; REMOVE L%d deletes." % [route_leg_edit_index + 1, str(edit_modes[route_leg_edit_index]).to_upper(), int(edit_pauses[route_leg_edit_index]), "START" if route_leg_edit_index == 0 else "L%d" % (route_leg_edit_index + 1), route_leg_edit_index + 1]
     if area_armed: report_label.text = "AREA: left-click reachable ground.\nRight-click cancels cursor."
     if facing_armed: report_label.text = "FACE: left-click ground.\nRight-click or FACE cancels."
     if not selected_squad.is_empty() and simulation.morale_state(selected) == "broken":

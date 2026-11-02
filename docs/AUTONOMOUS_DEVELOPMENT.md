@@ -1296,3 +1296,43 @@ This setup change contains instructions only; these missing tools must be addres
 - Next only after final documentation-head CI: separately remove a selected
   earlier authored leg and deterministically reconnect to unchanged later intent
   while preserving later metadata, disk continuation and authoritative outcome.
+
+## Selected authored route-leg removal — ready for review 2026-11-01 (America/Chicago)
+
+- Branch `codex/remove-authored-route-leg`, draft PR #54, starts exactly from
+  validated PR #53 documentation head
+  `af255a1300e3e09f4e579feddc2953c4e5faabbc`; remote branches/open PRs were
+  rechecked and no unfinished successor or overlapping task existed.
+- Selecting any gold marker changes the removal control to **REMOVE L#**. It
+  deletes that destination and paired mode/wait, keeps earlier geometry exact,
+  then deterministically reconnects through all unchanged later destinations.
+  Removing LEG 1 promotes the next active mode/wait; selected-tail and one-leg
+  removal stay identical to existing last-leg/HOLD behavior.
+- The command reuses tactical v28 fields without migration. Earned response,
+  events, knowledge and RNG stay exact; invalid, enemy, legacy-v27 and over-128-
+  point reconnections reject atomically. Campaign v2/result v1, locks, once-only
+  losses, rollback, exports/GIS and Windows launchers remain unchanged.
+- Focused actual-input coverage verifies UI naming/help, exact prefix/later
+  endpoints, metadata ownership, first-leg promotion, tail/HOLD equivalence,
+  no-ammo boundary execution, disk reopen and every real-combat tick/result
+  against an unrendered twin. All 46 local Godot 4.5.1 logic/editor entries,
+  26 terrain tests, Python compile and diff checks pass.
+- Feature/evidence code `91d0a4a2676cc6ceada7632e33b70a2f0fb8c995`:
+  combined CI https://github.com/Austin-Ellefson/Wargame/actions/runs/41373798243
+  passed all 23 rendered scripts and 26 terrain tests.
+- Artifact `13110224066`, digest
+  `sha256:8849bc65ac0cb062f33edad25c2a16273581159e3a9b3b228397262c907b4728`,
+  was downloaded and inspected: 69 logs, 68 PASS-bearing non-editor logs, zero
+  script/error/failure matches and 92 PNGs. Planning visibly shows selected LEG 2,
+  **REMOVE L2**, QUICK/15s and deletion help; the result shows three retained
+  legs. Actual 00:03 fire shows three cues, -9 rounds, SUP+18 and 351 rounds/
+  SUP17%. The readable 02:42 report shows blue 36/0/36, red 36/22/14, objective
+  0s/75s and both campaign consequences.
+- Download: https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/remove-authored-route-leg
+  Import `project.godot` in Godot 4.5.1, press F5, author four legs, select an
+  earlier gold marker, use **REMOVE L#**, save/reopen and Execute.
+- Linux/headless/rendered CI does not establish Windows, CMBS editor, individual-
+  soldier navigation or realistic Combat Mission fidelity.
+- Next only after final documentation-head CI: separately insert a new authored
+  destination immediately before selected intent while preserving bounded route
+  splicing, later metadata, disk continuation and authoritative outcome.
