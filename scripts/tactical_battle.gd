@@ -772,6 +772,81 @@ func order_retarget_leg(id: String, target: Vector2, leg_index: int, player: boo
     state["route_legs"][id] = rebuilt_legs
     return true
 
+func order_remove_leg(id: String, leg_index: int, player: bool = true) -> bool:
+    var squad := squad_by_id(id)
+    if int(state["version"]) < 28 or state["phase"] != "planning" or squad.is_empty() or int(squad["alive"]) <= 0 or morale_state(id) == "broken" or (player and squad["faction"] != "UKR"):
+        return false
+    var path = state["orders"].get(id)
+    var legs = state["route_legs"].get(id)
+    var modes = state["route_modes"].get(id)
+    var pauses = state["route_pauses"].get(id)
+    if not path is Array or path.is_empty() or not legs is Array or not modes is Array or not pauses is Array or legs.size() != modes.size() or modes.size() != pauses.size() or leg_index < 0 or leg_index >= legs.size():
+        return false
+
+    # Recover every authored endpoint and validate the flattened leg boundaries
+    # before changing state. Geometry before the removed leg stays byte-shape
+    # exact; only the gap and later segments are deterministically reconnected.
+    var authored: Array[Vector2] = []
+    var prefix_size := 0
+    var cursor := 0
+    for index in range(legs.size()):
+        var length := int(legs[index])
+        if length <= 0 or cursor + length > path.size():
+            return false
+        if index < leg_index:
+            prefix_size += length
+        cursor += length
+        var destination = path[cursor - 1]
+        if not destination is Array or destination.size() != 2:
+            return false
+        authored.append(Vector2(float(destination[0]), float(destination[1])))
+    if cursor != path.size():
+        return false
+    if legs.size() == 1:
+        return order_hold(id)
+    # Keep the established tail-removal behavior exactly when no reconnect is
+    # needed, including active wait/mode and earned command-response time.
+    if leg_index == legs.size() - 1:
+        return order_remove_last_waypoint(id)
+
+    var rebuilt: Array = path.slice(0, prefix_size).duplicate(true)
+    var rebuilt_legs: Array = legs.slice(0, leg_index).duplicate()
+    var origin := position(squad) if prefix_size == 0 else Vector2(float(path[prefix_size - 1][0]), float(path[prefix_size - 1][1]))
+    for index in range(leg_index + 1, authored.size()):
+        var destination: Vector2 = authored[index]
+        var start := Vector2i(int(origin.x / CELL), int(origin.y / CELL))
+        var finish := Vector2i(int(destination.x / CELL), int(destination.y / CELL))
+        if navigation.is_point_solid(finish):
+            return false
+        var points := navigation.get_point_path(start, finish)
+        if points.is_empty():
+            return false
+        var segment_size := 0
+        for point_index in range(1, points.size()):
+            rebuilt.append([points[point_index].x, points[point_index].y])
+            segment_size += 1
+        rebuilt.append([destination.x, destination.y])
+        segment_size += 1
+        if rebuilt.size() > 128:
+            return false
+        rebuilt_legs.append(segment_size)
+        origin = destination
+
+    modes = modes.duplicate()
+    pauses = pauses.duplicate()
+    modes.remove_at(leg_index)
+    pauses.remove_at(leg_index)
+    state["orders"][id] = rebuilt
+    state["route_legs"][id] = rebuilt_legs
+    state["route_modes"][id] = modes
+    state["route_pauses"][id] = pauses
+    # Removing the active first leg promotes the next retained leg and its
+    # before-leg wait to the execution-facing fields required by strict v28.
+    if leg_index == 0:
+        state["movement_modes"][id] = modes[0]
+        state["pause_remaining"][id] = int(pauses[0])
+    return true
+
 func _assign_route(id: String, target: Vector2, mode: String = "move", append: bool = false) -> bool:
     var squad := squad_by_id(id)
     if not is_finite(target.x) or not is_finite(target.y) or target.x < 4 or target.y < 4 or target.x > SIZE - 4 or target.y > SIZE - 4 or inside_building(target, 5.0):
