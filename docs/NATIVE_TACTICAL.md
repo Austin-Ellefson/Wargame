@@ -1071,3 +1071,28 @@ behavior. Campaign v2/result v1, locks, bounded once-only losses, rollback,
 exports/GIS and Windows launchers remain unchanged. This remains squad-center
 route planning, not individual-soldier navigation or Windows/Combat Mission
 fidelity validation.
+
+## Removing a selected authored leg (v28, no save change)
+
+On `codex/remove-authored-route-leg`, select any gold authored destination during
+planning. The removal button names it as **REMOVE L#**. Activating it deletes that
+destination and only its paired movement mode and pre-leg wait. The complete
+routed prefix before it remains exact; the simulator reconnects the gap and each
+later segment through the unchanged later gold destinations. Without an edit
+selection the established newest-leg removal remains available.
+
+If LEG 1 is removed, the next retained mode and wait become the execution-facing
+mode and start wait required by strict v28. Selecting the tail is exactly the
+existing last-leg operation, and deleting a one-leg route still uses canonical
+HOLD cleanup. Command response already earned, combat events, knowledge, squad
+position and simulation RNG are never reset or sampled. A reconnect that is
+blocked or exceeds 128 saved points rejects before any field changes.
+
+The operation rewrites only existing `orders`, `route_legs`, `route_modes` and
+`route_pauses`, plus the existing active mode/wait when LEG 1 is promoted. No
+schema or rules version was added. Disk reopen reconstructs the retained route
+but not transient selection. V1–v27 reject selected removal and retain exact
+behavior. Campaign v2/result v1, locks, bounded once-only losses, rollback,
+exports/GIS and Windows launchers remain unchanged. This is deterministic squad-
+center routing, not individual-soldier navigation or Windows/Combat Mission
+fidelity validation.

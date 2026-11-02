@@ -639,3 +639,21 @@ destinations but not their edit selection. V1–v27 reject the command and retai
 their exact fields and behavior. Tactical v28/campaign v2/result v1, simulation
 RNG, battle locks, bounded once-only results, rollback, exports/GIS and Windows
 launchers are unchanged.
+
+## Removing a selected authored route leg — no save change
+
+The selected gold-marker index remains transient view state. Accepted v28
+removal deletes the selected destination's existing parallel entries from
+`route_modes` and `route_pauses`. The path prefix and `route_legs` entries before
+it stay exact; `orders` and the affected later counts are rebuilt through every
+unchanged later authored destination. Removing LEG 1 promotes the first retained
+mode/wait into `movement_modes` and `pause_remaining`, preserving strict v28
+mirroring. Tail removal and one-leg HOLD cleanup retain their established shape.
+
+No new field or version is required. The complete reconnect must fit the existing
+128-point bound or all fields remain untouched. Command response, event history,
+knowledge and RNG remain exact. Disk reopen reconstructs the retained endpoints
+and metadata but not edit selection. V1–v27 reject selected removal and retain
+their saved shapes/behavior. Tactical v28/campaign v2/result v1, locks, bounded
+once-only results/losses, failed-save rollback, exports/GIS and Windows launchers
+are unchanged.
