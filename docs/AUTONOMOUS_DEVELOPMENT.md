@@ -1337,7 +1337,7 @@ This setup change contains instructions only; these missing tools must be addres
   destination immediately before selected intent while preserving bounded route
   splicing, later metadata, disk continuation and authoritative outcome.
 
-## Selected authored route-leg insertion — in validation 2026-11-02 (America/Chicago)
+## Selected authored route-leg insertion — validated 2026-11-02 (America/Chicago)
 
 - Branch `codex/insert-authored-route-leg`, based exactly on validated PR #54.
   Actual branches/open PRs were rechecked first; no unfinished successor, overlap
@@ -1352,9 +1352,22 @@ This setup change contains instructions only; these missing tools must be addres
 - The focused regression passes actual Ctrl-right input, strict metadata ownership,
   invalid/v27/128-point rejection, first-leg activation, exact disk reopen and
   every real-combat tick/result against an unrendered twin with actual shots and
-  the completed report. All 47 local Godot 4.5.1 entries and 26 terrain tests pass;
-  rendered CI/artifact inspection and the draft PR are pending.
+  the completed report. All 47 local Godot 4.5.1 entries and 26 terrain tests pass.
+- Draft PR #55 carries feature/evidence commit
+  `c363d10b41a88b65f12e41d4b21d55b3f9fcd800`. Combined CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/41559257018 passed all
+  47 Godot checks, including rendered input, and 26 terrain tests.
+- Artifact `13195822561`, digest
+  `sha256:40c0cb224f85cc614812cb401b0f4ab739f98eecf1cc9c2f546eba817e65ae03`,
+  was downloaded and inspected: 71 logs, 70 PASS-bearing non-editor logs, zero
+  script/error/failure matches and 95 PNGs. Planning visibly shows selected LEG 2
+  with insertion/retarget/removal help. Actual 00:03 execution shows a shot line,
+  three shot cues, -9 rounds, SUP+18 and 351 rounds/SUP17%. The readable 02:42
+  report shows blue 36/0/36, red 36/22/14, objective 0s/75s and both campaign
+  consequences.
 - No Windows, CMBS editor, individual-soldier navigation or realistic Combat
-  Mission fidelity claim. Next after validation: separately version a selected
+  Mission fidelity claim. Download:
+  https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/insert-authored-route-leg
+- Next only after final documentation-head CI: separately version a selected
   authored leg's optional arrival facing so it activates at the exact boundary
   without changing hidden-information, restart or outcome determinism contracts.

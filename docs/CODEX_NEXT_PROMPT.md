@@ -1,8 +1,8 @@
 # Continue from authored-leg insertion
 
-Current descendant in validation: `codex/insert-authored-route-leg`, based exactly
-on validated `codex/remove-authored-route-leg` PR #54. Ctrl-right on a selected
-gold marker inserts a new destination immediately before that intent. Earlier
+Latest validated descendant: `codex/insert-authored-route-leg`, draft PR #55,
+based exactly on validated `codex/remove-authored-route-leg` PR #54. Ctrl-right
+on a selected gold marker inserts a new destination immediately before that intent. Earlier
 geometry stays exact; affected segments splice deterministically through the new
 point and every unchanged later destination. The inserted leg inherits the
 selected MOVE/QUICK/HUNT mode with zero wait, while all original destinations
@@ -13,13 +13,16 @@ The implementation reuses tactical v28 route arrays without a schema bump. V1–
 v27 reject insertion; selection remains transient. Actual-input coverage passes
 invalid/enemy/v27/128-point rejection, metadata ownership, first-leg timing,
 disk reopen, RNG/event purity and every real-combat tick/result against an
-unrendered twin with actual shots and the completed report. All 47 local Godot
-4.5.1 entries and 26 terrain tests pass. Draft PR, combined rendered CI and
-artifact inspection are pending; finish those before declaring this descendant
-validated or beginning dependent work.
+unrendered twin with actual shots and the completed report. Feature/evidence commit
+`c363d10b41a88b65f12e41d4b21d55b3f9fcd800` passed combined CI
+https://github.com/Austin-Ellefson/Wargame/actions/runs/41559257018: all 47 Godot
+4.5.1 checks, including rendered input, and 26 terrain tests. Artifact
+`13195822561` was downloaded and its planning, actual-shot execution and completed
+report captures were inspected. Check the final documentation-head CI before
+beginning dependent work.
 
-After validation, separately scope optional per-leg arrival facing that activates
-at the exact authored boundary. Version any new saved metadata; preserve local-
+Next, separately scope optional per-leg arrival facing that activates at the
+exact authored boundary. Version any new saved metadata; preserve local-
 visibility-only targeting, deterministic restart/outcomes and old save rules.
 
 ## Prior validated hypothetical waypoint probe
