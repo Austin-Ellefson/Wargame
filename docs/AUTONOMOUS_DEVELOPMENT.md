@@ -1336,3 +1336,25 @@ This setup change contains instructions only; these missing tools must be addres
 - Next only after final documentation-head CI: separately insert a new authored
   destination immediately before selected intent while preserving bounded route
   splicing, later metadata, disk continuation and authoritative outcome.
+
+## Selected authored route-leg insertion — in validation 2026-11-02 (America/Chicago)
+
+- Branch `codex/insert-authored-route-leg`, based exactly on validated PR #54.
+  Actual branches/open PRs were rechecked first; no unfinished successor, overlap
+  or merge existed, and the local parent tree matches PR #54's remote head.
+- With a gold leg selected, Ctrl-right inserts a destination immediately before
+  it. The new leg inherits the selected mode with zero wait; original selected
+  and later destinations keep their paired metadata. Earlier geometry stays exact
+  and affected segments splice deterministically within the existing 128-point cap.
+- Inserting before LEG 1 activates the inherited mode/zero wait and moves the old
+  start wait with its original destination. Earned response, events, knowledge,
+  RNG, campaign/result/export/GIS contracts and Windows launchers remain unchanged.
+- The focused regression passes actual Ctrl-right input, strict metadata ownership,
+  invalid/v27/128-point rejection, first-leg activation, exact disk reopen and
+  every real-combat tick/result against an unrendered twin with actual shots and
+  the completed report. All 47 local Godot 4.5.1 entries and 26 terrain tests pass;
+  rendered CI/artifact inspection and the draft PR are pending.
+- No Windows, CMBS editor, individual-soldier navigation or realistic Combat
+  Mission fidelity claim. Next after validation: separately version a selected
+  authored leg's optional arrival facing so it activates at the exact boundary
+  without changing hidden-information, restart or outcome determinism contracts.

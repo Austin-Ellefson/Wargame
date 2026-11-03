@@ -657,3 +657,20 @@ and metadata but not edit selection. V1–v27 reject selected removal and retain
 their saved shapes/behavior. Tactical v28/campaign v2/result v1, locks, bounded
 once-only results/losses, failed-save rollback, exports/GIS and Windows launchers
 are unchanged.
+
+## Inserting before a selected authored route leg — no save change
+
+The selected gold-marker index remains transient view state. Accepted v28
+insertion keeps the complete `orders`/`route_legs` prefix before that index exact,
+then deterministically routes through the new destination, original selected
+destination and every later destination. It inserts a copy of the selected
+`route_modes` entry and a zero into `route_pauses`; all original mode/wait entries
+shift together with their destinations unchanged. Inserting at index zero mirrors
+the inherited mode and zero wait into `movement_modes`/`pause_remaining`.
+
+The rebuilt route must fit the existing 128-point bound or every field remains
+untouched. Earned response, events, knowledge and RNG remain exact. Disk reopen
+reconstructs the inserted endpoints and metadata but not edit selection. No field
+or rules version is added; V1–v27 reject insertion and retain their saved shapes.
+Tactical v28/campaign v2/result v1, locks, bounded once-only results/losses,
+failed-save rollback, exports/GIS and Windows launchers are unchanged.

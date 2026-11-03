@@ -24,6 +24,7 @@ they actually run on Windows.
 - Latest validated post-milestone descendant: codex/remove-authored-route-leg / PR #54
 - Latest post-milestone code/evidence commit: 91d0a4a2676cc6ceada7632e33b70a2f0fb8c995
 - Post-milestone next task after validation: insert a new leg before selected intent
+- Post-milestone task in validation: codex/insert-authored-route-leg
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -1913,3 +1914,24 @@ is delivered as the scheduled task result in ChatGPT.
 - Next only after final documentation-head CI: separately scope insertion of a
   new authored destination immediately before selected intent, with bounded
   deterministic splicing and exact later metadata/restart/outcome parity.
+
+## Selected authored route-leg insertion — in validation 2026-11-02 (America/Chicago)
+
+- `codex/insert-authored-route-leg` starts from the exact validated PR #54 tree;
+  no existing successor, overlapping PR or merge was present before work.
+- Actual Ctrl-right input on a selected gold marker inserts a new destination
+  immediately before it. Earlier routed geometry remains exact; affected segments
+  deterministically splice through the new point and all unchanged later intent.
+- The inserted leg inherits the selected mode with zero wait. Original selected
+  and later destinations retain their paired modes/waits. LEG 1 insertion mirrors
+  the inherited active mode/zero wait and shifts the old start wait with its intent.
+- Focused coverage passes actual input/help, strict metadata ownership, blocked/
+  bad/enemy/v27 rejection, 128-point atomicity, RNG/event purity, exact first-leg
+  boundary timing, disk reopen and every real-combat tick/result against an
+  unrendered twin. All 47 local Godot 4.5.1 checks and 26 terrain tests pass.
+- Tactical v28/campaign v2/result v1, deterministic restart, locks, bounded once-
+  only losses, rollback, exports/GIS and Windows launchers remain unchanged.
+  Rendered CI/artifact inspection and draft PR publication remain pending.
+- No Windows, CMBS editor, individual-soldier navigation or realistic Combat
+  Mission fidelity claim. Next after validation: optional per-leg arrival facing,
+  versioned separately and activated only at an authored boundary.
