@@ -21,9 +21,11 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/remove-authored-route-leg / PR #54
-- Latest post-milestone code/evidence commit: 91d0a4a2676cc6ceada7632e33b70a2f0fb8c995
-- Post-milestone next task after validation: insert a new leg before selected intent
+- Latest validated post-milestone descendant: codex/insert-authored-route-leg / PR #55
+- Latest post-milestone code/evidence commit: c363d10b41a88b65f12e41d4b21d55b3f9fcd800
+- Post-milestone next task after validation: optional per-leg arrival facing at
+  an authored boundary
+- Post-milestone task in validation: none
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
 - Baseline evidence: two-battle loop, save/load, GUI input, terrain render and
@@ -1913,3 +1915,37 @@ is delivered as the scheduled task result in ChatGPT.
 - Next only after final documentation-head CI: separately scope insertion of a
   new authored destination immediately before selected intent, with bounded
   deterministic splicing and exact later metadata/restart/outcome parity.
+
+## Selected authored route-leg insertion — validated 2026-11-02 (America/Chicago)
+
+- `codex/insert-authored-route-leg` starts from the exact validated PR #54 tree;
+  no existing successor, overlapping PR or merge was present before work.
+- Actual Ctrl-right input on a selected gold marker inserts a new destination
+  immediately before it. Earlier routed geometry remains exact; affected segments
+  deterministically splice through the new point and all unchanged later intent.
+- The inserted leg inherits the selected mode with zero wait. Original selected
+  and later destinations retain their paired modes/waits. LEG 1 insertion mirrors
+  the inherited active mode/zero wait and shifts the old start wait with its intent.
+- Focused coverage passes actual input/help, strict metadata ownership, blocked/
+  bad/enemy/v27 rejection, 128-point atomicity, RNG/event purity, exact first-leg
+  boundary timing, disk reopen and every real-combat tick/result against an
+  unrendered twin. All 47 local Godot 4.5.1 checks and 26 terrain tests pass.
+- Draft PR #55 carries feature/evidence commit
+  `c363d10b41a88b65f12e41d4b21d55b3f9fcd800`. Combined CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/41559257018 passed the
+  same 47 Godot checks, including rendered input, plus 26 terrain tests.
+- Artifact `13195822561`, digest
+  `sha256:40c0cb224f85cc614812cb401b0f4ab739f98eecf1cc9c2f546eba817e65ae03`,
+  was downloaded and inspected: 71 logs, 70 PASS-bearing non-editor logs, zero
+  script/error/failure matches and 95 PNGs. Planning visibly shows selected LEG 2,
+  **Ctrl-right inserts QUICK/0s before**, and retained retarget/remove help. Actual
+  execution at 00:03 shows a shot line, three real shot cues, -9 rounds, SUP+18
+  and 351 rounds/SUP17%. The readable 02:42 report shows blue 36/0/36, red
+  36/22/14, objective 0s/75s and both sides' campaign consequences.
+- Tactical v28/campaign v2/result v1, deterministic restart, locks, bounded once-
+  only losses, rollback, exports/GIS and Windows launchers remain unchanged.
+- No Windows, CMBS editor, individual-soldier navigation or realistic Combat
+  Mission fidelity claim. Download:
+  https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/insert-authored-route-leg
+- Next only after final documentation-head CI: optional per-leg arrival facing,
+  versioned separately and activated only at an authored boundary.

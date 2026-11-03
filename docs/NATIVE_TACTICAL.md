@@ -6,7 +6,7 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/edit-earlier-route-leg` descendant includes a planning-only terrain
+The newer `codex/insert-authored-route-leg` descendant includes a planning-only terrain
 LOS/range tool with current-position and explicitly hypothetical final-waypoint
 origins, smooth combat zoom, route previews,
 camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
@@ -1096,3 +1096,30 @@ behavior. Campaign v2/result v1, locks, bounded once-only losses, rollback,
 exports/GIS and Windows launchers remain unchanged. This is deterministic squad-
 center routing, not individual-soldier navigation or Windows/Combat Mission
 fidelity validation.
+
+## Inserting before a selected authored leg (v28, no save change)
+
+On `codex/insert-authored-route-leg`, select a gold authored destination during
+planning, then **Ctrl + right-click** ground. The new destination is inserted
+immediately before that selected intent and remains selected for review. Ordinary
+right-click still retargets the selected destination, while Shift-right continues
+to append at the tail. Invalid ground and routes beyond 128 saved points reject
+without changing the command.
+
+The complete routed prefix before the insertion remains byte-shape exact. The
+inserted segment and affected later segments route deterministically through the
+new point, original selected destination and every unchanged later destination.
+The new leg inherits the selected leg's MOVE/QUICK/HUNT mode and receives a zero
+pre-leg wait. The original selected destination and all later destinations retain
+their own paired mode/wait. Inserting before LEG 1 therefore makes the new same-
+mode leg active with no wait; the old start wait begins only after reaching it.
+Earned command response is not reset.
+
+The command rewrites only existing v28 `orders`, `route_legs`, `route_modes` and
+`route_pauses`, plus the existing active wait when inserting first. It advances
+no clock, creates no combat event, queries no enemy and samples no RNG. Reopening
+reconstructs the inserted route but not transient marker selection. V1–v27 reject
+the command and retain their exact saved behavior. Campaign v2/result v1, locks,
+bounded once-only losses, rollback, exports/GIS and Windows launchers remain
+unchanged. This is deterministic squad-center routing, not individual-soldier
+navigation or Windows/Combat Mission fidelity validation.
