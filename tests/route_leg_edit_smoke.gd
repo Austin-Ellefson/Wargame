@@ -35,7 +35,7 @@ func _run() -> void:
     await process_frame
     click(view.leg_pause_button.get_global_rect().get_center())
     await process_frame
-    check(sim.state["route_modes"]["UKR_S1"] == ["move","quick","hunt"] and sim.state["route_pauses"]["UKR_S1"] == [15,15,30] and view.command_mode == "hunt", "Actual input builds the three-leg edit fixture without changing v28 authority.")
+    check(sim.state["route_modes"]["UKR_S1"] == ["move","quick","hunt"] and sim.state["route_pauses"]["UKR_S1"] == [15,15,30] and sim.state["route_facings"]["UKR_S1"] == [-1,-1,-1] and view.command_mode == "hunt", "Actual input builds the three-leg edit fixture without changing v29 authority.")
 
     # Clicking the middle gold destination selects its corresponding authored leg.
     # Selection itself is transient and consumes neither events nor RNG.
@@ -79,7 +79,7 @@ func _run() -> void:
     check(sim.state["route_modes"]["UKR_S1"] == ["hunt","move","hunt"] and sim.movement_mode("UKR_S1") == "hunt", "Editing the first leg keeps its saved and execution-facing modes synchronized.")
     check(sim.state["route_pauses"]["UKR_S1"] == [30,30,30] and int(sim.state["pause_remaining"]["UKR_S1"]) == 30, "START edits the selected first leg's saved and active wait together.")
     check(same(route_before,sim.state["orders"]["UKR_S1"]) and same(legs_before,sim.state["route_legs"]["UKR_S1"]) and int(sim.state["command_remaining"]["UKR_S1"]) == 5, "First-leg editing leaves route geometry, boundaries and earned command response exact.")
-    check(Battle.validate(sim.state,PAYLOAD), "The in-place edited route remains a strict valid tactical v28 save.")
+    check(Battle.validate(sim.state,PAYLOAD), "The in-place edited route remains a strict valid tactical v29 save.")
     print("ROUTE EDIT: modes=",sim.state["route_modes"]["UKR_S1"]," waits=",sim.state["route_pauses"]["UKR_S1"]," points=",sim.state["orders"]["UKR_S1"].size()," response=",sim.state["command_remaining"]["UKR_S1"])
     await capture("route-edit-planning-preview")
 
@@ -95,6 +95,7 @@ func _run() -> void:
     legacy.setup(PAYLOAD)
     legacy.state["version"] = 27
     legacy.state.erase("route_pauses")
+    legacy.state.erase("route_facings")
     legacy.squad_by_id("UKR_S1")["position"] = [180,245]
     check(legacy.order_move("UKR_S1",Vector2(210,245),true,"move") and legacy.order_move("UKR_S1",Vector2(250,245),true,"quick",true), "V27 compatibility fixture authors its original mixed route.")
     var legacy_before: Dictionary = legacy.state.duplicate(true)
@@ -111,6 +112,7 @@ func _run() -> void:
     pacing.state["route_legs"]["UKR_S1"] = [1,1,1]
     pacing.state["route_modes"]["UKR_S1"] = ["move","move","move"]
     pacing.state["route_pauses"]["UKR_S1"] = [0,0,0]
+    pacing.state["route_facings"]["UKR_S1"] = [-1,-1,-1]
     pacing.state["command_remaining"]["UKR_S1"] = 0
     check(pacing.order_leg_mode("UKR_S1","hunt",1) and pacing.order_leg_pause("UKR_S1",2,1) and pacing.execute(), "Boundary fixture accepts an in-place earlier HUNT/2s edit before execution.")
     pacing.step()
@@ -121,7 +123,7 @@ func _run() -> void:
     pacing.step()
     check(Battle.position(pacing.squad_by_id("UKR_S1")) == Vector2(102,100) and pacing.hunt_paused(pacing.squad_by_id("UKR_S1")), "The edited HUNT leg applies its own pressure gate after the edited wait.")
 
-    # Disk stores only the existing v28 arrays. Reopening deliberately forgets
+    # Disk stores only the authoritative route arrays. Reopening deliberately forgets
     # edit selection while retaining the exact authored changes and labels.
     var save_path := "user://route_edit_%d.json" % Time.get_ticks_usec()
     var file := FileAccess.open(save_path,FileAccess.WRITE)
@@ -137,7 +139,7 @@ func _run() -> void:
     root.add_child(view)
     await process_frame
     view.set_process(false)
-    check(same(edited_snapshot,restored.state) and restored.state["version"] == 28 and view.route_leg_edit_index == -1, "Disk reopen retains v28 authority exactly and discards transient leg selection.")
+    check(same(edited_snapshot,restored.state) and restored.state["version"] == 29 and view.route_leg_edit_index == -1, "Disk reopen retains v29 authority exactly and discards transient leg selection.")
     check(authored_labels(view) == ["LEG 1 HUNT\nWAIT 30s","LEG 2 MOVE\nWAIT 30s","LEG 3 HUNT"], "A fresh view reconstructs every edited mode/wait without a new save field.")
     view.queue_free()
     await process_frame

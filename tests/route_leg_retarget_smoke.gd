@@ -1,5 +1,5 @@
 extends "res://tests/route_leg_edit_smoke.gd"
-# Reuse the v28 route/input/render helpers; override the inherited run.
+# Reuse the route/input/render helpers; override the inherited run.
 
 func route_destinations(sim: RefCounted, id: String) -> Array[Vector2]:
     var destinations: Array[Vector2] = []
@@ -73,7 +73,7 @@ func _run() -> void:
     expected["route_legs"]["UKR_S1"] = sim.state["route_legs"]["UKR_S1"].duplicate()
     check(same(expected,sim.state) and same(before_events,sim.last_events), "Retargeting changes only route geometry/boundary counts, preserving modes, waits, response, events and all other authority.")
     check(sim.state["route_modes"]["UKR_S1"] == ["move","quick","hunt"] and sim.state["route_pauses"]["UKR_S1"] == [15,15,30] and int(sim.state["pause_remaining"]["UKR_S1"]) == 15 and int(sim.state["command_remaining"]["UKR_S1"]) == 2, "Per-leg modes/waits, active wait and earned response survive the reroute exactly.")
-    check(Battle.validate(sim.state,PAYLOAD) and "LEG 2 QUICK [EDIT]\nWAIT 30s" in authored_labels(view), "The retargeted planning state remains a strict v28 save with a visible selected marker.")
+    check(Battle.validate(sim.state,PAYLOAD) and "LEG 2 QUICK [EDIT]\nWAIT 30s" in authored_labels(view), "The retargeted planning state remains a strict v29 save with a visible selected marker.")
     var second_random := randi()
     seed(73511)
     check(first_random == randi() and second_random == randi(), "Route retargeting consumes no global RNG.")
@@ -88,6 +88,7 @@ func _run() -> void:
     legacy.setup(PAYLOAD)
     legacy.state["version"] = 27
     legacy.state.erase("route_pauses")
+    legacy.state.erase("route_facings")
     legacy.squad_by_id("UKR_S1")["position"] = [180,245]
     check(legacy.order_move("UKR_S1",Vector2(210,245),true,"move") and legacy.order_move("UKR_S1",Vector2(250,245),true,"quick",true), "V27 isolation fixture authors its original mixed route.")
     var legacy_before: Dictionary = legacy.state.duplicate(true)
@@ -103,9 +104,10 @@ func _run() -> void:
     limit.state["route_legs"]["UKR_S1"] = [127,1]
     limit.state["route_modes"]["UKR_S1"] = ["move","quick"]
     limit.state["route_pauses"]["UKR_S1"] = [0,15]
+    limit.state["route_facings"]["UKR_S1"] = [-1,-1]
     limit.state["pause_remaining"]["UKR_S1"] = 0
     limit.state["command_remaining"]["UKR_S1"] = 2
-    check(Battle.validate(limit.state,PAYLOAD), "The 128-point atomicity fixture is a strict v28 save.")
+    check(Battle.validate(limit.state,PAYLOAD), "The 128-point atomicity fixture is a strict v29 save.")
     var limit_before: Dictionary = limit.state.duplicate(true)
     check(not limit.order_retarget_leg("UKR_S1",Vector2(500,500),1) and same(limit_before,limit.state), "A reroute exceeding 128 points rejects without truncating or corrupting later intent.")
 
@@ -132,7 +134,7 @@ func _run() -> void:
         if not pacing.state["orders"].has("UKR_S1"): break
     check(saw_wait and saw_middle and Battle.position(pacing.squad_by_id("UKR_S1")) == pacing_destinations[2] and not pacing.state["orders"].has("UKR_S1"), "Retargeted execution waits at the prior node, reaches the new middle node, then reaches the retained later destination with exact modes.")
 
-    # Existing v28 fields round-trip through real disk I/O; transient selection
+    # Existing v29 fields round-trip through real disk I/O; transient selection
     # deliberately does not. The new geometry remains deterministic on reopen.
     var disk_snapshot: Dictionary = sim.state.duplicate(true)
     var save_path := "user://route_retarget_%d.json" % Time.get_ticks_usec()

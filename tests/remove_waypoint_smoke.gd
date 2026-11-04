@@ -12,6 +12,7 @@ func v26(sim: RefCounted) -> void:
     sim.state["version"] = 26
     sim.state.erase("route_modes")
     sim.state.erase("route_pauses")
+    sim.state.erase("route_facings")
 
 func _run() -> void:
     root.size = Vector2i(1280,720)
@@ -152,6 +153,7 @@ func _run() -> void:
     legacy.state["version"] = 25
     legacy.state.erase("route_modes")
     legacy.state.erase("route_pauses")
+    legacy.state.erase("route_facings")
     if int(legacy.state["version"]) < 26: legacy.state.erase("route_legs")
     if int(legacy.state["version"]) < 27: legacy.state.erase("route_modes")
     legacy.state.erase("route_legs")

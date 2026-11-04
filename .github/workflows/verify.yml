@@ -72,6 +72,7 @@ jobs:
             ${{ runner.temp }}/route-retarget-*-preview.png
             ${{ runner.temp }}/route-remove-*-preview.png
             ${{ runner.temp }}/route-insert-*-preview.png
+            ${{ runner.temp }}/route-facing-*-preview.png
             ${{ runner.temp }}/soldiers-*-motion-*.png
             ${{ runner.temp }}/soldiers-recoil-*.png
             ${{ runner.temp }}/soldiers-stand-preview.png

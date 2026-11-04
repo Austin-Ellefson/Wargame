@@ -1,5 +1,5 @@
 extends "res://tests/route_leg_retarget_smoke.gd"
-# Reuse the v28 route/input/render helpers; override the inherited run.
+# Reuse the route/input/render helpers; override the inherited run.
 
 func _run() -> void:
     root.size = Vector2i(1280,720)
@@ -70,9 +70,10 @@ func _run() -> void:
     expected["route_legs"]["UKR_S1"] = sim.state["route_legs"]["UKR_S1"].duplicate()
     expected["route_modes"]["UKR_S1"] = ["move","hunt","move"]
     expected["route_pauses"]["UKR_S1"] = [15,30,15]
+    expected["route_facings"]["UKR_S1"] = [-1,-1,-1]
     check(same(expected,sim.state) and same(before_events,sim.last_events), "Removal changes only route geometry/boundaries and the selected paired mode/wait entries.")
     check(sim.movement_mode("UKR_S1") == "move" and int(sim.state["pause_remaining"]["UKR_S1"]) == 15 and int(sim.state["command_remaining"]["UKR_S1"]) == 2, "The retained active mode, start wait and earned response remain exact.")
-    check(authored_labels(view) == ["LEG 1 MOVE\nWAIT 30s","LEG 2 HUNT\nWAIT 15s","LEG 3 MOVE"] and Battle.validate(sim.state,PAYLOAD), "The refreshed gold nodes visibly pair retained modes and waits in a strict v28 save.")
+    check(authored_labels(view) == ["LEG 1 MOVE\nWAIT 30s","LEG 2 HUNT\nWAIT 15s","LEG 3 MOVE"] and Battle.validate(sim.state,PAYLOAD), "The refreshed gold nodes visibly pair retained modes and waits in a strict v29 save.")
     seed(73617)
     check(first_random == randi() and second_random == randi(), "Selected-leg removal consumes no global RNG.")
     print("ROUTE REMOVE: points=",before_path.size()," -> ",sim.state["orders"]["UKR_S1"].size()," legs=",before_legs," -> ",sim.state["route_legs"]["UKR_S1"]," retained=",after_destinations," response=",sim.state["command_remaining"]["UKR_S1"])
@@ -86,6 +87,7 @@ func _run() -> void:
     legacy.setup(PAYLOAD)
     legacy.state["version"] = 27
     legacy.state.erase("route_pauses")
+    legacy.state.erase("route_facings")
     legacy.squad_by_id("UKR_S1")["position"] = [180,245]
     check(legacy.order_move("UKR_S1",Vector2(210,245),true,"move") and legacy.order_move("UKR_S1",Vector2(250,245),true,"quick",true), "V27 isolation fixture authors its original mixed route.")
     var legacy_before: Dictionary = legacy.state.duplicate(true)
@@ -103,9 +105,10 @@ func _run() -> void:
     limit.state["route_legs"]["UKR_S1"] = [126,1,1]
     limit.state["route_modes"]["UKR_S1"] = ["move","quick","hunt"]
     limit.state["route_pauses"]["UKR_S1"] = [0,15,30]
+    limit.state["route_facings"]["UKR_S1"] = [-1,-1,-1]
     limit.state["pause_remaining"]["UKR_S1"] = 0
     limit.state["command_remaining"]["UKR_S1"] = 2
-    check(Battle.validate(limit.state,PAYLOAD), "The 128-point reconnect fixture is a strict v28 save.")
+    check(Battle.validate(limit.state,PAYLOAD), "The 128-point reconnect fixture is a strict v29 save.")
     var limit_before: Dictionary = limit.state.duplicate(true)
     check(not limit.order_remove_leg("UKR_S1",1) and same(limit_before,limit.state), "A reconnect exceeding 128 points rejects without truncating later intent or metadata.")
 
@@ -121,7 +124,7 @@ func _run() -> void:
     first.state["command_remaining"]["UKR_S1"] = 2
     check(first.order_remove_leg("UKR_S1",0), "The active first authored leg can be removed in planning.")
     check(route_destinations(first,"UKR_S1") == [first_destinations[1],first_destinations[2]] and first.state["route_modes"]["UKR_S1"] == ["quick","hunt"] and first.state["route_pauses"]["UKR_S1"] == [30,0], "LEG 1 removal retains both later destinations and their paired metadata.")
-    check(first.movement_mode("UKR_S1") == "quick" and int(first.state["pause_remaining"]["UKR_S1"]) == 30 and int(first.state["command_remaining"]["UKR_S1"]) == 2 and Battle.validate(first.state,PAYLOAD), "The promoted first mode/wait mirror strict v28 active fields without resetting response.")
+    check(first.movement_mode("UKR_S1") == "quick" and int(first.state["pause_remaining"]["UKR_S1"]) == 30 and int(first.state["command_remaining"]["UKR_S1"]) == 2 and Battle.validate(first.state,PAYLOAD), "The promoted first mode/wait mirror strict v29 active fields without resetting response.")
     first.state["command_remaining"]["UKR_S1"] = 0
     check(first.execute(), "Promoted first-leg fixture begins execution.")
     first.step()
@@ -135,7 +138,7 @@ func _run() -> void:
     var single = Battle.new()
     single.setup(PAYLOAD)
     check(single.order_move("UKR_S1",Vector2(210,245),true,"hunt") and single.order_pause("UKR_S1",15) and single.order_remove_leg("UKR_S1",0), "A one-leg selected route delegates to canonical HOLD cleanup.")
-    check(not single.state["orders"].has("UKR_S1") and not single.state["route_legs"].has("UKR_S1") and not single.state["route_modes"].has("UKR_S1") and not single.state["route_pauses"].has("UKR_S1") and int(single.state["pause_remaining"]["UKR_S1"]) == 0 and int(single.state["command_remaining"]["UKR_S1"]) == 0, "Final selected removal clears every route field, wait and response exactly like HOLD.")
+    check(not single.state["orders"].has("UKR_S1") and not single.state["route_legs"].has("UKR_S1") and not single.state["route_modes"].has("UKR_S1") and not single.state["route_pauses"].has("UKR_S1") and not single.state["route_facings"].has("UKR_S1") and int(single.state["pause_remaining"]["UKR_S1"]) == 0 and int(single.state["command_remaining"]["UKR_S1"]) == 0, "Final selected removal clears every route field, wait and response exactly like HOLD.")
 
     # A controlled no-ammunition route proves the retained later wait/mode
     # activates at the prior retained node after the removed gap is reconnected.
@@ -148,6 +151,7 @@ func _run() -> void:
     pacing.state["route_legs"]["UKR_S1"] = [1,1,1]
     pacing.state["route_modes"]["UKR_S1"] = ["move","quick","hunt"]
     pacing.state["route_pauses"]["UKR_S1"] = [0,2,3]
+    pacing.state["route_facings"]["UKR_S1"] = [-1,-1,-1]
     pacing.state["command_remaining"]["UKR_S1"] = 0
     check(Battle.validate(pacing.state,PAYLOAD) and pacing.order_remove_leg("UKR_S1",1) and pacing.execute(), "Boundary fixture removes its middle leg and begins from a strict reconnected route.")
     pacing.step()
@@ -160,7 +164,7 @@ func _run() -> void:
         if not pacing.state["orders"].has("UKR_S1"): break
     check(Battle.position(pacing.squad_by_id("UKR_S1")) == Vector2(118,100) and not pacing.state["orders"].has("UKR_S1"), "The reconnected HUNT leg reaches the unchanged later destination and completes normally.")
 
-    # Existing v28 fields round-trip through real disk I/O; selection does not.
+    # Existing v29 fields round-trip through real disk I/O; selection does not.
     var disk_snapshot: Dictionary = sim.state.duplicate(true)
     var save_path := "user://route_remove_%d.json" % Time.get_ticks_usec()
     var file := FileAccess.open(save_path,FileAccess.WRITE)

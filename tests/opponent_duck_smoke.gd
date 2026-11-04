@@ -16,6 +16,7 @@ func fixture(hidden: bool = true) -> RefCounted:
     if int(sim.state["version"]) < 26: sim.state.erase("route_legs")
     if int(sim.state["version"]) < 27: sim.state.erase("route_modes")
     if int(sim.state["version"]) < 28: sim.state.erase("route_pauses")
+    if int(sim.state["version"]) < 29: sim.state.erase("route_facings")
     if int(sim.state["version"]) < 23: sim.state.erase("cover_responses")
     for squad in sim.state["squads"]:
         squad["ammo"] = 0
@@ -108,6 +109,7 @@ func _run() -> void:
     if int(legacy.state["version"]) < 26: legacy.state.erase("route_legs")
     if int(legacy.state["version"]) < 27: legacy.state.erase("route_modes")
     if int(legacy.state["version"]) < 28: legacy.state.erase("route_pauses")
+    if int(legacy.state["version"]) < 29: legacy.state.erase("route_facings")
     if int(legacy.state["version"]) < 23: legacy.state.erase("cover_responses")
     legacy.squad_by_id("RU_S1")["suppression"] = 0.6
     stationary(legacy)
@@ -119,6 +121,7 @@ func _run() -> void:
     if int(old.state["version"]) < 26: old.state.erase("route_legs")
     if int(old.state["version"]) < 27: old.state.erase("route_modes")
     if int(old.state["version"]) < 28: old.state.erase("route_pauses")
+    if int(old.state["version"]) < 29: old.state.erase("route_facings")
     if int(old.state["version"]) < 23: old.state.erase("cover_responses")
     finish(current)
     finish(old)
@@ -127,6 +130,7 @@ func _run() -> void:
     normalized.erase("route_legs")
     normalized.erase("route_modes")
     normalized.erase("route_pauses")
+    normalized.erase("route_facings")
     check(same(normalized,old.state) and same(current.result(),old.result()),"With no pressure the complete v22 campaign battle matches v21 fields/results.")
     # Actual campaign save/load with real received fire and autonomous pose.
     var game = load("res://scenes/main.tscn").instantiate()
