@@ -6,12 +6,12 @@ This milestone branch includes the unmerged stacked campaign and tactical work.
 Godot 4.5.1 is the tested version.
 Python, CMAutoEditor and Combat Mission are not required for native play.
 
-The newer `codex/insert-authored-route-leg` descendant includes a planning-only terrain
+The newer `codex/per-leg-arrival-facing` descendant includes a planning-only terrain
 LOS/range tool with current-position and explicitly hypothetical final-waypoint
 origins, smooth combat zoom, route previews,
 camera navigation, pinning, spotting/contact memory, MOVE/QUICK/HUNT, fire control,
 queued waypoints, timed pauses, local-contact reactions and cover-weighted red routes. The milestone
-branch above remains frozen. Fresh battles use tactical rules v28, including authored route-leg modes/waits/markers/removal, selected-squad visibility, delayed shared reports, spaced nearby cover and saved retries when friendlies block otherwise usable cover. See the five-step
+branch above remains frozen. Fresh battles use tactical rules v29, including authored route-leg modes/waits/arrival facings/markers/removal, selected-squad visibility, delayed shared reports, spaced nearby cover and saved retries when friendlies block otherwise usable cover. See the five-step
 batch test guide in [FIVE_STEP_TACTICAL_PROGRESS.md](FIVE_STEP_TACTICAL_PROGRESS.md).
 
 ## Complete game loop
@@ -1123,3 +1123,30 @@ the command and retain their exact saved behavior. Campaign v2/result v1, locks,
 bounded once-only losses, rollback, exports/GIS and Windows launchers remain
 unchanged. This is deterministic squad-center routing, not individual-soldier
 navigation or Windows/Combat Mission fidelity validation.
+
+## Optional per-leg arrival facing (v29)
+
+On `codex/per-leg-arrival-facing`, select a gold authored destination and use
+**ARRIVAL FACE**, then left-click a ground direction measured from that node.
+North/east/south/west display as 000/090/180/270 degrees. Gold labels and a short
+world-space line show an explicit bearing. **CLEAR ###°** returns that leg to
+**KEEP**, which preserves the squad's live bearing when it reaches the node.
+
+The command changes planning metadata only. Reaching the exact authored boundary
+consumes its entry and applies an explicit heading before the same simulation
+second's contact acquisition and attack collection. KEEP consumes no heading.
+The final destination applies its heading before canonical route cleanup. The
+existing live arc width is not queued or changed by this increment. Retargeting
+keeps the bearing paired with the same intent; insertion adds KEEP; selected or
+tail removal drops only its paired entry. HOLD, death, withdrawal and completion
+clear the metadata. No presentation path samples simulation RNG.
+
+Fresh v29 saves add strict `route_facings`, parallel to `route_legs`,
+`route_modes` and `route_pauses`. Every remaining editable blue leg stores one
+integer: `-1` for KEEP or `0..359` for an explicit world bearing. Missing/extra
+owners, empty/mismatched arrays, noninteger or out-of-range values reject before
+restore. V1–v28 retain exact saved shapes and behavior without migration and
+cannot accept the new command. Campaign v2/result v1, locks, bounded once-only
+losses, rollback, export/GIS and optional Windows launchers remain unchanged.
+This is deterministic squad-center facing, not individual-soldier navigation,
+Windows/CMBS validation or a Combat Mission fidelity claim.

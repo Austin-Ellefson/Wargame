@@ -1,29 +1,34 @@
-# Continue from authored-leg insertion
+# Continue from validated per-leg arrival facing
 
-Latest validated descendant: `codex/insert-authored-route-leg`, draft PR #55,
-based exactly on validated `codex/remove-authored-route-leg` PR #54. Ctrl-right
-on a selected gold marker inserts a new destination immediately before that intent. Earlier
-geometry stays exact; affected segments splice deterministically through the new
-point and every unchanged later destination. The inserted leg inherits the
-selected MOVE/QUICK/HUNT mode with zero wait, while all original destinations
-retain paired metadata. Inserting before LEG 1 makes that new leg active and
-moves the old start wait with the original first destination.
+Latest validated descendant: `codex/per-leg-arrival-facing`, draft PR #56,
+based exactly on validated `codex/insert-authored-route-leg` PR #55 at
+`d0f6f5794f739300a7def1a02209441ad84b1725`. Fresh tactical v29 adds strict
+`route_facings` entries parallel to each editable authored leg: `-1` keeps the
+live bearing, while `0..359` applies a whole-degree world bearing only when that
+exact gold destination is reached.
 
-The implementation reuses tactical v28 route arrays without a schema bump. V1–
-v27 reject insertion; selection remains transient. Actual-input coverage passes
-invalid/enemy/v27/128-point rejection, metadata ownership, first-leg timing,
-disk reopen, RNG/event purity and every real-combat tick/result against an
-unrendered twin with actual shots and the completed report. Feature/evidence commit
-`c363d10b41a88b65f12e41d4b21d55b3f9fcd800` passed combined CI
-https://github.com/Austin-Ellefson/Wargame/actions/runs/41559257018: all 47 Godot
-4.5.1 checks, including rendered input, and 26 terrain tests. Artifact
-`13195822561` was downloaded and its planning, actual-shot execution and completed
-report captures were inspected. Check the final documentation-head CI before
-beginning dependent work.
+Select a gold node, use ARRIVAL FACE, then click a direction from that node.
+Labels and a short line show the queued bearing; an existing bearing clears back
+to KEEP. Boundary consumption applies an explicit heading before that same
+second's contact acquisition and firing. Retarget preserves paired intent,
+insertion adds KEEP, and removal/cleanup consume only matching metadata.
 
-Next, separately scope optional per-leg arrival facing that activates at the
-exact authored boundary. Version any new saved metadata; preserve local-
-visibility-only targeting, deterministic restart/outcomes and old save rules.
+Feature/evidence commit `3947aa2f9383fc7eba522f2ce61516e1e9af4b3b`
+passed combined CI
+https://github.com/Austin-Ellefson/Wargame/actions/runs/41760070176: all 48
+Godot 4.5.1 checks, including 24 rendered checks, and 26 terrain tests. Actual-
+input coverage includes strict malformed-save rejection, exact v28 isolation,
+metadata ownership, same-tick fire, disk restart, global-RNG purity and every
+full-combat tick/result against an unrendered twin. Artifact `13290023227`
+(`sha256:9adfac2f724dfe3970b17e1735dfdca78ad018793ca22362879400bb69d08afa`)
+was downloaded: 73 logs, 98 screenshots, 72 PASS-bearing logs and no script/
+error/failure matches. Planning ARRIVE 271 degrees, actual three-shot execution
+with ammunition/suppression changes, and the readable completed two-sided report
+were inspected. Check the final documentation-head CI before dependent work.
+
+Next, separately scope optional per-leg arrival fire-arc width that
+activates with an explicit arrival bearing. Version it independently, preserve
+the live arc until its boundary, and retain exact v1–v29 shapes and outcomes.
 
 ## Prior validated hypothetical waypoint probe
 
