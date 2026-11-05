@@ -16,6 +16,7 @@ func fixture() -> RefCounted:
     if int(sim.state["version"]) < 26: sim.state.erase("route_legs")
     if int(sim.state["version"]) < 27: sim.state.erase("route_modes")
     if int(sim.state["version"]) < 28: sim.state.erase("route_pauses")
+    if int(sim.state["version"]) < 29: sim.state.erase("route_facings")
     if int(sim.state["version"]) < 23: sim.state.erase("cover_responses")
     sim.state.erase("area_fire")
     for squad in sim.state["squads"]:
@@ -146,6 +147,7 @@ func _run() -> void:
     if int(legacy.state["version"]) < 26: legacy.state.erase("route_legs")
     if int(legacy.state["version"]) < 27: legacy.state.erase("route_modes")
     if int(legacy.state["version"]) < 28: legacy.state.erase("route_pauses")
+    if int(legacy.state["version"]) < 29: legacy.state.erase("route_facings")
     if int(legacy.state["version"]) < 23: legacy.state.erase("cover_responses")
     legacy.state.erase("facing_orders")
     legacy.state.erase("area_fire")
@@ -159,6 +161,7 @@ func _run() -> void:
     authoritative.erase("route_legs")
     authoritative.erase("route_modes")
     authoritative.erase("route_pauses")
+    authoritative.erase("route_facings")
     authoritative.erase("facing_orders")
     authoritative.erase("area_fire")
     check(same(authoritative,legacy.state) and same(current.result(),legacy.result()), "Default unrestricted v20 reproduces complete v19 combat fields/results exactly.")

@@ -187,10 +187,18 @@ func _build_interface() -> void:
     area_button.add_theme_font_size_override("font_size",12)
     area_button.tooltip_text = "Left-click ground to suppress a 16m area using real rounds. No casualty/hit reports. CLEAR FIRE cancels the order; right-click cancels cursor. HOLD FIRE pauses it."
     facing_button = _button("FACE", Rect2(370, 70, 104, 36), func():
-        route_leg_edit_index = -1
         _clear_los_probe()
-        facing_armed = not facing_armed
         area_armed = false
+        if int(simulation.state["version"]) >= 29 and _can_edit_route_leg(route_leg_edit_index):
+            var facings: Array = simulation.state["route_facings"][selected]
+            if not facing_armed and int(facings[route_leg_edit_index]) >= 0:
+                simulation.order_clear_leg_facing(selected, route_leg_edit_index)
+                facing_armed = false
+            else:
+                facing_armed = not facing_armed
+        else:
+            route_leg_edit_index = -1
+            facing_armed = not facing_armed
         _refresh())
     facing_button.tooltip_text = "Click FACE then left-click ground to face that direction; click FACE again or right-click to cancel. Routes are unchanged."
     arc_button = _button("ARC OFF", Rect2(480, 70, 104, 36), func():
@@ -528,6 +536,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
     if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE and (los_armed or route_leg_edit_index >= 0):
         if los_armed:
             _clear_los_probe()
+        facing_armed = false
         route_leg_edit_index = -1
         _refresh()
         get_viewport().set_input_as_handled()
@@ -582,7 +591,8 @@ func _map_input(event: InputEvent) -> void:
             _refresh()
             return
         if event.button_index == MOUSE_BUTTON_LEFT:
-            if simulation.order_facing(selected, _ground_point(event.position)): facing_armed = false
+            var accepted: bool = simulation.order_leg_facing(selected, _ground_point(event.position), route_leg_edit_index) if int(simulation.state["version"]) >= 29 and _can_edit_route_leg(route_leg_edit_index) else simulation.order_facing(selected, _ground_point(event.position))
+            if accepted: facing_armed = false
             _refresh()
             return
     if event.button_index == MOUSE_BUTTON_LEFT and not event.shift_pressed and simulation.state["phase"] == "planning" and int(simulation.state["version"]) >= 28:
@@ -1264,7 +1274,8 @@ func _can_edit_route_leg(index: int) -> bool:
     var legs = simulation.state["route_legs"].get(selected)
     var modes = simulation.state["route_modes"].get(selected)
     var pauses = simulation.state["route_pauses"].get(selected)
-    return legs is Array and modes is Array and pauses is Array and legs.size() == modes.size() and modes.size() == pauses.size() and index < legs.size()
+    var facings = simulation.state.get("route_facings", {}).get(selected) if int(simulation.state["version"]) >= 29 else []
+    return legs is Array and modes is Array and pauses is Array and legs.size() == modes.size() and modes.size() == pauses.size() and (int(simulation.state["version"]) < 29 or (facings is Array and facings.size() == legs.size())) and index < legs.size()
 
 func _authored_route_points() -> Array[Vector2]:
     var result: Array[Vector2] = []
@@ -1341,12 +1352,26 @@ func _refresh_order_preview() -> void:
             marker.height = 0.45
             var selected_material := _material(Color(0.35, 0.95, 1.0, 0.98), true) if editing else marker_material
             _mesh(marker, Vector3(point.x, Battle.terrain_height(point.x, point.y) + 1.0, point.y), selected_material, order_preview)
+            var arrival_heading := -1
+            if int(simulation.state["version"]) >= 29 and simulation.state["route_facings"].has(selected):
+                arrival_heading = int(simulation.state["route_facings"][selected][index])
+            if arrival_heading >= 0:
+                var radians := deg_to_rad(float(arrival_heading))
+                var facing_end := (point + Vector2(sin(radians), -cos(radians)) * 14.0).clamp(Vector2(4,4), Vector2(Battle.SIZE - 4, Battle.SIZE - 4))
+                var start_3d := Vector3(point.x, Battle.terrain_height(point.x, point.y) + 1.3, point.y)
+                var end_3d := Vector3(facing_end.x, Battle.terrain_height(facing_end.x, facing_end.y) + 1.3, facing_end.y)
+                var facing_line := BoxMesh.new()
+                facing_line.size = Vector3(0.7, 0.3, start_3d.distance_to(end_3d))
+                var facing_instance := _mesh(facing_line, (start_3d + end_3d) * 0.5, selected_material, order_preview)
+                facing_instance.look_at(end_3d, Vector3.UP)
             var label := Label3D.new()
             label.text = "LEG %d" % (index + 1)
             if int(simulation.state["version"]) >= 27 and simulation.state["route_modes"].has(selected):
                 label.text += " %s" % str(simulation.state["route_modes"][selected][index]).to_upper()
             if editing:
                 label.text += " [EDIT]"
+            if arrival_heading >= 0:
+                label.text += "\nFACE %03d°" % arrival_heading
             if int(simulation.state["version"]) >= 28 and simulation.state["route_pauses"].has(selected):
                 var pauses: Array = simulation.state["route_pauses"][selected]
                 if index + 1 < pauses.size() and int(pauses[index + 1]) > 0:
@@ -1505,8 +1530,15 @@ func _refresh() -> void:
     area_button.disabled = facing_button.disabled
     area_button.text = "CLICK AREA" if area_armed else "AREA FIRE"
     _refresh_area_preview()
-    facing_button.text = "CLICK GROUND" if facing_armed else "FACE %d°" % simulation.facing(selected)
-    facing_button.add_theme_font_size_override("font_size",12)
+    if int(state["version"]) >= 29 and _can_edit_route_leg(route_leg_edit_index):
+        var arrival_heading := int(state["route_facings"][selected][route_leg_edit_index])
+        facing_button.text = "CLICK GROUND" if facing_armed else ("CLEAR %03d°" % arrival_heading if arrival_heading >= 0 else "ARRIVAL FACE")
+        facing_button.tooltip_text = "Selected-leg arrival bearing. Set it from that gold destination toward clicked ground; an existing bearing button clears it. It activates only on actual arrival."
+        facing_button.add_theme_font_size_override("font_size",10)
+    else:
+        facing_button.text = "CLICK GROUND" if facing_armed else "FACE %d°" % simulation.facing(selected)
+        facing_button.tooltip_text = "Click FACE then left-click ground to face that direction; click FACE again or right-click to cancel. Routes are unchanged."
+        facing_button.add_theme_font_size_override("font_size",12)
     arc_button.text = "ARC OFF" if simulation.arc_width(selected) == 0 else "ARC %d°" % simulation.arc_width(selected)
     _refresh_arc_preview()
     phase_label.text = "%s  |  %02d:%02d elapsed  |  512 x 512 m generated test terrain" % [str(state["phase"]).to_upper(), int(state["elapsed"]) / 60, int(state["elapsed"]) % 60]
@@ -1615,9 +1647,14 @@ func _refresh() -> void:
     if _can_edit_route_leg(route_leg_edit_index):
         var edit_modes: Array = state["route_modes"][selected]
         var edit_pauses: Array = state["route_pauses"][selected]
-        report_label.text = "EDIT LEG %d: %s | WAIT BEFORE %ds\nCtrl-right inserts %s/0s before.\nRight-click retargets; REMOVE L%d deletes." % [route_leg_edit_index + 1, str(edit_modes[route_leg_edit_index]).to_upper(), int(edit_pauses[route_leg_edit_index]), str(edit_modes[route_leg_edit_index]).to_upper(), route_leg_edit_index + 1]
+        var arrival_text := ""
+        if int(state["version"]) >= 29:
+            var edit_facing := int(state["route_facings"][selected][route_leg_edit_index])
+            arrival_text = " | ARRIVE %s" % ("KEEP" if edit_facing < 0 else "%03d°" % edit_facing)
+        report_label.text = "EDIT LEG %d: %s | WAIT BEFORE %ds%s\nCtrl-right inserts %s/0s before.\nRight-click retargets; REMOVE L%d deletes." % [route_leg_edit_index + 1, str(edit_modes[route_leg_edit_index]).to_upper(), int(edit_pauses[route_leg_edit_index]), arrival_text, str(edit_modes[route_leg_edit_index]).to_upper(), route_leg_edit_index + 1]
     if area_armed: report_label.text = "AREA: left-click reachable ground.\nRight-click cancels cursor."
-    if facing_armed: report_label.text = "FACE: left-click ground.\nRight-click or FACE cancels."
+    if facing_armed:
+        report_label.text = ("ARRIVAL FACE L%d: click direction from gold node.\nActivates only when that node is reached." % (route_leg_edit_index + 1)) if int(state["version"]) >= 29 and _can_edit_route_leg(route_leg_edit_index) else "FACE: left-click ground.\nRight-click or FACE cancels."
     if not selected_squad.is_empty() and simulation.morale_state(selected) == "broken":
         report_label.text = "BROKEN: automatic withdrawal.\n30 quiet rear seconds to rally."
     if playback_paused:

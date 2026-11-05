@@ -21,10 +21,10 @@ they actually run on Windows.
 - Current task: milestone check-in prepared; preserve this downloadable branch
 - Current task branch / PR: codex/completed-battle-report / PR #10
 - Next task: user Windows playtest, then small independent tactical improvements
-- Latest validated post-milestone descendant: codex/insert-authored-route-leg / PR #55
-- Latest post-milestone code/evidence commit: c363d10b41a88b65f12e41d4b21d55b3f9fcd800
-- Post-milestone next task after validation: optional per-leg arrival facing at
-  an authored boundary
+- Latest validated post-milestone descendant: codex/per-leg-arrival-facing / PR #56
+- Latest post-milestone code/evidence commit: 3947aa2f9383fc7eba522f2ce61516e1e9af4b3b
+- Post-milestone next task after validation: optional per-leg arrival fire-arc
+  width, versioned separately and activated only at an authored boundary
 - Post-milestone task in validation: none
 - Check-in prepared for code commit: 733b6d8feafcd2f96265cfb387dd2d0823945966
 - Baseline CI: https://github.com/Austin-Ellefson/Wargame/actions/runs/38087842201
@@ -1949,3 +1949,34 @@ is delivered as the scheduled task result in ChatGPT.
   https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/insert-authored-route-leg
 - Next only after final documentation-head CI: optional per-leg arrival facing,
   versioned separately and activated only at an authored boundary.
+
+## Per-leg arrival facing — validated 2026-11-03 (America/Chicago)
+
+- `codex/per-leg-arrival-facing` / draft PR #56 starts from validated PR #55
+  documentation head `d0f6f5794f739300a7def1a02209441ad84b1725`;
+  live branches/open PRs showed no successor, overlap or merge before work.
+- Tactical v29 adds strict per-authored-leg `route_facings`: `-1` keeps the
+  current bearing and `0..359` applies an explicit world heading only when its
+  exact destination is consumed. Labels and a short planning line expose intent.
+- Actual marker/FACE/ground input, clear/reassign, retarget/insert/remove pairing,
+  eleven malformed saves, exact v28 isolation, final-boundary cleanup, disk
+  restart, global-RNG purity and same-tick acquisition/fire ordering pass.
+- Feature/evidence commit `3947aa2f9383fc7eba522f2ce61516e1e9af4b3b`
+  passes all 48 local Godot 4.5.1 checks, 26 terrain tests, Python compile and
+  diff hygiene. Every real-combat tick/result matches an unrendered twin through
+  actual shot cues and the completed two-sided report.
+- Combined rendered CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/41760070176 passed all
+  48 Godot checks, including 24 rendered checks, plus 26 terrain tests. Artifact
+  `13290023227` (`sha256:9adfac2f724dfe3970b17e1735dfdca78ad018793ca22362879400bb69d08afa`)
+  has 73 logs and 98 screenshots: 72 PASS-bearing logs and no script/error/failure
+  matches. Inspected evidence shows ARRIVE 271 degrees in planning, actual three-
+  shot execution after boundary activation with visible ammunition/suppression
+  changes, and a readable completed two-sided report.
+- Campaign v2/result v1, locks, bounded once-only losses, rollback, exports/GIS
+  and Windows launchers remain unchanged. Windows, CMBS, individual-soldier
+  navigation and realistic Combat Mission fidelity are unverified.
+- Next: optional versioned per-leg arrival arc width,
+  activating with arrival facing without changing the live arc before its node.
+- Download:
+  https://codeload.github.com/Austin-Ellefson/Wargame/zip/refs/heads/codex/per-leg-arrival-facing

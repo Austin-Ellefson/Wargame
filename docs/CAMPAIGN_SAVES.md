@@ -674,3 +674,27 @@ reconstructs the inserted endpoints and metadata but not edit selection. No fiel
 or rules version is added; V1–v27 reject insertion and retain their saved shapes.
 Tactical v28/campaign v2/result v1, locks, bounded once-only results/losses,
 failed-save rollback, exports/GIS and Windows launchers are unchanged.
+
+## Per-leg arrival facing (tactical v29)
+
+Fresh v29 engagements add `route_facings`, a dictionary parallel to the existing
+editable-blue `route_legs`, `route_modes` and `route_pauses` maps. Each remaining
+authored leg has exactly one integer: `-1` means keep the current live bearing on
+arrival, while `0` through `359` is an explicit world bearing in whole degrees.
+The map has exactly the same owners and array lengths as `route_legs`. Missing or
+extra owners, empty/mismatched arrays, fractional/nonnumeric values and values
+outside `-1..359` reject the complete campaign snapshot before restore.
+
+Planning can set or clear only the selected leg's entry. Retargeting carries it
+with that authored destination, insertion adds `-1`, and removal drops the paired
+entry. Execution consumes entries at exact boundaries. An explicit bearing updates
+the existing saved `facing_orders` heading before same-tick acquisition/fire;
+KEEP leaves it unchanged. Route completion, HOLD, death and withdrawal clear the
+map with the other route metadata. Disk restart therefore needs no transient
+cursor or marker selection to reproduce later headings and outcomes.
+
+V1–v28 tactical states retain their exact fields and rules; loading never creates
+arrival facings or upgrades a pending battle. Campaign v2, result v1, battle locks,
+bounded once-only losses/results, failed-save rollback, exports/GIS and optional
+Windows launchers remain unchanged. Linux validation does not establish Windows,
+CMBS editor or realistic Combat Mission fidelity.

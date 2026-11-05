@@ -4,6 +4,7 @@ extends "res://tests/remove_waypoint_smoke.gd"
 func v27(sim: RefCounted) -> void:
     sim.state["version"] = 27
     sim.state.erase("route_pauses")
+    sim.state.erase("route_facings")
 
 func _run() -> void:
     root.size = Vector2i(1280,720)
@@ -80,6 +81,7 @@ func _run() -> void:
     legacy.state["version"] = 26
     legacy.state.erase("route_modes")
     legacy.state.erase("route_pauses")
+    legacy.state.erase("route_facings")
     legacy.squad_by_id("UKR_S1")["position"] = [180,245]
     check(legacy.order_move("UKR_S1",Vector2(210,245),true,"hunt"), "V26 accepts its original first route mode.")
     var legacy_before: Dictionary = legacy.state.duplicate(true)

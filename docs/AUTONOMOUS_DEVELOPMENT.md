@@ -1371,3 +1371,38 @@ This setup change contains instructions only; these missing tools must be addres
 - Next only after final documentation-head CI: separately version a selected
   authored leg's optional arrival facing so it activates at the exact boundary
   without changing hidden-information, restart or outcome determinism contracts.
+
+## Per-leg arrival facing — validated 2026-11-03 (America/Chicago)
+
+- Branch `codex/per-leg-arrival-facing`, draft PR #56, starts exactly from
+  validated PR #55 documentation head
+  `d0f6f5794f739300a7def1a02209441ad84b1725`. Branches and open PRs were
+  rechecked before mutation; no successor, overlap or merge existed.
+- Fresh tactical v29 adds strict `route_facings` arrays parallel to every
+  editable blue authored route. Each entry is KEEP (`-1`) or a whole-degree
+  `0..359` world bearing applied only on arrival at that exact gold node.
+- Actual selected-marker/FACE/ground input exposes ARRIVAL FACE, CLEAR and
+  visible `FACE ###°` labels plus short direction lines. Planning changes no
+  route, position, clock, event or global RNG. Heading activation occurs before
+  same-tick acquisition and fire, including the final destination.
+- Retargeting carries the paired bearing; insertion adds KEEP; selected/tail
+  removal and HOLD/death/withdrawal/completion clear only matching metadata.
+  V1–v28 retain exact fields/rules without migration.
+- Feature/evidence commit `3947aa2f9383fc7eba522f2ce61516e1e9af4b3b`
+  passes all 48 local Godot 4.5.1 editor/logic/input checks, 26 terrain tests,
+  Python compile and diff hygiene. The focused regression also covers eleven
+  malformed saves, exact v28 behavior, disk reopen, actual shots/report and every
+  rendered combat tick/result against an unrendered twin.
+- Combined rendered CI
+  https://github.com/Austin-Ellefson/Wargame/actions/runs/41760070176 passed all
+  48 Godot checks, including 24 rendered checks, plus 26 terrain tests. Artifact
+  `13290023227` (`sha256:9adfac2f724dfe3970b17e1735dfdca78ad018793ca22362879400bb69d08afa`)
+  contains 73 logs and 98 screenshots: 72 logs contain PASS and none contain a
+  script/error/failure match. Planning ARRIVE 271 degrees, actual three-shot
+  execution with ammunition/suppression changes, and the completed two-sided
+  report were inspected.
+- No Windows, CMBS editor, individual-soldier navigation or realistic Combat
+  Mission fidelity is claimed.
+- Next: separately version optional per-leg arrival arc
+  width, activated with an explicit arrival bearing while preserving the live
+  arc until that boundary and exact v1–v29 restart/outcome behavior.

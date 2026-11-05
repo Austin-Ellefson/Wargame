@@ -38,11 +38,11 @@ func _run() -> void:
     await process_frame
     click(view.leg_pause_button.get_global_rect().get_center())
     await process_frame
-    check(sim.state["version"] == 28 and sim.state["route_modes"]["UKR_S1"] == ["hunt","quick","move"], "Fresh v28 retains one mode for every authored leg.")
+    check(sim.state["version"] == 29 and sim.state["route_modes"]["UKR_S1"] == ["hunt","quick","move"] and sim.state["route_facings"]["UKR_S1"] == [-1,-1,-1], "Fresh v29 retains one mode, wait and optional facing for every authored leg.")
     check(sim.state["route_pauses"]["UKR_S1"] == [15,15,30] and int(sim.state["pause_remaining"]["UKR_S1"]) == 15, "Initial and later leg-start waits remain distinct and bounded.")
     check(authored_labels(view) == ["LEG 1 HUNT\nWAIT 15s","LEG 2 QUICK\nWAIT 30s","LEG 3 MOVE"], "Gold authored nodes visibly name each queued future delay.")
     check(view.pause_button.text == "START 15s" and view.leg_pause_button.text == "LEG 30s" and view.remove_waypoint_button.text == "REMOVE LEG", "The compact command row distinguishes the start wait, newest-leg wait and whole-leg removal.")
-    check(view.hold_button.position.x + view.hold_button.size.x < view.pause_button.position.x and view.pause_button.position.x + view.pause_button.size.x < view.leg_pause_button.position.x and view.leg_pause_button.position.x + view.leg_pause_button.size.x < view.remove_waypoint_button.position.x and view.remove_waypoint_button.position.x + view.remove_waypoint_button.size.x <= 1234.0, "All four v28 route controls remain separate inside the 720p command panel.")
+    check(view.hold_button.position.x + view.hold_button.size.x < view.pause_button.position.x and view.pause_button.position.x + view.pause_button.size.x < view.leg_pause_button.position.x and view.leg_pause_button.position.x + view.leg_pause_button.size.x < view.remove_waypoint_button.position.x and view.remove_waypoint_button.position.x + view.remove_waypoint_button.size.x <= 1234.0, "All four route controls remain separate inside the 720p command panel.")
     check("LEG WAIT: pause at prior gold node" in view.report_label.text, "Planning help explains where the newest leg delay begins.")
     await capture("route-pauses-planning-preview")
 
@@ -58,7 +58,7 @@ func _run() -> void:
     check(sim.state["route_modes"]["UKR_S1"] == ["hunt","quick"] and sim.state["route_pauses"]["UKR_S1"] == [15,15], "Whole-leg removal drops only the paired final mode and delay.")
     check(authored_labels(view) == ["LEG 1 HUNT\nWAIT 15s","LEG 2 QUICK"] and int(sim.state["pause_remaining"]["UKR_S1"]) == 15 and int(sim.state["command_remaining"]["UKR_S1"]) == 5, "Removal retains the active start wait, earlier node delay and unearned response time.")
 
-    check(Battle.validate(sim.state,PAYLOAD), "The authored pause route is a strict valid v28 save.")
+    check(Battle.validate(sim.state,PAYLOAD), "The authored pause route is a strict valid v29 save.")
     for index in range(12):
         var bad: Dictionary = sim.state.duplicate(true)
         match index:
@@ -74,13 +74,14 @@ func _run() -> void:
             9: bad["route_pauses"]["UNKNOWN"] = [0]
             10: bad["route_pauses"]["RU_S1"] = [0]
             11: bad["route_pauses"]["UKR_S1"] = "wait"
-        check(not Battle.validate(bad,PAYLOAD), "Malformed v28 route-pause state rejects case%d." % index)
+        check(not Battle.validate(bad,PAYLOAD), "Malformed v29 route-pause state rejects case%d." % index)
 
     # V27 keeps its original global PAUSE behavior and exact field shape.
     var legacy = Battle.new()
     legacy.setup(PAYLOAD)
     legacy.state["version"] = 27
     legacy.state.erase("route_pauses")
+    legacy.state.erase("route_facings")
     legacy.squad_by_id("UKR_S1")["position"] = [180,245]
     check(legacy.order_move("UKR_S1",Vector2(210,245),true,"hunt") and legacy.order_move("UKR_S1",Vector2(250,245),true,"quick",true) and legacy.order_pause("UKR_S1",15), "V27 still authors mixed modes with its original single route-start wait.")
     check(int(legacy.state["pause_remaining"]["UKR_S1"]) == 15 and not legacy.state.has("route_pauses") and Battle.validate(legacy.state,PAYLOAD), "V27 validates without invented per-leg pauses.")
@@ -99,8 +100,9 @@ func _run() -> void:
     pacing.state["route_legs"]["UKR_S1"] = [1,1,1]
     pacing.state["route_modes"]["UKR_S1"] = ["move","quick","hunt"]
     pacing.state["route_pauses"]["UKR_S1"] = [0,2,3]
+    pacing.state["route_facings"]["UKR_S1"] = [-1,-1,-1]
     pacing.state["command_remaining"]["UKR_S1"] = 0
-    check(Battle.validate(pacing.state,PAYLOAD) and pacing.execute(), "Boundary fixture starts from a strict mixed-mode/mixed-wait v28 route.")
+    check(Battle.validate(pacing.state,PAYLOAD) and pacing.execute(), "Boundary fixture starts from a strict mixed-mode/mixed-wait v29 route.")
     pacing.step()
     check(Battle.position(pacing.squad_by_id("UKR_S1")) == Vector2(102,100) and pacing.movement_mode("UKR_S1") == "quick" and pacing.state["route_pauses"]["UKR_S1"] == [2,3] and int(pacing.state["pause_remaining"]["UKR_S1"]) == 2, "Arrival at LEG1 activates its queued two-second wait without entering QUICK.")
     pacing.step()
@@ -182,5 +184,5 @@ func _run() -> void:
     await capture("route-pauses-report-preview")
     view.queue_free()
     await process_frame
-    if failures.is_empty(): print("PASS: v28 start/per-leg waits, visible node labels, strict saves, v27 compatibility, exact boundary timing, disk restart and full combat parity.")
+    if failures.is_empty(): print("PASS: v29 start/per-leg waits, visible node labels, strict saves, v27 compatibility, exact boundary timing, disk restart and full combat parity.")
     quit(0 if failures.is_empty() else 1)

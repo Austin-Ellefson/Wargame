@@ -1,5 +1,5 @@
 extends "res://tests/route_leg_remove_smoke.gd"
-# Reuse the v28 route/input/render helpers; override the inherited run.
+# Reuse the route/input/render helpers; override the inherited run.
 
 func ctrl_click(point: Vector2, button: int = MOUSE_BUTTON_RIGHT) -> void:
     var event := InputEventMouseButton.new()
@@ -74,9 +74,10 @@ func _run() -> void:
     expected["route_legs"]["UKR_S1"] = sim.state["route_legs"]["UKR_S1"].duplicate()
     expected["route_modes"]["UKR_S1"] = ["move","quick","quick","hunt"]
     expected["route_pauses"]["UKR_S1"] = [15,0,15,30]
+    expected["route_facings"]["UKR_S1"] = [-1,-1,-1,-1]
     check(same(expected,sim.state) and same(before_events,sim.last_events), "Insertion changes only route geometry/boundaries and inserts inherited mode/zero-wait metadata.")
     check(sim.movement_mode("UKR_S1") == "move" and int(sim.state["pause_remaining"]["UKR_S1"]) == 15 and int(sim.state["command_remaining"]["UKR_S1"]) == 2, "A later insertion preserves active mode, active wait and earned response exactly.")
-    check(authored_labels(view) == ["LEG 1 MOVE","LEG 2 QUICK [EDIT]\nWAIT 15s","LEG 3 QUICK\nWAIT 30s","LEG 4 HUNT"] and Battle.validate(sim.state,PAYLOAD), "Gold markers show the inserted intent and all shifted metadata in a strict v28 save.")
+    check(authored_labels(view) == ["LEG 1 MOVE","LEG 2 QUICK [EDIT]\nWAIT 15s","LEG 3 QUICK\nWAIT 30s","LEG 4 HUNT"] and Battle.validate(sim.state,PAYLOAD), "Gold markers show the inserted intent and all shifted metadata in a strict v29 save.")
     seed(73703)
     check(first_random == randi() and second_random == randi(), "Authored-leg insertion consumes no global RNG.")
     print("ROUTE INSERT: points=",before_path.size()," -> ",sim.state["orders"]["UKR_S1"].size()," legs=",before_legs," -> ",sim.state["route_legs"]["UKR_S1"]," inserted=",after_destinations[1]," response=",sim.state["command_remaining"]["UKR_S1"])
@@ -90,6 +91,7 @@ func _run() -> void:
     legacy.setup(PAYLOAD)
     legacy.state["version"] = 27
     legacy.state.erase("route_pauses")
+    legacy.state.erase("route_facings")
     legacy.squad_by_id("UKR_S1")["position"] = [180,245]
     check(legacy.order_move("UKR_S1",Vector2(210,245),true,"move") and legacy.order_move("UKR_S1",Vector2(250,245),true,"quick",true), "V27 isolation fixture authors its original mixed route.")
     var legacy_before: Dictionary = legacy.state.duplicate(true)
@@ -107,9 +109,10 @@ func _run() -> void:
     limit.state["route_legs"]["UKR_S1"] = [126,1,1]
     limit.state["route_modes"]["UKR_S1"] = ["move","quick","hunt"]
     limit.state["route_pauses"]["UKR_S1"] = [0,15,30]
+    limit.state["route_facings"]["UKR_S1"] = [-1,-1,-1]
     limit.state["pause_remaining"]["UKR_S1"] = 0
     limit.state["command_remaining"]["UKR_S1"] = 2
-    check(Battle.validate(limit.state,PAYLOAD), "The 128-point insertion fixture is a strict v28 save.")
+    check(Battle.validate(limit.state,PAYLOAD), "The 128-point insertion fixture is a strict v29 save.")
     var limit_before: Dictionary = limit.state.duplicate(true)
     check(not limit.order_insert_leg("UKR_S1",Vector2(500,500),1) and same(limit_before,limit.state), "An insertion exceeding 128 points rejects without truncating later intent or metadata.")
 
@@ -134,7 +137,7 @@ func _run() -> void:
             break
     check(saw_shifted_wait, "The original LEG 1 wait begins only after arrival at the newly inserted destination.")
 
-    # Disk stores only the existing v28 arrays; the selected inserted marker is
+    # Disk stores only authoritative v29 arrays; the selected inserted marker is
     # transient. Reopening must reconstruct the exact four authored destinations.
     var disk_snapshot: Dictionary = sim.state.duplicate(true)
     var save_path := "user://route_insert_%d.json" % Time.get_ticks_usec()
